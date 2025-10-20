@@ -1,0 +1,34 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE quizzes (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE questions (
+    id SERIAL PRIMARY KEY,
+    quiz_id INT NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+);
+
+CREATE TABLE question_choices(
+    id SERIAL PRIMARY KEY,
+    question_id INT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    is_correct BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE quiz_attempts (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    quiz_id INT NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    finished_at TIMESTAMP,
+    score NUMERIC(5,2)
+);
