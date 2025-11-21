@@ -8,6 +8,7 @@ import {
   numeric,
   integer,
   pgEnum,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { studyResourceTypeEnum } from "../db/queries/sessions";
 
@@ -42,6 +43,7 @@ export const tags = pgTable("tags", {
     .notNull()
     .references(() => users.userId, { onDelete: "cascade" }),
   content: varchar({ length: 50 }).notNull(),
+  color: varchar({ length: 7 }).notNull().default("#000000"),
 });
 
 export const studySessions = pgTable("study_sessions", {
@@ -71,55 +73,27 @@ export const studyResources = pgTable("study_resources", {
 
 export const quizzes = pgTable("quizzes", {
   quizId: uuid().defaultRandom().primaryKey(),
-  title: varchar({ length: 255 }).notNull(),
+  userId: uuid()
+    .notNull()
+    .references(() => users.userId, { onDelete: "cascade" }),
   tagId: uuid()
     .notNull()
     .references(() => tags.tagId, { onDelete: "cascade" }),
   createdAt: timestamp().defaultNow().notNull(),
-});
-
-export const questions = pgTable("questions", {
-  questionId: uuid().defaultRandom().primaryKey(),
-  quizId: uuid()
-    .notNull()
-    .references(() => quizzes.quizId, { onDelete: "cascade" }),
-  content: text().notNull(),
-});
-
-export const questionChoices = pgTable("question_choices", {
-  questionChoiceId: uuid().defaultRandom().primaryKey(),
-  questionId: uuid()
-    .notNull()
-    .references(() => questions.questionId, { onDelete: "cascade" }),
-  content: text().notNull(),
-  isCorrect: boolean().default(false).notNull(),
+  title: varchar({ length: 255 }).notNull(),
+  isMultipleChoice: boolean().default(false).notNull(),
+  numberOfQuestions: integer().notNull(),
+  quizContent: jsonb().notNull(),
 });
 
 export const quizAttempts = pgTable("quiz_attempts", {
   quizAttemptId: uuid().defaultRandom().primaryKey(),
-  userId: uuid()
-    .notNull()
-    .references(() => users.userId, { onDelete: "cascade" }),
   quizId: uuid()
     .notNull()
     .references(() => quizzes.quizId, { onDelete: "cascade" }),
-  startedAt: timestamp().defaultNow().notNull(),
-  finishedAt: timestamp(),
+  finishedAt: timestamp().defaultNow().notNull(),
+  userAttemptContent: jsonb().notNull(),
   score: numeric({ precision: 5, scale: 2 }),
-});
-
-export const userAnswers = pgTable("user_answers", {
-  userAnswerId: uuid().defaultRandom().primaryKey(),
-  quizAttemptId: uuid()
-    .notNull()
-    .references(() => quizAttempts.quizAttemptId, { onDelete: "cascade" }),
-  questionId: uuid()
-    .notNull()
-    .references(() => questions.questionId, { onDelete: "cascade" }),
-  answerId: uuid().references(() => questionChoices.questionChoiceId, {
-    onDelete: "cascade",
-  }),
-  isCorrect: boolean(),
 });
 
 export const challenges = pgTable("challenges", {

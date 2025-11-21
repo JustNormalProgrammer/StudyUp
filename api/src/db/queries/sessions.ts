@@ -1,4 +1,4 @@
-import { and, eq, or, between, desc } from "drizzle-orm";
+import { and, eq, between, desc, sql } from "drizzle-orm";
 import { db } from "../index";
 import { studyResources, studySessions } from "../schema";
 import { tags } from "../schema";
@@ -11,6 +11,20 @@ export interface studySessionCreate {
   startedAt: Date;
   durationMinutes: number;
 }
+export interface studySessionUpdate {
+  tagId?: string;
+  title?: string;
+  notes?: string;
+  startedAt?: Date;
+  durationMinutes?: number;
+}
+
+export interface studySessionResourceUpdate {
+  title?: string;
+  type?: studyResourceTypeEnum;
+  content?: string;
+}
+
 export enum studyResourceTypeEnum {
   URL = "url",
   VIDEO = "video",
@@ -25,7 +39,7 @@ export interface studySessionResourceCreate {
 export interface studySessionResource extends studySessionResourceCreate {
   sessionId: string;
 }
-export interface getSessionQuery {
+export interface PaginationQuery {
   userId: string;
   from: Date;
   to: Date;
@@ -33,7 +47,7 @@ export interface getSessionQuery {
   itemsOnPage?: number;
 }
 
-export async function getSessions(data: getSessionQuery) {
+export async function getSessions(data: PaginationQuery) {
   const { userId, from, to, page = 1, itemsOnPage = 10 } = data;
   const result = await db
     .select({
@@ -43,7 +57,11 @@ export async function getSessions(data: getSessionQuery) {
       notes: studySessions.notes,
       startedAt: studySessions.startedAt,
       durationMinutes: studySessions.durationMinutes,
-      tagContent: tags.content,
+      tag: {
+        tagId: tags.tagId,
+        content: tags.content,
+        color: tags.color,
+      },
     })
     .from(studySessions)
     .leftJoin(tags, eq(studySessions.tagId, tags.tagId))
@@ -58,52 +76,149 @@ export async function getSessions(data: getSessionQuery) {
     .limit(itemsOnPage);
   return result;
 }
-export async function getSessionById(sessionId: string) {
+export async function getSessionById(sessionId: string, userId: string) {
   const [result] = await db
     .select({
       sessionId: studySessions.sessionId,
+      userId: studySessions.userId,
       tagId: tags.tagId,
       title: studySessions.title,
       notes: studySessions.notes,
       startedAt: studySessions.startedAt,
       durationMinutes: studySessions.durationMinutes,
-      tagContent: tags.content,
-      resourcesTitle: studyResources.title,
-      resourcesType: studyResources.type,
-      resourcesContent: studyResources.content,
+      tag: {
+        tagId: tags.tagId,
+        content: tags.content,
+        color: tags.color,
+      },
+      studyResources: sql`
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'resourceId', ${studyResources.resourceId},
+            'title', ${studyResources.title},
+            'type', ${studyResources.type},
+            'content', ${studyResources.content}
+          )
+        ) FILTER (WHERE ${studyResources.resourceId} IS NOT NULL),
+      '[]')::json
+    `.as("studyResources"),
     })
     .from(studySessions)
     .leftJoin(tags, eq(studySessions.tagId, tags.tagId))
-    .leftJoin(studyResources, eq(studySessions.sessionId, studyResources.sessionId))
-    .where(eq(studySessions.sessionId, sessionId))
+    .leftJoin(
+      studyResources,
+      eq(studySessions.sessionId, studyResources.sessionId)
+    )
+    .where(
+      and(
+        eq(studySessions.sessionId, sessionId),
+        eq(studySessions.userId, userId)
+      )
+    )
+    .groupBy(studySessions.sessionId, tags.tagId)
     .limit(1);
   return result;
 }
+// ARRAY OF RESOURCES
 export async function createStudySessionAndResources(
   session: studySessionCreate,
-  resources: studySessionResourceCreate[]
+  resources: studySessionResource[]
 ) {
   const [result] = await db.insert(studySessions).values(session).returning();
-  for (const resource of resources) {
-    const sessionResource: studySessionResource = {
-      ...resource,
-      sessionId: result.sessionId,
-    };
-    await createStudySessionResource(sessionResource);
+  await db.insert(studyResources).values(resources);
+  return result;
+}
+// put request
+export async function replaceStudySession(
+  sessionId: string,
+  data: studySessionCreate
+) {
+  const [result] = await db
+    .update(studySessions)
+    .set(data)
+    .where(eq(studySessions.sessionId, sessionId))
+    .returning();
+  return result;
+}
+// patch request
+export async function updateStudySession(
+  sessionId: string,
+  updateData: studySessionUpdate
+) {
+  const updateFields: Partial<Omit<studySessionCreate, "userId">> = {};
+
+  if (updateData.tagId !== undefined) {
+    updateFields.tagId = updateData.tagId;
   }
+  if (updateData.title !== undefined) {
+    updateFields.title = updateData.title;
+  }
+  if (updateData.notes !== undefined) {
+    updateFields.notes = updateData.notes;
+  }
+  if (updateData.startedAt !== undefined) {
+    updateFields.startedAt =
+      updateData.startedAt instanceof Date
+        ? updateData.startedAt
+        : new Date(updateData.startedAt);
+  }
+  if (updateData.durationMinutes !== undefined) {
+    updateFields.durationMinutes = updateData.durationMinutes;
+  }
+
+  if (Object.keys(updateFields).length === 0) {
+    return null;
+  }
+
+  const [result] = await db
+    .update(studySessions)
+    .set(updateFields)
+    .where(eq(studySessions.sessionId, sessionId))
+    .returning();
+  return result;
+}
+// patch request
+export async function replaceStudySessionResources(
+  sessionId: string,
+  resources: studySessionResource[]
+) {
+  await db
+    .delete(studyResources)
+    .where(eq(studyResources.sessionId, sessionId));
+  await db.insert(studyResources).values(resources);
+  return;
+}
+// METHOD TO ADD STUDY SESSION RESOURCE, DELETES RESOURCES IF [] IS PASSED, USED ONLY IN PATCH REQUEST
+export async function updateStudySessionResources(
+  sessionId: string,
+  resources: (studySessionResourceCreate & { sessionId: string })[]
+) {
+  if (resources.length === 0) {
+    await db
+      .delete(studyResources)
+      .where(eq(studyResources.sessionId, sessionId));
+    return;
+  }
+  const result = db.insert(studyResources).values(resources);
   return result;
 }
 
-export async function createStudySessionResource(
-  resource: studySessionResource
-) {
-  const [result] = await db.insert(studyResources).values(resource).returning();
-  return result;
+export async function deleteStudySession(sessionId: string) {
+  await db
+    .delete(studySessions)
+    .where(eq(studySessions.sessionId, sessionId))
+    .returning();
+  return;
 }
 
 export default {
   getSessions,
   createStudySessionAndResources,
-  createStudySessionResource,
   getSessionById,
+  updateStudySession,
+  updateStudySessionResources,
+  replaceStudySession,
+  replaceStudySessionResources,
+  deleteStudySession,
 };

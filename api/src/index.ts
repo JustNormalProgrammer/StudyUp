@@ -7,13 +7,14 @@ import express, {
 import "dotenv/config";
 import helmet from "helmet";
 import auth from "./routes/auth";
-import users from "./routes/users";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { allowedOrigins } from "./config/allowedOrigins";
 import { credentials } from "./middleware/credentials";
 import sessions from "./routes/sessions";
 import tags from "./routes/tags";
+import quizzes from "./routes/quizes";
+import user from "./routes/user";
 
 const app = express();
 
@@ -25,10 +26,11 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/", user);
 app.use("/auth", auth);
-app.use("/users", users);
 app.use("/sessions", sessions);
 app.use("/tags", tags);
+app.use("/quizzes", quizzes);
 
 app.use(
   (

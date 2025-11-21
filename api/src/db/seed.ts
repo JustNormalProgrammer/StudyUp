@@ -1,6 +1,12 @@
 import "dotenv/config";
 import { db } from "./index";
-import { tags, studySessions, studyResources, users } from "./schema";
+import {
+  tags,
+  studySessions,
+  studyResources,
+  users,
+  quizzes,
+} from "./schema";
 import { studyResourceTypeEnum } from "./queries/sessions";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
@@ -189,15 +195,125 @@ async function seed() {
       .returning();
     console.log(`✅ Dodano ${insertedResources.length} zasobów`);
 
-    console.log("🎉 Seedowanie zakończone pomyślnie!");
-    console.log(`📊 Podsumowanie:`);
-    console.log(`   - Użytkowników: 1`);
-    console.log(`   - Tagów: ${insertedTags.length}`);
-    console.log(`   - Sesji: ${insertedSessions.length}`);
-    console.log(`   - Zasobów: ${insertedResources.length}`);
+    const insertedQuizzes = await db.insert(quizzes).values({
+      userId,
+      tagId: insertedTags[0].tagId,
+      title: "Algebra liniowa - quiz",
+      isMultipleChoice: true,
+      numberOfQuestions: 10,
+      quizContent: {
+        "questions": [
+          {
+            "content": "Kiedy rozpoczęła się II wojna światowa?",
+            "isMultipleChoice": false,
+            "choices": [
+              { "content": "1 września 1939", "isCorrect": true },
+              { "content": "3 września 1939", "isCorrect": false },
+              { "content": "7 grudnia 1941", "isCorrect": false },
+              { "content": "6 czerwca 1944", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Które państwa były głównymi członkami Osi?",
+            "isMultipleChoice": true,
+            "choices": [
+              { "content": "Niemcy", "isCorrect": true },
+              { "content": "Włochy", "isCorrect": true },
+              { "content": "Japonia", "isCorrect": true },
+              { "content": "Francja", "isCorrect": false },
+              { "content": "Wielka Brytania", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Kto był premierem Wielkiej Brytanii w czasie większości II wojny światowej?",
+            "isMultipleChoice": false,
+            "choices": [
+              { "content": "Winston Churchill", "isCorrect": true },
+              { "content": "Neville Chamberlain", "isCorrect": false },
+              { "content": "Clement Attlee", "isCorrect": false },
+              { "content": "Anthony Eden", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Jakie wydarzenie oznaczało początek działań wojennych na Pacyfiku?",
+            "isMultipleChoice": false,
+            "choices": [
+              { "content": "Atak na Pearl Harbor", "isCorrect": true },
+              { "content": "Bitwa o Midway", "isCorrect": false },
+              { "content": "Bitwa o Guadalcanal", "isCorrect": false },
+              { "content": "Bombardowanie Hiroszimy", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Które z poniższych bitw miały kluczowe znaczenie w 1942 roku?",
+            "isMultipleChoice": true,
+            "choices": [
+              { "content": "Bitwa o Stalingrad", "isCorrect": true },
+              { "content": "Bitwa o Midway", "isCorrect": true },
+              { "content": "Bitwa o Normandię", "isCorrect": false },
+              { "content": "Bitwa o Anglię", "isCorrect": false },
+              { "content": "Bitwa na Łuku Kurskim", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Jak nazywała się operacja aliancka lądowania w Normandii?",
+            "isMultipleChoice": false,
+            "choices": [
+              { "content": "Overlord", "isCorrect": true },
+              { "content": "Barbarossa", "isCorrect": false },
+              { "content": "Market Garden", "isCorrect": false },
+              { "content": "Torch", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Które państwa były członkami aliantów?",
+            "isMultipleChoice": true,
+            "choices": [
+              { "content": "Stany Zjednoczone", "isCorrect": true },
+              { "content": "Związek Radziecki", "isCorrect": true },
+              { "content": "Chiny", "isCorrect": true },
+              { "content": "Niemcy", "isCorrect": false },
+              { "content": "Włochy", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Kiedy zakończyła się II wojna światowa w Europie?",
+            "isMultipleChoice": false,
+            "choices": [
+              { "content": "8 maja 1945", "isCorrect": true },
+              { "content": "2 września 1945", "isCorrect": false },
+              { "content": "6 czerwca 1944", "isCorrect": false },
+              { "content": "1 września 1939", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Które miasta zostały zbombardowane bombami atomowymi?",
+            "isMultipleChoice": true,
+            "choices": [
+              { "content": "Hiroshima", "isCorrect": true },
+              { "content": "Nagasaki", "isCorrect": true },
+              { "content": "Tokio", "isCorrect": false },
+              { "content": "Osaka", "isCorrect": false }
+            ]
+          },
+          {
+            "content": "Który plan zakładał szybkie pokonanie Francji przez Niemcy w 1940 roku?",
+            "isMultipleChoice": false,
+            "choices": [
+              { "content": "Plan Manstein", "isCorrect": false },
+              { "content": "Plan Schlieffena", "isCorrect": false },
+              { "content": "Plan Fall Gelb", "isCorrect": true },
+              { "content": "Plan Barbarossa", "isCorrect": false }
+            ]
+          }
+        ]
+      }
+    }).returning();
+
+    console.log(`✅ Dodano ${insertedQuizzes.length} quizów`);
   } catch (error) {
-    console.error("❌ Błąd podczas seedowania:", error);
-    throw error;
+    console.error("❌ Błąd:", error);
+    process.exit(1);
   }
 }
 

@@ -112,7 +112,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
         if (err) return res.sendStatus(401);
         const user = await users.getUserById(payload?.userId);
         if (!user) {
-          await refreshTokens.removeRefreshToken(payload.userId); // If reused, delete refreshToken and require authentication
+          await refreshTokens.removeRefreshToken(payload.userId);
           return res.sendStatus(401);
         }
         const accessToken = jwt.sign(
