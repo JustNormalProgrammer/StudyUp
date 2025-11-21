@@ -134,6 +134,7 @@ export async function updateStudySession(
   sessionId: string,
   updateData: StudySessionUpdate
 ) {
+  console.log("updateData", updateData);
   const [result] = await db
     .update(studySessions)
     .set(updateData)

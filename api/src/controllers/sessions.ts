@@ -151,6 +151,7 @@ export const updateSession = async (
         studyResources?: StudySessionResourceCreate[];
       }
     >(req);
+    console.log("data", data);
     const existingSession = await sessions.getSessionById(
       sessionId,
       req.user!.userId

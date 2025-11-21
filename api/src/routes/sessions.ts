@@ -10,14 +10,19 @@ import {
 } from "../controllers/sessions";
 import { body, query } from "express-validator";
 import validate from "../utils/validate";
-import { studyResourceTypeEnum } from "../db/queries/sessions";
+import { StudyResourceTypeEnum } from "../db/queries/sessions";
 import tags from "../db/queries/tags";
 
 const validateCreateSession = [
   body("tagId").notEmpty().withMessage("Tag is required"),
   body("title").notEmpty().withMessage("Title is required"),
   body("notes").optional().notEmpty().withMessage("Notes cannot be empty"),
-  body("startedAt").notEmpty().withMessage("Starting time is required").isISO8601().withMessage("Starting time must be a valid date").toDate(),
+  body("startedAt")
+    .notEmpty()
+    .withMessage("Starting time is required")
+    .isISO8601()
+    .withMessage("Starting time must be a valid date")
+    .toDate(),
   body("durationMinutes")
     .notEmpty()
     .withMessage("Duration minutes is required")
@@ -25,7 +30,7 @@ const validateCreateSession = [
     .withMessage("Duration minutes must be a positive integer"),
   body("studyResources")
     .isArray()
-      .withMessage("Study resources must be an array"),
+    .withMessage("Study resources must be an array"),
   body("studyResources.*.title")
     .trim()
     .notEmpty()
@@ -41,7 +46,7 @@ const validateCreateSession = [
     .withMessage("Study resource content cannot be empty"),
   body("studyResources.*.type")
     .custom((value) => {
-      if (!Object.values(studyResourceTypeEnum).includes(value)) {
+      if (!Object.values(StudyResourceTypeEnum).includes(value)) {
         throw new Error("Invalid study resource type");
       }
       return true;
@@ -59,13 +64,29 @@ const validateCreateSession = [
 ];
 
 const validateUpdateSession = [
-  body("tagId").optional().notEmpty().withMessage("Tag is required"),
+  body("tagId")
+    .optional()
+    .notEmpty()
+    .withMessage("Tag is required")
+    .bail()
+    .custom(async (value, { req }) => {
+      if (value) {
+        const existingTag = await tags.getTagById(value, req.user!.userId);
+        if (!existingTag) {
+          throw new Error("Tag not found");
+        }
+      }
+      return true;
+    }),
   body("title").optional().notEmpty().withMessage("Title is required"),
   body("notes").optional().notEmpty().withMessage("Notes is required"),
   body("startedAt")
     .optional()
     .notEmpty()
-    .withMessage("Starting time is required").isISO8601().withMessage("Starting time must be a valid date").toDate(),
+    .withMessage("Starting time is required")
+    .isISO8601()
+    .withMessage("Starting time must be a valid date")
+    .toDate(),
   body("durationMinutes")
     .optional()
     .notEmpty()
@@ -95,21 +116,12 @@ const validateUpdateSession = [
     .withMessage("Study resource content is required"),
   body("studyResources.*.type")
     .custom((value) => {
-      if (!Object.values(studyResourceTypeEnum).includes(value)) {
+      if (!Object.values(StudyResourceTypeEnum).includes(value)) {
         throw new Error("Invalid study resource type");
       }
       return true;
     })
     .withMessage("Invalid study resource type"),
-  body("tagId").custom(async (value, { req }) => {
-    if (value) {
-      const existingTag = await tags.getTagById(value, req.user!.userId);
-      if (!existingTag) {
-        throw new Error("Tag not found");
-      }
-    }
-    return true;
-  }),
 ];
 
 const validateGetSessions = [
@@ -138,6 +150,11 @@ router.patch(
   validate(validateUpdateSession),
   updateSession
 );
-router.put("/:sessionId", requiredAuth, validate(validateCreateSession), replaceSession);
+router.put(
+  "/:sessionId",
+  requiredAuth,
+  validate(validateCreateSession),
+  replaceSession
+);
 router.delete("/:sessionId", requiredAuth, deleteSession);
 export default router;
