@@ -3,7 +3,7 @@ import { db } from "../index";
 import { studyResources, studySessions } from "../schema";
 import { tags } from "../schema";
 
-export interface studySessionCreate {
+export interface StudySessionCreate {
   userId: string;
   tagId: string;
   title: string;
@@ -11,34 +11,22 @@ export interface studySessionCreate {
   startedAt: Date;
   durationMinutes: number;
 }
-export interface studySessionUpdate {
-  tagId?: string;
-  title?: string;
-  notes?: string;
-  startedAt?: Date;
-  durationMinutes?: number;
-}
+export type StudySessionUpdate = Partial<Omit<StudySessionCreate, "userId">>;
 
-export interface studySessionResourceUpdate {
-  title?: string;
-  type?: studyResourceTypeEnum;
-  content?: string;
-}
-
-export enum studyResourceTypeEnum {
+export enum StudyResourceTypeEnum {
   URL = "url",
   VIDEO = "video",
   BOOK = "book",
   OTHER = "other",
 }
-export interface studySessionResourceCreate {
+export interface StudySessionResource {
+  sessionId: string;
   title: string;
-  type: studyResourceTypeEnum;
+  type: StudyResourceTypeEnum;
   content?: string;
 }
-export interface studySessionResource extends studySessionResourceCreate {
-  sessionId: string;
-}
+export type StudySessionResourceCreate = Omit<StudySessionResource, "sessionId">;
+
 export interface PaginationQuery {
   userId: string;
   from: Date;
@@ -122,8 +110,8 @@ export async function getSessionById(sessionId: string, userId: string) {
 }
 // ARRAY OF RESOURCES
 export async function createStudySessionAndResources(
-  session: studySessionCreate,
-  resources: studySessionResource[]
+  session: StudySessionCreate,
+  resources: StudySessionResource[]
 ) {
   const [result] = await db.insert(studySessions).values(session).returning();
   await db.insert(studyResources).values(resources);
@@ -132,7 +120,7 @@ export async function createStudySessionAndResources(
 // put request
 export async function replaceStudySession(
   sessionId: string,
-  data: studySessionCreate
+  data: StudySessionCreate
 ) {
   const [result] = await db
     .update(studySessions)
@@ -144,36 +132,11 @@ export async function replaceStudySession(
 // patch request
 export async function updateStudySession(
   sessionId: string,
-  updateData: studySessionUpdate
+  updateData: StudySessionUpdate
 ) {
-  const updateFields: Partial<Omit<studySessionCreate, "userId">> = {};
-
-  if (updateData.tagId !== undefined) {
-    updateFields.tagId = updateData.tagId;
-  }
-  if (updateData.title !== undefined) {
-    updateFields.title = updateData.title;
-  }
-  if (updateData.notes !== undefined) {
-    updateFields.notes = updateData.notes;
-  }
-  if (updateData.startedAt !== undefined) {
-    updateFields.startedAt =
-      updateData.startedAt instanceof Date
-        ? updateData.startedAt
-        : new Date(updateData.startedAt);
-  }
-  if (updateData.durationMinutes !== undefined) {
-    updateFields.durationMinutes = updateData.durationMinutes;
-  }
-
-  if (Object.keys(updateFields).length === 0) {
-    return null;
-  }
-
   const [result] = await db
     .update(studySessions)
-    .set(updateFields)
+    .set(updateData)
     .where(eq(studySessions.sessionId, sessionId))
     .returning();
   return result;
@@ -181,7 +144,7 @@ export async function updateStudySession(
 // patch request
 export async function replaceStudySessionResources(
   sessionId: string,
-  resources: studySessionResource[]
+  resources: StudySessionResource[]
 ) {
   await db
     .delete(studyResources)
@@ -192,15 +155,19 @@ export async function replaceStudySessionResources(
 // METHOD TO ADD STUDY SESSION RESOURCE, DELETES RESOURCES IF [] IS PASSED, USED ONLY IN PATCH REQUEST
 export async function updateStudySessionResources(
   sessionId: string,
-  resources: (studySessionResourceCreate & { sessionId: string })[]
+  resources: StudySessionResourceCreate[]
 ) {
   if (resources.length === 0) {
     await db
       .delete(studyResources)
       .where(eq(studyResources.sessionId, sessionId));
-    return;
+    return null;
   }
-  const result = db.insert(studyResources).values(resources);
+  const resourcesData = resources.map((resource) => ({
+    ...resource,
+    sessionId,
+  }));
+  const result = await db.insert(studyResources).values(resourcesData).returning();
   return result;
 }
 

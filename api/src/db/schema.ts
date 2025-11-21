@@ -10,11 +10,11 @@ import {
   pgEnum,
   jsonb,
 } from "drizzle-orm/pg-core";
-import { studyResourceTypeEnum } from "../db/queries/sessions";
+import { StudyResourceTypeEnum } from "../db/queries/sessions";
 
 export const studyResourceType = pgEnum(
   "study_resource_type",
-  Object.values(studyResourceTypeEnum) as [string, ...string[]]
+  Object.values(StudyResourceTypeEnum) as [string, ...string[]]
 );
 export const challengeType = pgEnum("challenge_type", [
   "time",

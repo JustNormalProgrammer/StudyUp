@@ -3,7 +3,7 @@ import { quizzes, quizAttempts, tags } from "../schema";
 import { and, between, desc, eq } from "drizzle-orm";
 import { PaginationQuery } from "./sessions";
 
-export interface quizAttemptCreate {
+export interface QuizAttemptCreate {
   quizId: string;
   userAttemptContent: any;
   score: string;
@@ -107,7 +107,7 @@ export async function getQuizAttempt(quizAttemptId: string, userId: string) {
     .limit(1);
   return quizAttempt;
 }
-export async function createQuizAttempt(data: quizAttemptCreate) {
+export async function createQuizAttempt(data: QuizAttemptCreate) {
   const [quizAttempt] = await db.insert(quizAttempts).values(data).returning();
   return quizAttempt;
 }

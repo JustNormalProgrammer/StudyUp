@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import quizzes, { quizAttemptCreate } from "../db/queries/quizzes";
+import quizzes, { QuizAttemptCreate } from "../db/queries/quizzes";
 import { matchedData, validationResult } from "express-validator";
 
 export const getUserQuizzes = async (req: Request, res: Response) => {
@@ -45,7 +45,7 @@ export const createQuizAttempt = async (req: Request, res: Response) => {
     if(quiz.numberOfQuestions !== userAttemptContent.length) {
       return res.status(400).json({ error: [{ msg: "User attempt content must be the same length as the number of questions. Received " + userAttemptContent.length + " answers, expected " + quiz.numberOfQuestions }] });
     }
-    const quizAttempt: quizAttemptCreate = {
+    const quizAttempt: QuizAttemptCreate = {
       quizId: quiz.quizId,
       userAttemptContent: userAttemptContent,
       score: "0",
