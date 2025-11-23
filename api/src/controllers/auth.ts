@@ -57,6 +57,7 @@ export const handleLogin = async (req: Request, res: Response) => {
     return res.json({
       userId: foundUser.userId,
       username: foundUser.username,
+      email: foundUser.email,
       accessToken,
     });
   } catch (e) {
@@ -148,9 +149,6 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
 };
 export const handleLogout = async (req: Request, res: Response) => {
   try {
-    if (!req.user!.userId) {
-      throw new Error();
-    }
     await refreshTokens.removeRefreshToken(req.user!.userId);
     return res.sendStatus(204);
   } catch (e) {

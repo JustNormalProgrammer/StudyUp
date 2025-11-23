@@ -57,7 +57,7 @@ export const studySessions = pgTable("study_sessions", {
   title: varchar({ length: 255 }).notNull(),
   notes: text(),
   startedAt: timestamp().notNull(),
-  durationMinutes: integer(),
+  durationMinutes: integer().notNull(),
   createdAt: timestamp().defaultNow().notNull(),
 });
 
