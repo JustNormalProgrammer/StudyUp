@@ -34,7 +34,7 @@ export const refreshTokens = pgTable("refresh_tokens", {
   userId: uuid()
     .references(() => users.userId)
     .primaryKey(),
-  refreshToken: varchar({ length: 256 }).notNull(),
+  refreshToken: varchar().notNull(),
 });
 
 export const tags = pgTable("tags", {

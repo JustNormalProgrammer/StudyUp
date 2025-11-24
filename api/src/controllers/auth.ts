@@ -95,6 +95,7 @@ export const handleRegister = async (req: Request, res: Response) => {
     return res.json({
       userId: result.userId,
       username: result.username,
+      email: result.email,
       accessToken,
     });
   } catch (e) {
@@ -120,6 +121,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
           {
             userId: user.userId,
             username: user.username,
+            email: user.email,
           },
           process.env.ACCESS_TOKEN_SECRET!,
           { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION! as StringValue }
@@ -128,6 +130,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
           {
             userId: user.userId,
             username: user.username,
+            email: user.email,
           },
           process.env.REFRESH_TOKEN_SECRET!,
           { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION! as StringValue }

@@ -5,118 +5,89 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-import type { LoginForm } from '@/pages/Auth/Login'
+import type { LoginResponse } from '@/pages/Auth/Login'
 import { api } from '@/api/api'
-import makeAuthenticatedRequest from '@/api/AuthenticatedRequest'
 
 export interface User {
   userId: string
   username: string
   email: string
 }
+export interface RefreshTokenResponse {
+  accessToken: string
+}
 
 export interface AuthContext {
   user: User | null
   token: string | null
   isAuthenticated: boolean
-  error: string | null
-  refresh: () => Promise<string | null>
-  login: (data: LoginForm) => Promise<void>
-  logout: () => Promise<void>
-}
-interface LoginResponse extends User {
-  accessToken: string
+  login: (data: LoginResponse) => void
+  logout: () => void
+  updateToken: (updatedToken: string) => void
 }
 
-interface RefreshTokenResponse {
-  accessToken: string
-}
 
 const AuthContext = createContext<AuthContext | null>(null)
 
 export function AuthProvider({ children }: React.PropsWithChildren) {
-  const [{ user, token, isAuthenticated, error }, setState] = useState<{
+  const [{ user, token, isAuthenticated }, setState] = useState<{
     user: User | null
     isAuthenticated: boolean
     token: string | null
-    error: string | null
-  }>({ user: null, isAuthenticated: false, token: null, error: null })
+  }>({ user: null, isAuthenticated: false, token: null})
   const [isLoading, setIsLoading] = useState(true)
 
+  const login = useCallback((data: LoginResponse) => {
+    setState({
+      user: {
+        username: data.username,
+        userId: data.userId,
+        email: data.email,
+      },
+      isAuthenticated: true,
+      token: data.accessToken,
+    })
+    return
+  }, [])
+  // TODO: ERRORS
+  const logout = useCallback(() => {
+    setState({ user: null, isAuthenticated: false, token: null })
+    return
+  }, [])
+
+  const updateToken = useCallback((updatedToken: string) => {
+    setState((prev) => {
+      return { ...prev, token: updatedToken }
+    })
+    return
+  }, [])
+
+  // LOADING STATE TODO
   useEffect(() => {
     const fetchUser = async () => {
-      const accessToken = await refresh()
-      console.log('AccessToken:', accessToken)
-      if (!accessToken) return
       try {
+        const {data: {accessToken}} = await api.get<RefreshTokenResponse>('/auth/refresh-token')
         const { data } = await api.get<User>('/user-details', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         })
-        setState((prev) => {
-          return {
-            ...prev,
+        setState(
+          {
             user: {
               ...data,
             },
             isAuthenticated: true,
-            error: null,
+            token: accessToken,
           }
-        })
-        console.log('Auth complete')
+        )
       } catch (e) {
         console.log(e)
       } finally {
         setIsLoading(false)
       }
-      setIsLoading(false)
     }
     fetchUser()
-  }, [])
-
-  const login = useCallback(async (data: LoginForm) => {
-    const response = await api.post<LoginResponse>('/auth/login', data)
-    setState({
-      user: {
-        username: response.data.username,
-        userId: response.data.userId,
-        email: response.data.email,
-      },
-      isAuthenticated: true,
-      token: response.data.accessToken,
-      error: null,
-    })
-  }, [])
-  // TODO: ERRORS
-  const logout = useCallback(async () => {
-    if (!token) return
-    try {
-      await api.get('/auth/logout')
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setState({ user: null, isAuthenticated: false, token: null, error: null })
-    }
-  }, [token])
-
-  const refresh: () => Promise<string | null> = useCallback(async () => {
-    try {
-      const response =
-        await api.get<RefreshTokenResponse>(`/auth/refresh-token`)
-      setState((prev) => {
-        return { ...prev, token: response.data.accessToken }
-      })
-      return response.data.accessToken
-    } catch (e) {
-      setState({
-        user: null,
-        isAuthenticated: false,
-        token: null,
-        error: null,
-      })
-      return null
-    }
   }, [])
 
   return (
@@ -125,8 +96,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         user,
         token,
         isAuthenticated,
-        error,
-        refresh,
+        updateToken,
         login,
         logout,
       }}

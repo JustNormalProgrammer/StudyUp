@@ -18,6 +18,7 @@ const validateLogin = [
     .isLength({ min: 1, max: 256 })
     .withMessage("Password cannot be empty or exceed 256 characters"),
 ];
+// Add min length
 const validateRegister = [
   body("username")
     .trim()
