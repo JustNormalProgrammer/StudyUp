@@ -60,11 +60,11 @@ export default function Login() {
       login(response.data)
       navigate({ to: '/dashboard' })
     } catch (e) {
-      if (!axios.isAxiosError(e)) {
+      if (!axios.isAxiosError(e) || !e.response) {
         setFormError('Unexpected error occurred')
         return
       }
-      if (e.response?.status === 400) {
+      if (e.response.status === 400) {
         const resErrors = e.response.data?.errors
         if (Array.isArray(resErrors) && resErrors.length > 0) {
           resErrors.forEach((error: ExpressValidatorError) => {
@@ -76,7 +76,7 @@ export default function Login() {
           return
         }
       }
-      if (e.response?.status === 401) {
+      if (e.response.status === 401) {
         setFormError('Username or password is invalid')
         return
       }

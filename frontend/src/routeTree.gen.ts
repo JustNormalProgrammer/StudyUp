@@ -11,8 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardHomeRouteImport } from './routes/dashboard/home'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
+import { Route as DashboardStudySessionsCreateRouteImport } from './routes/dashboard/study-sessions/create'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -24,7 +28,7 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
@@ -34,37 +38,93 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardHomeRoute = DashboardHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardStudySessionsCreateRoute =
+  DashboardStudySessionsCreateRouteImport.update({
+    id: '/study-sessions/create',
+    path: '/study-sessions/create',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/home': typeof DashboardHomeRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/home': typeof DashboardHomeRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/home': typeof DashboardHomeRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/dashboard/calendar'
+    | '/dashboard/home'
+    | '/dashboard/'
+    | '/dashboard/study-sessions/create'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/register'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/register'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/dashboard/calendar'
+    | '/dashboard/home'
+    | '/dashboard'
+    | '/dashboard/study-sessions/create'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/register'
+    | '/dashboard/calendar'
+    | '/dashboard/home'
+    | '/dashboard/'
+    | '/dashboard/study-sessions/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
 }
@@ -89,7 +149,7 @@ declare module '@tanstack/react-router' {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+      preLoaderRoute: typeof DashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -99,12 +159,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/home': {
+      id: '/dashboard/home'
+      path: '/home'
+      fullPath: '/dashboard/home'
+      preLoaderRoute: typeof DashboardHomeRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/calendar': {
+      id: '/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/study-sessions/create': {
+      id: '/dashboard/study-sessions/create'
+      path: '/study-sessions/create'
+      fullPath: '/dashboard/study-sessions/create'
+      preLoaderRoute: typeof DashboardStudySessionsCreateRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
+interface DashboardRouteRouteChildren {
+  DashboardCalendarRoute: typeof DashboardCalendarRoute
+  DashboardHomeRoute: typeof DashboardHomeRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardStudySessionsCreateRoute: typeof DashboardStudySessionsCreateRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardCalendarRoute: DashboardCalendarRoute,
+  DashboardHomeRoute: DashboardHomeRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardStudySessionsCreateRoute: DashboardStudySessionsCreateRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
 }

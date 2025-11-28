@@ -5,12 +5,10 @@ import {
   deleteSession,
   getSessionById,
   getSessions,
-  replaceSession,
-  updateSession,
 } from "../controllers/sessions";
 import { body, query } from "express-validator";
 import validate from "../utils/validate";
-import { StudyResourceTypeEnum } from "../db/queries/sessions";
+import { StudyResourceTypeEnum } from "../db/queries/resources";
 import tags from "../db/queries/tags";
 
 const validateCreateSession = [
@@ -28,23 +26,32 @@ const validateCreateSession = [
     .withMessage("Duration minutes is required")
     .isInt({ min: 0 })
     .withMessage("Duration minutes must be a positive integer"),
-  body("studyResources")
+  
+  body("resources.existing")
+    .optional()
     .isArray()
-    .withMessage("Study resources must be an array"),
-  body("studyResources.*.title")
+    .withMessage("resources.existing must be an array"),
+  body("resources.existing.*")
+    .isUUID()
+    .withMessage("Each existing resourceId must be a valid UUID"),
+  body("resources.new")
+    .optional()
+    .isArray()
+    .withMessage("resources.new must be an array"),
+  body("resources.new.*.title")
     .trim()
     .notEmpty()
     .withMessage("Study resource title is required"),
-  body("studyResources.*.type")
+  body("resources.new.*.type")
     .trim()
     .notEmpty()
     .withMessage("Study resource type is required"),
-  body("studyResources.*.content")
+  body("resources.new.*.content")
     .optional()
     .trim()
     .notEmpty()
     .withMessage("Study resource content cannot be empty"),
-  body("studyResources.*.type")
+  body("resources.new.*.type")
     .custom((value) => {
       if (!Object.values(StudyResourceTypeEnum).includes(value)) {
         throw new Error("Invalid study resource type");
@@ -54,8 +61,13 @@ const validateCreateSession = [
     .withMessage("Invalid study resource type"),
   body("tagId").custom(async (value, { req }) => {
     if (value) {
-      const existingTag = await tags.getTagById(value, req.user!.userId);
-      if (!existingTag) {
+      try {
+        const existingTag = await tags.getTagById(value, req.user!.userId);
+        if (!existingTag) {
+          throw new Error();
+        }
+      } catch (error) {
+        console.log(error);
         throw new Error("Tag not found");
       }
     }
@@ -144,7 +156,7 @@ const router = Router();
 router.get("/", requiredAuth, validate(validateGetSessions), getSessions);
 router.post("/", requiredAuth, validate(validateCreateSession), createSession);
 router.get("/:sessionId", requiredAuth, getSessionById);
-router.patch(
+/* router.patch(
   "/:sessionId",
   requiredAuth,
   validate(validateUpdateSession),
@@ -155,6 +167,6 @@ router.put(
   requiredAuth,
   validate(validateCreateSession),
   replaceSession
-);
+); */
 router.delete("/:sessionId", requiredAuth, deleteSession);
 export default router;

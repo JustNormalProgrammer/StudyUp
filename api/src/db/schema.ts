@@ -8,9 +8,10 @@ import {
   numeric,
   integer,
   pgEnum,
+  primaryKey,
   jsonb,
 } from "drizzle-orm/pg-core";
-import { StudyResourceTypeEnum } from "../db/queries/sessions";
+import { StudyResourceTypeEnum } from "../db/queries/resources";
 
 export const studyResourceType = pgEnum(
   "study_resource_type",
@@ -63,22 +64,36 @@ export const studySessions = pgTable("study_sessions", {
 
 export const studyResources = pgTable("study_resources", {
   resourceId: uuid().defaultRandom().primaryKey(),
-  sessionId: uuid()
+  userId: uuid()
     .notNull()
-    .references(() => studySessions.sessionId, { onDelete: "cascade" }),
+    .references(() => users.userId, { onDelete: "cascade" }),
   title: varchar({ length: 255 }).notNull(),
   type: studyResourceType().notNull(),
   content: varchar({ length: 255 }),
 });
+
+export const studySessionsStudyResources = pgTable(
+  "study_sessions_study_resources",
+  {
+    sessionId: uuid()
+      .notNull()
+      .references(() => studySessions.sessionId, { onDelete: "cascade" }),
+    resourceId: uuid()
+      .notNull()
+      .references(() => studyResources.resourceId, { onDelete: "cascade" }),
+    label: varchar({ length: 100 }),
+  },
+  (table) => [primaryKey({ columns: [table.sessionId, table.resourceId] })]
+);
 
 export const quizzes = pgTable("quizzes", {
   quizId: uuid().defaultRandom().primaryKey(),
   userId: uuid()
     .notNull()
     .references(() => users.userId, { onDelete: "cascade" }),
-  tagId: uuid()
+  sessionId: uuid()
     .notNull()
-    .references(() => tags.tagId, { onDelete: "cascade" }),
+    .references(() => studySessions.sessionId, { onDelete: "cascade" }),
   createdAt: timestamp().defaultNow().notNull(),
   title: varchar({ length: 255 }).notNull(),
   isMultipleChoice: boolean().default(false).notNull(),
@@ -100,7 +115,7 @@ export const challenges = pgTable("challenges", {
   challengeId: uuid().defaultRandom().primaryKey(),
   userId: uuid()
     .notNull()
-    .references(() => users.userId, { onDelete: "cascade" }),
+    .references(() => users.userId, { onDelete: "cascade" }).unique(),
   title: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   targetValue: integer().notNull(),

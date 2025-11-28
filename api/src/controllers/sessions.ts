@@ -72,11 +72,7 @@ export const createSession = async (req: Request, res: Response) => {
       ...resource,
       sessionId: req.user!.userId,
     }));
-    const result = await sessions.createStudySessionAndResources(
-      session,
-      studyResourcesData
-    );
-    // NO IDEA MAYBE TODO
+    const result = await sessions.createStudySession(session);
     const updatedSession = await sessions.getSessionById(
       result.sessionId,
       req.user!.userId
@@ -89,7 +85,7 @@ export const createSession = async (req: Request, res: Response) => {
 };
 
 //put request
-export const replaceSession = async (
+/* export const replaceSession = async (
   req: Request<{ sessionId: string }>,
   res: Response
 ) => {
@@ -118,11 +114,7 @@ export const replaceSession = async (
       ...sessionData,
     };
     await sessions.replaceStudySession(sessionId, session);
-    const studyResourcesData = studyResources.map((resource) => ({
-      ...resource,
-      sessionId,
-    }));
-    await sessions.replaceStudySessionResources(sessionId, studyResourcesData);
+    await sessions.updateStudySessionResources(sessionId, studyResources || []);
     const updatedSession = await sessions.getSessionById(
       sessionId,
       req.user!.userId
@@ -132,9 +124,9 @@ export const replaceSession = async (
     console.log(e);
     return res.sendStatus(500);
   }
-};
+}; */
 // patch request
-export const updateSession = async (
+/* export const updateSession = async (
   req: Request<{ sessionId: string }>,
   res: Response
 ) => {
@@ -173,7 +165,8 @@ export const updateSession = async (
     console.log(e);
     return res.sendStatus(500);
   }
-};
+}; */
+
 export const deleteSession = async (
   req: Request<{ sessionId: string }>,
   res: Response

@@ -29,7 +29,10 @@ export interface RegisterResponse extends User {
 const schema = z
   .object({
     email: z.email('Email is invalid').max(255, 'Email is too long'),
-    username: z.string().min(1, "Username is required").max(100, 'Username is too long'),
+    username: z
+      .string()
+      .min(1, 'Username is required')
+      .max(100, 'Username is too long'),
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters long')
@@ -63,11 +66,11 @@ export default function Register() {
       login(reponse.data)
       navigate({ to: '/dashboard' })
     } catch (e) {
-      if (!axios.isAxiosError(e)) {
+      if (!axios.isAxiosError(e) || !e.response) {
         setFormError('Unexpected error occurred.')
         return
       }
-      if (e.response?.status === 400) {
+      if (e.response.status === 400) {
         const resErrors = e.response.data?.errors
         if (Array.isArray(resErrors) && resErrors.length > 0) {
           resErrors.forEach((error: ExpressValidatorError) => {
@@ -79,7 +82,6 @@ export default function Register() {
           return
         }
         setFormError('Unexpected network error occurred.')
-        return
       }
     }
   }
@@ -223,7 +225,7 @@ export default function Register() {
                 {form.formState.isSubmitting ? (
                   <>
                     <Spinner />
-                    ...
+                    Loading...
                   </>
                 ) : (
                   'Create account'
