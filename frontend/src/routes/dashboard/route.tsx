@@ -1,0 +1,24 @@
+import { Outlet, createFileRoute } from '@tanstack/react-router'
+import { AppSidebar } from '@/components/Sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import Header from '@/components/Header'
+
+export const Route = createFileRoute('/dashboard')({
+  component: AppLayoutComponent,
+})
+
+function AppLayoutComponent() {
+  return (
+    <>
+      <SidebarProvider defaultOpen={false}>
+        <AppSidebar />
+        <div className="w-full">
+          <Header />
+          <main className="p-3 md:p-10 h-full">
+          <Outlet />
+          </main>
+        </div>
+      </SidebarProvider>
+    </>
+  )
+}

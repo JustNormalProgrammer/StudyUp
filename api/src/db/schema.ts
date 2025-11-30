@@ -31,6 +31,13 @@ export const users = pgTable("users", {
   createdAt: timestamp().defaultNow().notNull(),
 });
 
+export const userApiTokens = pgTable("user_api_tokens", {
+  userId: uuid()
+    .references(() => users.userId)
+    .primaryKey(),
+  apiToken: text().notNull(),
+});
+
 export const refreshTokens = pgTable("refresh_tokens", {
   userId: uuid()
     .references(() => users.userId)
@@ -115,7 +122,8 @@ export const challenges = pgTable("challenges", {
   challengeId: uuid().defaultRandom().primaryKey(),
   userId: uuid()
     .notNull()
-    .references(() => users.userId, { onDelete: "cascade" }).unique(),
+    .references(() => users.userId, { onDelete: "cascade" })
+    .unique(),
   title: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   targetValue: integer().notNull(),

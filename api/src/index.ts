@@ -15,6 +15,7 @@ import sessions from "./routes/sessions";
 import tags from "./routes/tags";
 import quizzes from "./routes/quizes";
 import user from "./routes/user";
+import resources from "./routes/resources";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use("/", user);
 app.use("/auth", auth);
 app.use("/sessions", sessions);
+app.use("/resources", resources);
 app.use("/tags", tags);
 app.use("/quizzes", quizzes);
 

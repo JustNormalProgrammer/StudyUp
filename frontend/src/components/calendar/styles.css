@@ -1,0 +1,16 @@
+
+.fc-toolbar-chunk > div {
+    display: flex;
+    gap: 10px;
+  }
+.fc-toolbar-title {
+    width: 220px;
+    text-align: center;
+}
+@media (max-width: 600px) {
+  .fc-toolbar{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}

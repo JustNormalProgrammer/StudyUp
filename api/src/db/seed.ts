@@ -16,7 +16,9 @@ async function seed() {
   try {
     console.log("🌱 Rozpoczynam seedowanie bazy danych...");
 
-    // Tworzenie użytkownika testowego
+    // ----------------------------------------
+    // UŻYTKOWNIK
+    // ----------------------------------------
     const testUserEmail = "test@example.com";
 
     const existingUser = await db
@@ -45,7 +47,9 @@ async function seed() {
       console.log(`ℹ️ Użytkownik już istnieje: ${userId}`);
     }
 
-    // Dodawanie tagów
+    // ----------------------------------------
+    // TAGI
+    // ----------------------------------------
     console.log("🏷️  Dodawanie tagów...");
 
     const tagsData = [
@@ -58,7 +62,9 @@ async function seed() {
 
     const insertedTags = await db.insert(tags).values(tagsData).returning();
 
-    // Dodawanie sesji
+    // ----------------------------------------
+    // SESJE NAUKI
+    // ----------------------------------------
     console.log("📚 Dodawanie sesji nauki...");
 
     const sessionsData = [
@@ -109,7 +115,9 @@ async function seed() {
       .values(sessionsData)
       .returning();
 
-    // Dodawanie zasobów
+    // ----------------------------------------
+    // ZASOBY
+    // ----------------------------------------
     console.log("📖 Dodawanie zasobów...");
 
     const resourcesData = [
@@ -192,7 +200,9 @@ async function seed() {
       .values(resourcesData)
       .returning();
 
-    // Powiązania many-to-many
+    // ----------------------------------------
+    // Many-to-many (SESJE ↔ ZASOBY)
+    // ----------------------------------------
     console.log("🔗 Powiązania sesji i zasobów...");
 
     const studySessionsResourcesData = [
@@ -200,61 +210,42 @@ async function seed() {
       {
         sessionId: insertedSessions[0].sessionId,
         resourceId: insertedResources[0].resourceId,
-        label: '1-23'
+        label: "1-23",
       },
       {
         sessionId: insertedSessions[0].sessionId,
         resourceId: insertedResources[1].resourceId,
-        label: '1-23'
+        label: "1-23",
       },
       {
         sessionId: insertedSessions[0].sessionId,
         resourceId: insertedResources[2].resourceId,
-        label: '1:24'
+        label: "1:24",
       },
-      {
-        sessionId: insertedSessions[0].sessionId,
-        resourceId: insertedResources[5].resourceId,
-        label: '1:24'
-      }, // dodatkowy
-      {
-        sessionId: insertedSessions[0].sessionId,
-        resourceId: insertedResources[11].resourceId,
-        label: 'Paragraph 1'
-      }, // dodatkowy
 
       // React
       {
         sessionId: insertedSessions[1].sessionId,
         resourceId: insertedResources[3].resourceId,
-        label: 'Paragraph 1'
+        label: "Paragraph 1",
       },
       {
         sessionId: insertedSessions[1].sessionId,
         resourceId: insertedResources[4].resourceId,
-        label: 'Paragraph 1'
+        label: "Paragraph 1",
       },
-      {
-        sessionId: insertedSessions[1].sessionId,
-        resourceId: insertedResources[5].resourceId,
-        label: '1:24'
-      }, // dodatkowy
 
       // TypeScript
       {
         sessionId: insertedSessions[2].sessionId,
         resourceId: insertedResources[5].resourceId,
-        label: '1-23'
+        label: "1-23",
       },
       {
         sessionId: insertedSessions[2].sessionId,
         resourceId: insertedResources[6].resourceId,
-        label: '1:24'
+        label: "1:24",
       },
-      {
-        sessionId: insertedSessions[2].sessionId,
-        resourceId: insertedResources[3].resourceId,
-      }, // dodatkowy
 
       // Angielski
       {
@@ -264,18 +255,14 @@ async function seed() {
       {
         sessionId: insertedSessions[3].sessionId,
         resourceId: insertedResources[8].resourceId,
-        label: '1-23'
+        label: "1-23",
       },
-      {
-        sessionId: insertedSessions[3].sessionId,
-        resourceId: insertedResources[4].resourceId,
-      }, // dodatkowy
 
       // Historia
       {
         sessionId: insertedSessions[4].sessionId,
         resourceId: insertedResources[9].resourceId,
-        label: '1-23'
+        label: "1-23",
       },
       {
         sessionId: insertedSessions[4].sessionId,
@@ -284,45 +271,40 @@ async function seed() {
       {
         sessionId: insertedSessions[4].sessionId,
         resourceId: insertedResources[11].resourceId,
-        label: '1-23'
+        label: "1-23",
       },
-      {
-        sessionId: insertedSessions[4].sessionId,
-        resourceId: insertedResources[0].resourceId,
-      }, // dodatkowy
     ];
 
     await db
       .insert(studySessionsStudyResources)
       .values(studySessionsResourcesData);
 
-    // Dodanie quizu
+    // ----------------------------------------
+    // QUIZY (dostosowane do nowego schema!)
+    // ----------------------------------------
     console.log("📝 Dodawanie quizów...");
 
-    await db
-      .insert(quizzes)
-      .values({
-        userId,
-        sessionId: insertedSessions[0].sessionId,
-        title: "II Wojna Światowa - Quiz",
-        isMultipleChoice: true,
-        numberOfQuestions: 10,
-        quizContent: {
-          questions: [
-            {
-              content: "Kiedy rozpoczęła się II wojna światowa?",
-              isMultipleChoice: false,
-              choices: [
-                { content: "1 września 1939", isCorrect: true },
-                { content: "3 września 1939", isCorrect: false },
-                { content: "7 grudnia 1941", isCorrect: false },
-                { content: "6 czerwca 1944", isCorrect: false },
-              ],
-            },
-          ],
-        },
-      })
-      .returning();
+    await db.insert(quizzes).values({
+      userId,
+      sessionId: insertedSessions[4].sessionId, // sesja: Historia
+      title: "II Wojna Światowa - Quiz",
+      isMultipleChoice: true,
+      numberOfQuestions: 10,
+      quizContent: {
+        questions: [
+          {
+            content: "Kiedy rozpoczęła się II wojna światowa?",
+            isMultipleChoice: true,
+            choices: [
+              { content: "1 września 1939", isCorrect: true },
+              { content: "3 września 1939", isCorrect: false },
+              { content: "7 grudnia 1941", isCorrect: false },
+              { content: "6 czerwca 1944", isCorrect: false },
+            ],
+          },
+        ],
+      },
+    });
 
     console.log("✅ Seedowanie zakończone!");
   } catch (error) {

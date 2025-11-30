@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardHomeRouteImport } from './routes/dashboard/home'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
+import { Route as DashboardResourcesIndexRouteImport } from './routes/dashboard/resources/index'
 import { Route as DashboardStudySessionsCreateRouteImport } from './routes/dashboard/study-sessions/create'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -53,6 +54,11 @@ const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardResourcesIndexRoute = DashboardResourcesIndexRouteImport.update({
+  id: '/resources/',
+  path: '/resources/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardStudySessionsCreateRoute =
   DashboardStudySessionsCreateRouteImport.update({
     id: '/study-sessions/create',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/home': typeof DashboardHomeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
+  '/dashboard/resources': typeof DashboardResourcesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/dashboard/home': typeof DashboardHomeRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
+  '/dashboard/resources': typeof DashboardResourcesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/dashboard/home': typeof DashboardHomeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
+  '/dashboard/resources/': typeof DashboardResourcesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/dashboard/home'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
+    | '/dashboard/resources'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/dashboard/home'
     | '/dashboard'
     | '/dashboard/study-sessions/create'
+    | '/dashboard/resources'
   id:
     | '__root__'
     | '/'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/dashboard/home'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
+    | '/dashboard/resources/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -180,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCalendarRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/resources/': {
+      id: '/dashboard/resources/'
+      path: '/resources'
+      fullPath: '/dashboard/resources'
+      preLoaderRoute: typeof DashboardResourcesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/study-sessions/create': {
       id: '/dashboard/study-sessions/create'
       path: '/study-sessions/create'
@@ -195,6 +214,7 @@ interface DashboardRouteRouteChildren {
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardStudySessionsCreateRoute: typeof DashboardStudySessionsCreateRoute
+  DashboardResourcesIndexRoute: typeof DashboardResourcesIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -202,6 +222,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardStudySessionsCreateRoute: DashboardStudySessionsCreateRoute,
+  DashboardResourcesIndexRoute: DashboardResourcesIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

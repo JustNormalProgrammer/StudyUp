@@ -1,12 +1,12 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
-import users from "../db/queries/users";
+import users from "../db/queries/user";
 import jwt from "jsonwebtoken";
 import { matchedData, validationResult } from "express-validator";
 import type { StringValue } from "ms";
 import refreshTokens from "../db/queries/refreshTokens";
-import { UserRegister, UserLogin } from "../db/queries/users";
+import { UserRegister, UserLogin } from "../db/queries/user";
 
 function getSignedTokens({
   userId,

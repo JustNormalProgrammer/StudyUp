@@ -7,7 +7,7 @@ import {
 import { Router } from "express";
 import { body } from "express-validator";
 import { requiredAuth } from "../middleware/requiredAuth";
-import users from "../db/queries/users";
+import users from "../db/queries/user";
 import { User } from "../types";
 import validate from "../utils/validate";
 
@@ -45,7 +45,7 @@ const validateRegister = [
     try {
       duplicate = await users.getUserByEmail(email);
     } catch (e) {
-        console.log(e);
+      console.log(e);
       throw new Error("Failed to connect to the database. Cannot sign in.");
     }
     if (duplicate) throw new Error("Email already in use");

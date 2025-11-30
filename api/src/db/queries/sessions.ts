@@ -18,14 +18,12 @@ export interface StudySessionCreate {
 }
 export type StudySessionUpdate = Partial<Omit<StudySessionCreate, "userId">>;
 
-
 export interface StudySessionResource {
   sessionId: string;
   title: string;
   type: StudyResourceTypeEnum;
   content?: string;
 }
-
 
 export interface PaginationQuery {
   userId: string;
@@ -114,9 +112,7 @@ export async function getSessionById(sessionId: string, userId: string) {
 
   return result;
 }
-export async function createStudySession(
-  session: StudySessionCreate,
-) {
+export async function createStudySession(session: StudySessionCreate) {
   const [result] = await db.insert(studySessions).values(session).returning();
   return result;
 }
@@ -133,6 +129,21 @@ export async function updateStudySession(
   return result;
 }
 
+export async function updateStudySessionResources(
+  sessionId: string,
+  resourceIds: string[]
+) {
+  const resourcesToAdd = resourceIds.map((resourceId) => ({
+    sessionId,
+    resourceId,
+  }));
+  await db
+    .delete(studySessionsStudyResources)
+    .where(eq(studySessionsStudyResources.sessionId, sessionId));
+  await db.insert(studySessionsStudyResources).values(resourcesToAdd);
+  return;
+}
+
 export async function deleteStudySession(sessionId: string) {
   await db
     .delete(studySessions)
@@ -146,5 +157,6 @@ export default {
   createStudySession,
   getSessionById,
   updateStudySession,
+  updateStudySessionResources,
   deleteStudySession,
 };

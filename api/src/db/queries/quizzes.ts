@@ -1,7 +1,7 @@
 import { db } from "..";
-import { quizzes, quizAttempts, tags } from "../schema";
+import { quizzes, quizAttempts, tags, studySessions } from "../schema";
 import { and, between, desc, eq } from "drizzle-orm";
-import { PaginationQuery } from "./sessions";
+import sessions, { PaginationQuery } from "./sessions";
 
 export interface QuizAttemptCreate {
   quizId: string;
@@ -26,7 +26,8 @@ export async function getUserQuizzes(userId: string){
       },
     })
     .from(quizzes)
-    .innerJoin(tags, eq(quizzes.tagId, tags.tagId))
+    .innerJoin(studySessions, eq(quizzes.sessionId, studySessions.sessionId))
+    .innerJoin(tags, eq(studySessions.tagId, tags.tagId))
     .where(eq(quizzes.userId, userId));
   return result;
 }
@@ -48,7 +49,8 @@ export async function getQuiz(quizId: string, userId: string) {
       quizContent: quizzes.quizContent,
     })
     .from(quizzes)
-    .innerJoin(tags, eq(quizzes.tagId, tags.tagId))
+    .innerJoin(studySessions, eq(quizzes.sessionId, studySessions.sessionId))
+    .innerJoin(tags, eq(studySessions.tagId, tags.tagId))
     .where(and(eq(quizzes.quizId, quizId), eq(quizzes.userId, userId)))
     .limit(1);
   return quiz;
@@ -76,6 +78,7 @@ export async function getUserAttempts(data: PaginationQuery) {
       quizId: quizAttempts.quizId,
       quizTitle: quizzes.title,
       score: quizAttempts.score,
+      finishedAt: quizAttempts.finishedAt,
       tag:{
         tagId: tags.tagId,
         content: tags.content,
@@ -84,7 +87,8 @@ export async function getUserAttempts(data: PaginationQuery) {
     })
     .from(quizAttempts)
     .innerJoin(quizzes, eq(quizAttempts.quizId, quizzes.quizId))
-    .innerJoin(tags, eq(quizzes.tagId, tags.tagId))
+    .innerJoin(studySessions, eq(quizzes.sessionId, studySessions.sessionId))
+    .innerJoin(tags, eq(studySessions.tagId, tags.tagId))
     .where(and(eq(quizzes.userId, userId), between(quizAttempts.finishedAt, from, to)))
     .orderBy(desc(quizAttempts.finishedAt))
     .offset((page - 1) * itemsOnPage)

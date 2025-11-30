@@ -1,9 +1,8 @@
 import sessions, {
   StudySessionCreate,
-  StudySessionResourceCreate,
   PaginationQuery,
-  StudySessionUpdate,
 } from "../db/queries/sessions";
+import resources from "../db/queries/resources";
 import { Request, Response } from "express";
 import { validationResult, matchedData } from "express-validator";
 
@@ -57,7 +56,7 @@ export const createSession = async (req: Request, res: Response) => {
     const { tagId, title, startedAt, durationMinutes, notes, studyResources } =
       matchedData<
         Omit<StudySessionCreate, "userId"> & {
-          studyResources: StudySessionResourceCreate[];
+          studyResources: string[];
         }
       >(req);
     const session: StudySessionCreate = {
@@ -68,11 +67,8 @@ export const createSession = async (req: Request, res: Response) => {
       durationMinutes,
       notes,
     };
-    const studyResourcesData = studyResources.map((resource) => ({
-      ...resource,
-      sessionId: req.user!.userId,
-    }));
     const result = await sessions.createStudySession(session);
+    await resources.addResourcesToSession(result.sessionId, studyResources);
     const updatedSession = await sessions.getSessionById(
       result.sessionId,
       req.user!.userId
@@ -85,7 +81,7 @@ export const createSession = async (req: Request, res: Response) => {
 };
 
 //put request
-/* export const replaceSession = async (
+export const replaceSession = async (
   req: Request<{ sessionId: string }>,
   res: Response
 ) => {
@@ -99,7 +95,7 @@ export const createSession = async (req: Request, res: Response) => {
     const { sessionId } = req.params;
     const { studyResources, ...sessionData } = matchedData<
       Omit<StudySessionCreate, "userId"> & {
-        studyResources: StudySessionResourceCreate[];
+        studyResources: string[];
       }
     >(req);
     const existingSession = await sessions.getSessionById(
@@ -109,12 +105,8 @@ export const createSession = async (req: Request, res: Response) => {
     if (!existingSession) {
       return res.sendStatus(404);
     }
-    const session: StudySessionCreate = {
-      userId: req.user!.userId,
-      ...sessionData,
-    };
-    await sessions.replaceStudySession(sessionId, session);
-    await sessions.updateStudySessionResources(sessionId, studyResources || []);
+    await sessions.updateStudySession(sessionId, sessionData);
+    await sessions.updateStudySessionResources(sessionId, studyResources);
     const updatedSession = await sessions.getSessionById(
       sessionId,
       req.user!.userId
@@ -124,8 +116,8 @@ export const createSession = async (req: Request, res: Response) => {
     console.log(e);
     return res.sendStatus(500);
   }
-}; */
-// patch request
+};
+// patch request =========== OLD VERSION ====================
 /* export const updateSession = async (
   req: Request<{ sessionId: string }>,
   res: Response

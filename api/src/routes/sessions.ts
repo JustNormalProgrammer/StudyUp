@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { requiredAuth } from "../middleware/requiredAuth";
+import resources from "../db/queries/resources";
 import {
+  getSessions,
+  getSessionById,
   createSession,
   deleteSession,
-  getSessionById,
-  getSessions,
+  replaceSession,
 } from "../controllers/sessions";
 import { body, query } from "express-validator";
 import validate from "../utils/validate";
@@ -26,39 +28,27 @@ const validateCreateSession = [
     .withMessage("Duration minutes is required")
     .isInt({ min: 0 })
     .withMessage("Duration minutes must be a positive integer"),
-  
-  body("resources.existing")
-    .optional()
+  body("studyResources")
     .isArray()
-    .withMessage("resources.existing must be an array"),
-  body("resources.existing.*")
+    .withMessage("Study resources must be an array"),
+  body("studyResources.*")
     .isUUID()
-    .withMessage("Each existing resourceId must be a valid UUID"),
-  body("resources.new")
-    .optional()
-    .isArray()
-    .withMessage("resources.new must be an array"),
-  body("resources.new.*.title")
-    .trim()
-    .notEmpty()
-    .withMessage("Study resource title is required"),
-  body("resources.new.*.type")
-    .trim()
-    .notEmpty()
-    .withMessage("Study resource type is required"),
-  body("resources.new.*.content")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Study resource content cannot be empty"),
-  body("resources.new.*.type")
-    .custom((value) => {
-      if (!Object.values(StudyResourceTypeEnum).includes(value)) {
-        throw new Error("Invalid study resource type");
+    .withMessage("Each resource must be a valid UUID"),
+  body("studyResources.*").custom(async (value, { req }) => {
+    try {
+      const existingResource = await resources.getResourceById(
+        value,
+        req.user!.userId
+      );
+      if (!existingResource) {
+        throw new Error();
       }
-      return true;
-    })
-    .withMessage("Invalid study resource type"),
+    } catch (error) {
+      console.log(error);
+      throw new Error("Resource not found");
+    }
+    return true;
+  }),
   body("tagId").custom(async (value, { req }) => {
     if (value) {
       try {
@@ -105,35 +95,24 @@ const validateUpdateSession = [
     .withMessage("Duration minutes is required")
     .isInt({ min: 0 })
     .withMessage("Duration minutes must be a positive integer"),
-  body("studyResources")
-    .optional()
-    .isArray()
-    .withMessage("Study resources must be an array"),
-  body("studyResources.*.resourceId")
-    .optional()
-    .notEmpty()
-    .withMessage("Study resource ID cannot be empty"),
-  body("studyResources.*.title")
-    .trim()
-    .notEmpty()
-    .withMessage("Study resource title is required"),
-  body("studyResources.*.type")
-    .trim()
-    .notEmpty()
-    .withMessage("Study resource type is required"),
-  body("studyResources.*.content")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Study resource content is required"),
-  body("studyResources.*.type")
-    .custom((value) => {
-      if (!Object.values(StudyResourceTypeEnum).includes(value)) {
-        throw new Error("Invalid study resource type");
+  body("studyResources").isArray().withMessage("Resources must be an array"),
+  body("studyResources.*")
+    .isUUID()
+    .withMessage("Each resource must be a valid UUID"),
+  body("studyResources.*").custom(async (value, { req }) => {
+    try {
+      const existingResource = await resources.getResourceById(
+        value,
+        req.user!.userId
+      );
+      if (!existingResource) {
+        throw new Error();
       }
-      return true;
-    })
-    .withMessage("Invalid study resource type"),
+    } catch (error) {
+      throw new Error("Resource not found");
+    }
+    return true;
+  }),
 ];
 
 const validateGetSessions = [
@@ -161,12 +140,12 @@ router.get("/:sessionId", requiredAuth, getSessionById);
   requiredAuth,
   validate(validateUpdateSession),
   updateSession
-);
+); */
 router.put(
   "/:sessionId",
   requiredAuth,
   validate(validateCreateSession),
   replaceSession
-); */
+); 
 router.delete("/:sessionId", requiredAuth, deleteSession);
 export default router;
