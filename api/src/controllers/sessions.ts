@@ -68,7 +68,9 @@ export const createSession = async (req: Request, res: Response) => {
       notes,
     };
     const result = await sessions.createStudySession(session);
-    await resources.addResourcesToSession(result.sessionId, studyResources);
+    if(studyResources.length > 0) {
+      await resources.addResourcesToSession(result.sessionId, studyResources);
+    }
     const updatedSession = await sessions.getSessionById(
       result.sessionId,
       req.user!.userId

@@ -85,6 +85,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         console.log(e)
       } finally {
         setIsLoading(false)
+        console.log('Loading is done')
       }
     }
     fetchUser()

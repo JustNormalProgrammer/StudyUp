@@ -20,7 +20,7 @@ export interface StudySession {
     tagId: string,
     title: string,
     notes?: string,
-    startedAt: Date,
+    startedAt: string,
     durationMinutes: number,
     tag: Tag,
 }
@@ -29,7 +29,7 @@ export interface QuizAttempt {
     quizId: string,
     quizTitle: string,
     score: number,
-    finishedAt: Date,
+    finishedAt: string,
     tag: Tag,
 }
 export interface UserEventResponse {
