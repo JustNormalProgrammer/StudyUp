@@ -6,9 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
 import interactionPlugin from '@fullcalendar/interaction'
-import type { UserEventResponse } from '@/api/types'
+import { toast } from 'sonner'
 import { useSidebar } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
@@ -19,46 +18,56 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { hexToRgba } from '@/utils/hexToRgba'
+import '@/components/calendar/styles.css'
 
 export default function Calendar() {
   const calendarRef = useRef<FullCalendar>(null)
   const { open } = useSidebar()
   const api = useAuthenticatedRequest()
-  const [currentDate, setCurrentDate] = useState('')
 
-  // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedEvents, setSelectedEvents] = useState<Array<any>>([])
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [currentMonthTitle, setCurrentMonthTitle] = useState<string>('')
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['userEvents'],
-    queryFn: async () => {
-      const { data } = await api.get<UserEventResponse>('/user-events')
-      return data
-    },
-    select: (data) => {
-      const sessionsEvents = data.userSessions.map((session) => ({
-        title: session.title,
-        date: session.startedAt,
-        allDay: true,
-        color: session.tag.color,
-      }))
-      const quizzesAttemptsEvents = data.userQuizzesAttempts.map((attempt) => {
-        console.log(attempt.finishedAt)
-        console.log('data', new Date(attempt.finishedAt).toISOString())
-        return {
-          title: attempt.quizTitle,
-          date: attempt.finishedAt,
-          allDay: true,
-          color: attempt.tag.color,
-        }
+  async function fetchEvents(
+    fetchInfo: any,
+    successCallback: any,
+    failureCallback: any,
+  ) {
+    try {
+      const { startStr, endStr } = fetchInfo
+
+      const response = await api.get('/user-events', {
+        params: {
+          from: startStr,
+          to: endStr,
+        },
       })
 
-      return [...sessionsEvents, ...quizzesAttemptsEvents]
-    },
-  })
-  console.log(selectedEvents)
+      const data = response.data
+
+      const sessionsEvents = data.userSessions.map((session: any) => ({
+        title: session.title,
+        start: session.startedAt,
+        allDay: true,
+        colorBorder: session.tag.color,
+      }))
+
+      const quizzesAttemptsEvents = data.userQuizzesAttempts.map(
+        (attempt: any) => ({
+          title: attempt.quizTitle,
+          start: attempt.finishedAt,
+          allDay: true,
+          colorBorder: attempt.tag.color,
+        }),
+      )
+
+      successCallback([...sessionsEvents, ...quizzesAttemptsEvents])
+    } catch (err) {
+      failureCallback(err)
+    }
+  }
 
   useEffect(() => {
     const api = calendarRef.current?.getApi()
@@ -67,30 +76,43 @@ export default function Calendar() {
     return () => clearTimeout(timeout)
   }, [open])
 
-  function handlePrev() {
-    calendarRef.current?.getApi().prev()
-  }
-
-  function handleNext() {
-    calendarRef.current?.getApi().next()
-  }
-
-  function handleToday() {
-    calendarRef.current?.getApi().today()
+  function renderEventContent(eventInfo: any) {
+    return (
+      <div
+        className="w-full m-0 p-1 border-2 rounded-sm h-4 md:h-auto"
+        style={{
+          backgroundColor: hexToRgba(
+            eventInfo.event.extendedProps.colorBorder,
+            0.08,
+          ),
+          borderColor: eventInfo.event.extendedProps.colorBorder,
+          whiteSpace: 'normal',
+        }}
+      >
+        <div
+          className="text-black text-sm font-medium break-all hidden md:block"
+          style={{ fontSize: '12px' }}
+        >
+          {eventInfo.event.title}
+        </div>
+      </div>
+    )
   }
 
   function handleDateClick(info: any) {
-    const clickedDate = info.dateStr
-    const dayEvents =
-      data?.filter((event) => event.date.split('T')[0] === clickedDate) ?? []
+    const calendarApi = calendarRef.current?.getApi()
+    const allEvents = calendarApi ? calendarApi.getEvents() : []
 
-    setSelectedDate(clickedDate)
+    const clickedDate = info.dateStr
+
+    const dayEvents = allEvents.filter(
+      (e) => e.startStr.split('T')[0] === clickedDate,
+    )
+
     setSelectedEvents(dayEvents)
+    setSelectedDate(new Date(clickedDate).toLocaleDateString('pl-PL'))
     setDialogOpen(true)
   }
-
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error: {error.message}</div>
 
   return (
     <>
@@ -100,7 +122,7 @@ export default function Calendar() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handlePrev}
+              onClick={() => calendarRef.current?.getApi().prev()}
               className="px-3"
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
@@ -108,13 +130,13 @@ export default function Calendar() {
             </Button>
 
             <div className="text-center font-semibold text-lg select-none sm:text-base">
-              {currentDate}
+              {currentMonthTitle}
             </div>
 
             <Button
               variant="outline"
               size="sm"
-              onClick={handleNext}
+              onClick={() => calendarRef.current?.getApi().next()}
               className="px-3"
             >
               Next
@@ -125,7 +147,7 @@ export default function Calendar() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleToday}
+            onClick={() => calendarRef.current?.getApi().today()}
             className="px-3"
           >
             <CalendarIcon className="mr-1 h-4 w-4" />
@@ -141,31 +163,42 @@ export default function Calendar() {
             weekends={true}
             height="80vh"
             handleWindowResize={true}
-            events={data}
             headerToolbar={false}
-            dayMaxEventRows={true}
+            eventBackgroundColor="transparent"
             displayEventTime={false}
+            eventDisplay="block"
             dateClick={handleDateClick}
-            datesSet={(arg) => setCurrentDate(arg.view.title)}
+            eventContent={renderEventContent}
+            defaultAllDay={true}
+            dayMaxEventRows={false}
+            eventSources={[
+              {
+                events: fetchEvents,
+                failure: (error) => toast.error('Failed to fetch events'),
+              },
+            ]}
+            datesSet={(arg) => setCurrentMonthTitle(arg.view.title)}
           />
         </div>
       </div>
-
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Events on {selectedDate}</DialogTitle>
           </DialogHeader>
+
           {selectedEvents.length > 0 ? (
             <ul className="mt-3 space-y-2">
-              {selectedEvents.map((event, index) => (
+              {selectedEvents.map((event: any, idx: number) => (
                 <li
-                  key={index}
-                  className={`p-2 border-2 rounded-md`}
+                  key={idx}
+                  className="p-2 border-2 rounded-md"
                   style={{
-                    borderColor: event.color,
-                    backgroundColor: hexToRgba(event.color, 0.05),
+                    borderColor: event.extendedProps.colorBorder,
+                    backgroundColor: hexToRgba(
+                      event.extendedProps.colorBorder,
+                      0.05,
+                    ),
                   }}
                 >
                   {event.title}
@@ -173,7 +206,7 @@ export default function Calendar() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground mt-3">
+            <p className="text-sm text-muted-foreground mt-3 mx-auto">
               No events on this day.
             </p>
           )}

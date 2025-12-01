@@ -7,10 +7,12 @@
     width: 220px;
     text-align: center;
 }
-@media (max-width: 600px) {
-  .fc-toolbar{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+.fc-h-event {
+  border: 0 !important;
+}
+.fc-daygrid-event {
+  white-space: normal !important;
+  align-items: normal !important;
+  border: 0 !important;
+  background-color: transparent !important;
 }

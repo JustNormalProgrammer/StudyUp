@@ -6,7 +6,6 @@ import { api } from '@/api/api'
 
 const useAuthenticatedRequest = () => {
   const { token, updateToken } = useAuth()
-
   useEffect(() => {
     const requestIntercept = api.interceptors.request.use(
       (config) => {

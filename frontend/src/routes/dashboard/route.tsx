@@ -1,9 +1,20 @@
-import { Outlet, createFileRoute } from '@tanstack/react-router'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { AppSidebar } from '@/components/Sidebar'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import Header from '@/components/Header'
 
 export const Route = createFileRoute('/dashboard')({
+  beforeLoad: ({ context, location }) => {
+    if (context.auth.isLoading) return;
+    if (!context.auth.isAuthenticated) {
+      throw redirect({
+        to: '/login',
+        search: {
+          redirect: location.href,
+        },
+      })
+    }
+  },
   component: AppLayoutComponent,
 })
 

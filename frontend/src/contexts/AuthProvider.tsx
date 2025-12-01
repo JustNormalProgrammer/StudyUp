@@ -24,6 +24,7 @@ export interface AuthContext {
   login: (data: LoginResponse) => void
   logout: () => void
   updateToken: (updatedToken: string) => void
+  isLoading: boolean
 }
 
 
@@ -100,6 +101,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         updateToken,
         login,
         logout,
+        isLoading,
       }}
     >
       {children}

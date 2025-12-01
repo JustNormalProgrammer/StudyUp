@@ -1,26 +1,35 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { routeTree } from './routeTree.gen'
-import { AuthProvider } from '@/contexts/AuthProvider'
+import { AuthProvider, useAuth } from '@/contexts/AuthProvider'
+import { Toaster } from "@/components/ui/sonner"
 import './styles.css'
 
 const router = createRouter({
   routeTree,
-  context: {},
+  context: {
+    auth: undefined!,
+  },
   defaultPreload: 'intent',
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
 })
 
-
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }
+}
+
+function InnerApp() {
+  const auth = useAuth()
+  return (
+      <RouterProvider router={router} context={{auth}} />
+  )
 }
 
 const queryClient = new QueryClient()
@@ -30,8 +39,10 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools />
         <AuthProvider>
-          <RouterProvider router={router} />
+          <InnerApp />
+          <Toaster />
         </AuthProvider>
       </QueryClientProvider>
     </StrictMode>,
