@@ -1,14 +1,15 @@
 export enum StudyResourceTypeEnum {
-    URL = "url",
     VIDEO = "video",
     BOOK = "book",
+    WEBSITE = "website",
     OTHER = "other",
 }
 export interface StudyResource {
     resourceId: string,
     title: string,
     type: StudyResourceTypeEnum,
-    content?: string,
+    desc?: string,
+    url?: string,
 }
 export interface Tag {
     tagId: string,

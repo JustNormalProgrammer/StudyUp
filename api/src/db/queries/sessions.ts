@@ -84,8 +84,9 @@ export async function getSessionById(sessionId: string, userId: string) {
               'resourceId', ${studyResources.resourceId},
               'title', ${studyResources.title},
               'type', ${studyResources.type},
-              'content', ${studyResources.content},
-              'label', ${studySessionsStudyResources.label}
+              'content', ${studyResources.desc},
+              'label', ${studySessionsStudyResources.label},
+              'url', ${studyResources.url}
             )
           ) FILTER (WHERE ${studyResources.resourceId} IS NOT NULL),
         '[]')::json

@@ -13,13 +13,14 @@ import { StudyResourceTypeEnum } from "../db/queries/resources";
 const validateCreateResource = [
   body("title").notEmpty().withMessage("Title is required"),
   body("type").notEmpty().withMessage("Type is required"),
-  body("content").optional().notEmpty().withMessage("Content is required"),
+  body("desc").optional().notEmpty().withMessage("Description is required"),
   body("type").custom((value) => {
     if (!Object.values(StudyResourceTypeEnum).includes(value)) {
       throw new Error("Invalid study resource type");
     }
     return true;
   }),
+  body("url").optional().notEmpty().isURL().withMessage("URL is invalid"),
 ];
 
 const router = Router();

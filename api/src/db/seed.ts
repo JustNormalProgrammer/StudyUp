@@ -116,7 +116,7 @@ async function seed() {
       .returning();
 
     // ----------------------------------------
-    // ZASOBY
+    // ZASOBY – DOPASOWANE DO NOWEGO SCHEMA
     // ----------------------------------------
     console.log("📖 Dodawanie zasobów...");
 
@@ -125,73 +125,73 @@ async function seed() {
         userId,
         title: "Khan Academy - Linear Algebra",
         type: StudyResourceTypeEnum.VIDEO,
-        content: "https://www.khanacademy.org/math/linear-algebra",
+        url: "https://www.khanacademy.org/math/linear-algebra",
       },
       {
         userId,
         title: "Podręcznik: Algebra liniowa i geometria",
         type: StudyResourceTypeEnum.BOOK,
-        content: "ISBN: 978-83-01-12345-6",
+        desc: "ISBN: 978-83-01-12345-6",
       },
       {
         userId,
         title: "Notatki z wykładu",
         type: StudyResourceTypeEnum.OTHER,
-        content: "algebra_notatki.pdf",
+        desc: "algebra_notatki.pdf",
       },
       {
         userId,
         title: "React Documentation - Hooks",
-        type: StudyResourceTypeEnum.URL,
-        content: "https://react.dev/reference/react",
+        type: StudyResourceTypeEnum.WEBSITE,
+        url: "https://react.dev/reference/react",
       },
       {
         userId,
         title: "React Tutorial - YouTube",
         type: StudyResourceTypeEnum.VIDEO,
-        content: "https://www.youtube.com/watch?v=example",
+        url: "https://www.youtube.com/watch?v=example",
       },
       {
         userId,
         title: "TypeScript Handbook",
-        type: StudyResourceTypeEnum.URL,
-        content: "https://www.typescriptlang.org/docs/handbook/intro.html",
+        type: StudyResourceTypeEnum.WEBSITE,
+        url: "https://www.typescriptlang.org/docs/handbook/intro.html",
       },
       {
         userId,
         title: "TypeScript Deep Dive",
         type: StudyResourceTypeEnum.BOOK,
-        content: "basarat.gitbook.io/typescript",
+        desc: "basarat.gitbook.io/typescript",
       },
       {
         userId,
         title: "Business English Vocabulary - Quizlet",
-        type: StudyResourceTypeEnum.URL,
-        content: "https://quizlet.com/business-english",
+        type: StudyResourceTypeEnum.WEBSITE,
+        url: "https://quizlet.com/business-english",
       },
       {
         userId,
         title: "Podcast: Business English",
         type: StudyResourceTypeEnum.VIDEO,
-        content: "https://podcast.example.com/business-english",
+        url: "https://podcast.example.com/business-english",
       },
       {
         userId,
         title: "World War II Documentary",
         type: StudyResourceTypeEnum.VIDEO,
-        content: "https://www.youtube.com/watch?v=ww2-doc",
+        url: "https://www.youtube.com/watch?v=ww2-doc",
       },
       {
         userId,
         title: "Encyclopedia Britannica - WWII",
-        type: StudyResourceTypeEnum.URL,
-        content: "https://www.britannica.com/event/World-War-II",
+        type: StudyResourceTypeEnum.WEBSITE,
+        url: "https://www.britannica.com/event/World-War-II",
       },
       {
         userId,
         title: "Książka: Historia II Wojny Światowej",
         type: StudyResourceTypeEnum.BOOK,
-        content: "ISBN: 978-83-01-67890-1",
+        desc: "ISBN: 978-83-01-67890-1",
       },
     ];
 
@@ -201,7 +201,7 @@ async function seed() {
       .returning();
 
     // ----------------------------------------
-    // Many-to-many (SESJE ↔ ZASOBY)
+    // Many-to-many SESJE ↔ ZASOBY
     // ----------------------------------------
     console.log("🔗 Powiązania sesji i zasobów...");
 
@@ -280,13 +280,13 @@ async function seed() {
       .values(studySessionsResourcesData);
 
     // ----------------------------------------
-    // QUIZY (dostosowane do nowego schema!)
+    // QUIZY
     // ----------------------------------------
     console.log("📝 Dodawanie quizów...");
 
     await db.insert(quizzes).values({
       userId,
-      sessionId: insertedSessions[4].sessionId, // sesja: Historia
+      sessionId: insertedSessions[4].sessionId, // Historia
       title: "II Wojna Światowa - Quiz",
       isMultipleChoice: true,
       numberOfQuestions: 10,

@@ -40,12 +40,12 @@ export const createResource = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { title, type, content } = matchedData<StudyResourceCreate>(req);
+    const { title, type, desc, url } = matchedData<StudyResourceCreate>(req);
     const result = await resources.createStudyResource(
-      { title, type, content },
+      { title, type, desc, url },
       req.user!.userId
     );
-    return res.json(result);
+    return res.json(result[0]);
   } catch (e) {
     console.log(e);
     return res.sendStatus(500);

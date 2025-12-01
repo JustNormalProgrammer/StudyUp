@@ -3,16 +3,17 @@ import { db } from "../index";
 import { studyResources, studySessionsStudyResources } from "../schema";
 
 export enum StudyResourceTypeEnum {
-  URL = "url",
   VIDEO = "video",
   BOOK = "book",
+  WEBSITE = "website",
   OTHER = "other",
 }
 
 export interface StudyResourceCreate {
   title: string;
   type: StudyResourceTypeEnum;
-  content?: string;
+  desc?: string;
+  url?: string;
 }
 
 export async function getResourceById(resourceId: string, userId: string) {
@@ -21,7 +22,8 @@ export async function getResourceById(resourceId: string, userId: string) {
       resourceId: studyResources.resourceId,
       title: studyResources.title,
       type: studyResources.type,
-      content: studyResources.content,
+      desc: studyResources.desc,
+      url: studyResources.url,
     })
     .from(studyResources)
     .where(
@@ -40,7 +42,8 @@ export async function getStudyResources(userId: string, query: string = "") {
       resourceId: studyResources.resourceId,
       title: studyResources.title,
       type: studyResources.type,
-      content: studyResources.content,
+      desc: studyResources.desc,
+      url: studyResources.url,
     })
     .from(studyResources)
     .where(
@@ -48,7 +51,7 @@ export async function getStudyResources(userId: string, query: string = "") {
         eq(studyResources.userId, userId),
         or(
           ilike(studyResources.title, `%${query}%`),
-          ilike(studyResources.content, `%${query}%`)
+          ilike(studyResources.desc, `%${query}%`)
         )
       )
     );
@@ -61,7 +64,8 @@ export async function getStudyResourcesBySessionId(sessionId: string) {
       resourceId: studyResources.resourceId,
       title: studyResources.title,
       type: studyResources.type,
-      content: studyResources.content,
+      desc: studyResources.desc,
+      url: studyResources.url,
     })
     .from(studyResources)
     .innerJoin(
