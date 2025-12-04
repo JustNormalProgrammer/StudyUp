@@ -5,10 +5,8 @@ import {
   SquareArrowOutUpRight,
   SquarePlay,
 } from 'lucide-react'
-import IconLink from '../primitives/IconLink'
-import { Card } from '../ui/card'
 import { Separator } from '../ui/separator'
-import { Button } from '../ui/button'
+import ConditionalWrapper from '../UtilComponents/ConditionalWrapper'
 import type { StudyResource } from '@/api/types'
 import { StudyResourceTypeEnum } from '@/api/types'
 
@@ -20,33 +18,36 @@ const ResourceTypeIcons = {
 }
 
 export default function ResourceItem({
+  disableLink = false,
   resource,
 }: {
+  disableLink?: boolean
   resource: StudyResource
 }) {
   const ResourceTypeIcon = ResourceTypeIcons[resource.type]
   return (
-    <Card
-      key={resource.resourceId}
-      className="flex flex-row p-4 gap-5 items-center"
-    >
-      <ResourceTypeIcon size={20} />
+    <>
+      <ResourceTypeIcon size={26} />
       <div className="flex flex-col gap-1 w-full">
-        <div className="flex flex-row justify-between items-center">
-          <div className="text-sm font-medium">{resource.title}</div>
-          {resource.url && (
-            <a href={resource.url} target="_blank" referrerPolicy='no-referrer'>
-              <Button
-                variant="ghost"
-                className="size-6"
-                aria-label="Submit"
-                color="primary"
-              >
-                <SquareArrowOutUpRight size={20} />
-              </Button>
+        <ConditionalWrapper
+          condition={!!resource.url && !disableLink}
+          wrapper={(children) => (
+            <a
+              href={resource.url}
+              target="_blank"
+              referrerPolicy="no-referrer"
+              className="flex flex-row gap-2 items-center"
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+            >
+              {children}
+              <SquareArrowOutUpRight size={14} />
             </a>
           )}
-        </div>
+        >
+          <div className="text-sm font-medium">{resource.title}</div>
+        </ConditionalWrapper>
         {resource.desc && (
           <>
             <Separator orientation="horizontal" className="w-full" />
@@ -54,6 +55,6 @@ export default function ResourceItem({
           </>
         )}
       </div>
-    </Card>
+    </>
   )
 }

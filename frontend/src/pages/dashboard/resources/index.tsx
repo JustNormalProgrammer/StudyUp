@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { StudyResource } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
-import ResourceList from '@/components/resources/ResourceList'
+import ResourceList from '@/components/resources/List'
 import { Input } from '@/components/ui/input'
 
 function Recources() {
@@ -27,7 +27,10 @@ function Recources() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-      <ResourceList resources={filteredResources || []} />
+      <ResourceList
+        resources={filteredResources || []}
+        className="grid grid-cols-1 md:grid-cols-2 gap-3"
+      />
     </div>
   )
 }

@@ -14,14 +14,14 @@ export const getSessions = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, page, itemsOnPage } =
+    const { from, to, start, limit } =
       matchedData<Omit<PaginationQuery, "userId">>(req);
     const result = await sessions.getSessions({
       userId: req.user!.userId,
       from: from ? new Date(from) : new Date(0),
       to: to ? new Date(to) : new Date(),
-      page,
-      itemsOnPage,
+      start: start ? start : 0,
+      limit: limit ? limit : 999,
     });
     return res.json(result);
   } catch (e) {
@@ -56,7 +56,7 @@ export const createSession = async (req: Request, res: Response) => {
     const { tagId, title, startedAt, durationMinutes, notes, studyResources } =
       matchedData<
         Omit<StudySessionCreate, "userId"> & {
-          studyResources: string[];
+          studyResources: { resourceId: string; label?: string }[];
         }
       >(req);
     const session: StudySessionCreate = {

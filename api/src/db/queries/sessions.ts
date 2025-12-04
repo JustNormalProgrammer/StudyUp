@@ -29,12 +29,12 @@ export interface PaginationQuery {
   userId: string;
   from: Date;
   to: Date;
-  page?: number;
-  itemsOnPage?: number;
+  start?: number;
+  limit?: number;
 }
 
-export async function getSessions(data: PaginationQuery) {
-  const { userId, from, to, page = 1, itemsOnPage = 10 } = data;
+export async function getSessions(data: Required<PaginationQuery>) {
+  const { userId, from, to, start, limit } = data;
   const result = await db
     .select({
       sessionId: studySessions.sessionId,
@@ -58,8 +58,8 @@ export async function getSessions(data: PaginationQuery) {
       )
     )
     .orderBy(desc(studySessions.startedAt))
-    .offset((page - 1) * itemsOnPage)
-    .limit(itemsOnPage);
+    .offset(start)
+    .limit(limit);
   return result;
 }
 export async function getSessionById(sessionId: string, userId: string) {

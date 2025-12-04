@@ -1,11 +1,11 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { routeTree } from './routeTree.gen'
 import { AuthProvider, useAuth } from '@/contexts/AuthProvider'
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from '@/components/ui/sonner'
 import './styles.css'
 
 const router = createRouter({
@@ -27,9 +27,13 @@ declare module '@tanstack/react-router' {
 
 function InnerApp() {
   const auth = useAuth()
-  return (
-      <RouterProvider router={router} context={{auth}} />
-  )
+  const routerContext = useMemo(() => auth, [auth])
+
+  useEffect(() => {
+    router.invalidate()
+  }, [routerContext])
+
+  return <RouterProvider router={router} context={{ auth: routerContext }} />
 }
 
 const queryClient = new QueryClient()

@@ -36,6 +36,19 @@ export async function getResourceById(resourceId: string, userId: string) {
   return result[0];
 }
 
+export async function getResourceByTitle(title: string, userId: string) {
+  const result = await db
+    .select({
+      resourceId: studyResources.resourceId,
+    })
+    .from(studyResources)
+    .where(
+      and(eq(studyResources.title, title), eq(studyResources.userId, userId))
+    )
+    .limit(1);
+  return result[0];
+}
+
 export async function getStudyResources(userId: string, query: string = "") {
   const result = await db
     .select({
@@ -99,11 +112,12 @@ export async function createStudyResource(
 
 export async function addResourcesToSession(
   sessionId: string,
-  resourceId: string[]
+  resources: { resourceId: string; label?: string }[]
 ) {
-  const resourcesToAdd = resourceId.map((id) => ({
+  const resourcesToAdd = resources.map(({ resourceId, label }) => ({
     sessionId,
-    resourceId: id,
+    resourceId,
+    label
   }));
   await db.insert(studySessionsStudyResources).values(resourcesToAdd);
 }
@@ -121,4 +135,5 @@ export default {
   createStudyResource,
   deleteStudyResource,
   addResourcesToSession,
+  getResourceByTitle,
 };

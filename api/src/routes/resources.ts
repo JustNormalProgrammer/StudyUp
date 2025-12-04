@@ -8,7 +8,7 @@ import {
 } from "../controllers/resources";
 import validate from "../utils/validate";
 import { body } from "express-validator";
-import { StudyResourceTypeEnum } from "../db/queries/resources";
+import resources, { StudyResourceTypeEnum } from "../db/queries/resources";
 
 const validateCreateResource = [
   body("title").notEmpty().withMessage("Title is required"),
@@ -21,6 +21,24 @@ const validateCreateResource = [
     return true;
   }),
   body("url").optional().notEmpty().isURL().withMessage("URL is invalid"),
+  body("title").custom(async (value, { req }) => {
+    let existingResource: { resourceId: string } | undefined = undefined;
+    try {
+      existingResource = await resources.getResourceByTitle(
+        value,
+        req.user!.userId
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(
+        "Failed to check if resource with this title already exists"
+      );
+    }
+    if (existingResource) {
+      throw new Error(`Title already in use`);
+    }
+    return true;
+  }),
 ];
 
 const router = Router();

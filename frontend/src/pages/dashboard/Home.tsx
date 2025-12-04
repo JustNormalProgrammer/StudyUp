@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthProvider'
 export default function Home() {
   const { user } = useAuth()
   return (
-    <main className="grid grid-cols-1 justify-items-center md:grid-cols-2 gap-0 max-w-7xl mx-auto">
+    <main className="grid grid-cols-1 gap-4 justify-items-center md:grid-cols-2 gap-0 max-w-7xl mx-auto">
       <WeeklyChartStack />
       <Card className="w-full">
         <CardHeader>What did you learn today?</CardHeader>

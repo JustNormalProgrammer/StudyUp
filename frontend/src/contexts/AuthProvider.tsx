@@ -7,7 +7,7 @@ import React, {
 } from 'react'
 import type { LoginResponse } from '@/pages/Auth/Login'
 import { api } from '@/api/api'
-import { Spinner } from '@/components/ui/spinner'
+
 
 export interface User {
   userId: string
@@ -103,7 +103,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         logout,
       }}
     >
-      { isLoading ? <Spinner className="size-20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"  /> : children}
+      { isLoading ? null : children}
     </AuthContext.Provider>
   )
 }

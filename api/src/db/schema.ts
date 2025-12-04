@@ -74,7 +74,7 @@ export const studyResources = pgTable("study_resources", {
   userId: uuid()
     .notNull()
     .references(() => users.userId, { onDelete: "cascade" }),
-  title: varchar({ length: 255 }).notNull(),
+  title: varchar({ length: 255 }).notNull().unique(),
   type: studyResourceType().notNull(),
   desc: varchar({ length: 255 }),
   url: varchar({ length: 255 }),
