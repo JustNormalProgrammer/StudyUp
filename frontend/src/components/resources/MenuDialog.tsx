@@ -12,19 +12,42 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import type { StudyResource } from '@/api/types'
+import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { ResourceDialogForm } from './Dialog'
+import { toast } from 'sonner'
 
 export function DropdownMenuDialog({
+  resource,
   className,
   inSessionRemoveHandler,
 }: {
+  resource: StudyResource
   className?: string
   inSessionRemoveHandler?: () => void
 }) {
   const [showEditDialog, setShowEditDialog] = useState(false)
-
+  const api = useAuthenticatedRequest()
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: async (resourceData: ResourceDialogForm) => {
+      const { data } = await api.put(`/resources/${resource.resourceId}`, resourceData)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resources'] })
+      toast.success('Resource updated successfully')
+      setShowEditDialog(false)
+    },
+    onError: (error) => {
+      toast.error('Failed to update resource')
+    },
+  })
   return (
     <>
       <DropdownMenu modal={false}>
@@ -41,10 +64,13 @@ export function DropdownMenuDialog({
         <DropdownMenuContent className="w-40" align="end">
           <DropdownMenuGroup>
             {inSessionRemoveHandler && (
+              <>
               <DropdownMenuItem onSelect={() => inSessionRemoveHandler()}>
                 <DeleteIcon size={16} />
                 Remove
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              </>
             )}
             <DropdownMenuItem onSelect={() => setShowEditDialog(true)}>
               <SquarePenIcon size={16} />
@@ -60,7 +86,7 @@ export function DropdownMenuDialog({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ResourceDialog open={showEditDialog} setOpen={setShowEditDialog} />
+      <ResourceDialog open={showEditDialog} setOpen={setShowEditDialog} resource={resource} onSubmit={mutation.mutate} isLoading={mutation.isPending} />
     </>
   )
 }

@@ -21,7 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { StudyResourceTypeEnum } from '@/api/types'
+import { StudyResourceTypeEnum, type StudyResource } from '@/api/types'
+import { useState } from 'react'
+import { Spinner } from '../ui/spinner'
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -30,30 +32,42 @@ const schema = z.object({
   url: z.optional(z.url({ error: 'Invalid URL' })),
 })
 
+export type ResourceDialogForm = z.infer<typeof schema>
+
 export function ResourceDialog({
   open,
   setOpen,
+  resource,
+  onSubmit,
+  isLoading=false,
+  mutationError=undefined,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
+  resource?: StudyResource
+  onSubmit: (data: ResourceDialogForm) => void
+  isLoading?: boolean
+  mutationError?: Error
 }) {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: '',
-      type: StudyResourceTypeEnum.OTHER,
-      desc: '',
-      url: undefined,
+      title: resource?.title || '',
+      type: resource?.type || StudyResourceTypeEnum.OTHER,
+      desc: resource?.desc || undefined,
+      url: resource?.url || undefined,
     },
   })
+  const [error, setError] = useState<Error | undefined>(mutationError)
+  if(error) {}
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Resource</DialogTitle>
+          <DialogTitle>{resource ? 'Edit Resource' : 'Create Resource'}</DialogTitle>
         </DialogHeader>
         <form
-          onSubmit={form.handleSubmit((data) => console.log(data))}
+          onSubmit={form.handleSubmit((data) => onSubmit(data))}
           className="space-y-4"
         >
           <Controller
@@ -159,7 +173,7 @@ export function ResourceDialog({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? <><Spinner /> Loading...</> : 'Save'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

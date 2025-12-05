@@ -55,13 +55,14 @@ export default function CreateSession() {
       console.log(error)
     },
   })
+  // TODO: formError 
   const [formError, setFormError] = useState<string>('')
   const [studyResources, setStudyResources] = useState<Array<StudyResource>>([])
   console.log(form.getValues())
 
   return (
-    <div className="min-h-screen flex justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-xl self-start mt-20 gap-2">
+    <div className="min-h-screen flex justify-center">
+      <Card className="w-full max-w-xl self-start gap-2">
         <CardHeader className="text-xl font-semibold">
           What did you learn?
         </CardHeader>

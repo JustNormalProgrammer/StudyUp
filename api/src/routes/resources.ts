@@ -5,12 +5,13 @@ import {
   deleteResource,
   getResourceById,
   getResources,
+  replaceResource,
 } from "../controllers/resources";
 import validate from "../utils/validate";
 import { body } from "express-validator";
 import resources, { StudyResourceTypeEnum } from "../db/queries/resources";
 
-const validateCreateResource = [
+const validateResource = [
   body("title").notEmpty().withMessage("Title is required"),
   body("type").notEmpty().withMessage("Type is required"),
   body("desc").optional().notEmpty().withMessage("Description is required"),
@@ -21,6 +22,15 @@ const validateCreateResource = [
     return true;
   }),
   body("url").optional().notEmpty().isURL().withMessage("URL is invalid"),
+];
+
+const router = Router();
+router.get("/", requiredAuth, getResources);
+router.get("/:resourceId", requiredAuth, getResourceById);
+router.post(
+  "/",
+  requiredAuth,
+  validate(validateResource),
   body("title").custom(async (value, { req }) => {
     let existingResource: { resourceId: string } | undefined = undefined;
     try {
@@ -39,16 +49,13 @@ const validateCreateResource = [
     }
     return true;
   }),
-];
-
-const router = Router();
-router.get("/", requiredAuth, getResources);
-router.get("/:resourceId", requiredAuth, getResourceById);
-router.post(
-  "/",
-  requiredAuth,
-  validate(validateCreateResource),
   createResource
+);
+router.put(
+  "/:resourceId",
+  requiredAuth,
+  validate(validateResource),
+  replaceResource
 );
 router.delete("/:resourceId", requiredAuth, deleteResource);
 export default router;

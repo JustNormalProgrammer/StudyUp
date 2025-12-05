@@ -51,6 +51,33 @@ export const createResource = async (req: Request, res: Response) => {
     return res.sendStatus(500);
   }
 };
+export const replaceResource = async (
+  req: Request<{ resourceId: string }>,
+  res: Response
+) => {
+  const valResult = validationResult(req);
+  if (!valResult.isEmpty()) {
+    return res
+      .status(400)
+      .json({ error: valResult.array({ onlyFirstError: true }) });
+  }
+  try {
+    const { resourceId } = req.params;
+    const existingResource = await resources.getResourceById(
+      resourceId,
+      req.user!.userId
+    );
+    if (!existingResource) {
+      return res.sendStatus(404);
+    }
+    const resourceData = matchedData<StudyResourceCreate>(req);
+    const result = await resources.replaceStudyResource(resourceId, resourceData);
+    return res.json(result);
+  } catch (e) {
+    console.log(e);
+    return res.sendStatus(500);
+  }
+};
 export const deleteResource = async (
   req: Request<{ resourceId: string }>,
   res: Response

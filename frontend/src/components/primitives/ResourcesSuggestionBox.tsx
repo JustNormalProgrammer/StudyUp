@@ -52,7 +52,7 @@ export function ResourcesSuggestionBox({
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-[150px] justify-start">
             <>
-              <ListPlus /> Select resource
+              <ListPlus /> Add resource
             </>
           </Button>
         </PopoverTrigger>
@@ -87,7 +87,7 @@ export function ResourcesSuggestionBox({
           <OptionsList
             setOpen={setOpen}
             setValue={(option) => {
-              setValue([...value, option])
+              setValue([...value, { resourceId: option }])
               setSelectedResources([
                 ...selectedResources,
                 data.find((resource) => resource.resourceId === option)!,

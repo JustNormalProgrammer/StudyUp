@@ -67,7 +67,7 @@ export async function getStudyResources(userId: string, query: string = "") {
           ilike(studyResources.desc, `%${query}%`)
         )
       )
-    );
+    ).orderBy(studyResources.title);
   return result;
 }
 
@@ -109,7 +109,17 @@ export async function createStudyResource(
   }
   return result;
 }
-
+export async function replaceStudyResource(
+  resourceId: string,
+  resource: StudyResourceCreate
+) {
+  const [result] = await db
+    .update(studyResources)
+    .set(resource)
+    .where(eq(studyResources.resourceId, resourceId))
+    .returning();
+  return result;
+}
 export async function addResourcesToSession(
   sessionId: string,
   resources: { resourceId: string; label?: string }[]
@@ -117,7 +127,7 @@ export async function addResourcesToSession(
   const resourcesToAdd = resources.map(({ resourceId, label }) => ({
     sessionId,
     resourceId,
-    label
+    label,
   }));
   await db.insert(studySessionsStudyResources).values(resourcesToAdd);
 }
@@ -136,4 +146,5 @@ export default {
   deleteStudyResource,
   addResourcesToSession,
   getResourceByTitle,
+  replaceStudyResource,
 };
