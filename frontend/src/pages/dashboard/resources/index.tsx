@@ -60,7 +60,7 @@ function Recources() {
           <ResourceCard key={resource.resourceId} resource={resource} />
         ))}
       </div>
-      <ResourceDialog open={showCreateDialog} setOpen={setShowCreateDialog} onSubmit={mutation.mutate} isLoading={mutation.isPending} error={mutation.error} />
+      <ResourceDialog open={showCreateDialog} setOpen={setShowCreateDialog} onSubmit={mutation.mutate} isLoading={mutation.isPending} />
     </div>
     
   )
