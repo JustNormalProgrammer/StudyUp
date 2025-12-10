@@ -4,6 +4,7 @@ import {
   Home,
   MessageCircleQuestionMark,
   Settings,
+  BoxIcon,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import {
@@ -31,18 +32,23 @@ const items = [
     icon: Calendar,
   },
   {
-    title: 'Resources',
-    url: '/dashboard/resources',
+    title: 'Study Sessions',
+    url: '/dashboard/study-sessions',
     icon: BookOpen,
   },
   {
+    title: 'Resources',
+    url: '/dashboard/resources',
+    icon: BoxIcon,
+  },
+  {
     title: 'Quizzes',
-    url: '#',
+    url: '/dashboard/quizzes',
     icon: MessageCircleQuestionMark,
   },
   {
     title: 'Settings',
-    url: '#',
+    url: '/dashboard/settings',
     icon: Settings,
   },
 ]

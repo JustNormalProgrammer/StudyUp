@@ -14,10 +14,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardHomeRouteImport } from './routes/dashboard/home'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
+import { Route as DashboardStudySessionsIndexRouteImport } from './routes/dashboard/study-sessions/index'
 import { Route as DashboardResourcesIndexRouteImport } from './routes/dashboard/resources/index'
 import { Route as DashboardStudySessionsCreateRouteImport } from './routes/dashboard/study-sessions/create'
+import { Route as DashboardStudySessionsSessionIdIndexRouteImport } from './routes/dashboard/study-sessions/$sessionId/index'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -44,6 +47,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardHomeRoute = DashboardHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -54,6 +62,12 @@ const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardStudySessionsIndexRoute =
+  DashboardStudySessionsIndexRouteImport.update({
+    id: '/study-sessions/',
+    path: '/study-sessions/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardResourcesIndexRoute = DashboardResourcesIndexRouteImport.update({
   id: '/resources/',
   path: '/resources/',
@@ -65,6 +79,12 @@ const DashboardStudySessionsCreateRoute =
     path: '/study-sessions/create',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
+const DashboardStudySessionsSessionIdIndexRoute =
+  DashboardStudySessionsSessionIdIndexRouteImport.update({
+    id: '/study-sessions/$sessionId/',
+    path: '/study-sessions/$sessionId/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,9 +93,12 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/home': typeof DashboardHomeRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
   '/dashboard/resources': typeof DashboardResourcesIndexRoute
+  '/dashboard/study-sessions': typeof DashboardStudySessionsIndexRoute
+  '/dashboard/study-sessions/$sessionId': typeof DashboardStudySessionsSessionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,9 +106,12 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/home': typeof DashboardHomeRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
   '/dashboard/resources': typeof DashboardResourcesIndexRoute
+  '/dashboard/study-sessions': typeof DashboardStudySessionsIndexRoute
+  '/dashboard/study-sessions/$sessionId': typeof DashboardStudySessionsSessionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +121,12 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/home': typeof DashboardHomeRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
   '/dashboard/resources/': typeof DashboardResourcesIndexRoute
+  '/dashboard/study-sessions/': typeof DashboardStudySessionsIndexRoute
+  '/dashboard/study-sessions/$sessionId/': typeof DashboardStudySessionsSessionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,9 +137,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/dashboard/calendar'
     | '/dashboard/home'
+    | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
     | '/dashboard/resources'
+    | '/dashboard/study-sessions'
+    | '/dashboard/study-sessions/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,9 +150,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/dashboard/calendar'
     | '/dashboard/home'
+    | '/dashboard/settings'
     | '/dashboard'
     | '/dashboard/study-sessions/create'
     | '/dashboard/resources'
+    | '/dashboard/study-sessions'
+    | '/dashboard/study-sessions/$sessionId'
   id:
     | '__root__'
     | '/'
@@ -129,9 +164,12 @@ export interface FileRouteTypes {
     | '/register'
     | '/dashboard/calendar'
     | '/dashboard/home'
+    | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
     | '/dashboard/resources/'
+    | '/dashboard/study-sessions/'
+    | '/dashboard/study-sessions/$sessionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -178,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/home': {
       id: '/dashboard/home'
       path: '/home'
@@ -190,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/dashboard/calendar'
       preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/study-sessions/': {
+      id: '/dashboard/study-sessions/'
+      path: '/study-sessions'
+      fullPath: '/dashboard/study-sessions'
+      preLoaderRoute: typeof DashboardStudySessionsIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/resources/': {
@@ -206,23 +258,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudySessionsCreateRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/study-sessions/$sessionId/': {
+      id: '/dashboard/study-sessions/$sessionId/'
+      path: '/study-sessions/$sessionId'
+      fullPath: '/dashboard/study-sessions/$sessionId'
+      preLoaderRoute: typeof DashboardStudySessionsSessionIdIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
 interface DashboardRouteRouteChildren {
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardStudySessionsCreateRoute: typeof DashboardStudySessionsCreateRoute
   DashboardResourcesIndexRoute: typeof DashboardResourcesIndexRoute
+  DashboardStudySessionsIndexRoute: typeof DashboardStudySessionsIndexRoute
+  DashboardStudySessionsSessionIdIndexRoute: typeof DashboardStudySessionsSessionIdIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardHomeRoute: DashboardHomeRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardStudySessionsCreateRoute: DashboardStudySessionsCreateRoute,
   DashboardResourcesIndexRoute: DashboardResourcesIndexRoute,
+  DashboardStudySessionsIndexRoute: DashboardStudySessionsIndexRoute,
+  DashboardStudySessionsSessionIdIndexRoute:
+    DashboardStudySessionsSessionIdIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
