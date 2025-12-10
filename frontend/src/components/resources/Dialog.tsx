@@ -2,6 +2,7 @@ import z from 'zod'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { BookIcon, GlobeIcon, LayersIcon, SquarePlayIcon } from 'lucide-react'
+import { useState } from 'react'
 import { Field, FieldError, FieldLabel } from '../ui/field'
 import {
   Select,
@@ -13,6 +14,8 @@ import {
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
+import { Spinner } from '../ui/spinner'
+import type { StudyResource } from '@/api/types'
 import {
   Dialog,
   DialogClose,
@@ -21,9 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { StudyResourceTypeEnum, type StudyResource } from '@/api/types'
-import { useState } from 'react'
-import { Spinner } from '../ui/spinner'
+import { StudyResourceTypeEnum } from '@/api/types'
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -39,8 +40,8 @@ export function ResourceDialog({
   setOpen,
   resource,
   onSubmit,
-  isLoading=false,
-  mutationError=undefined,
+  isLoading = false,
+  mutationError = undefined,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
@@ -59,12 +60,15 @@ export function ResourceDialog({
     },
   })
   const [error, setError] = useState<Error | undefined>(mutationError)
-  if(error) {}
+  if (error) {
+  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{resource ? 'Edit Resource' : 'Create Resource'}</DialogTitle>
+          <DialogTitle>
+            {resource ? 'Edit Resource' : 'Create Resource'}
+          </DialogTitle>
         </DialogHeader>
         <form
           onSubmit={form.handleSubmit((data) => onSubmit(data))}
@@ -173,7 +177,15 @@ export function ResourceDialog({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" disabled={isLoading}>{isLoading ? <><Spinner /> Loading...</> : 'Save'}</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Spinner /> Loading...
+                </>
+              ) : (
+                'Save'
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
