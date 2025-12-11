@@ -1,9 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
+import Session from '@/pages/dashboard/sessions/Session'
 
 export const Route = createFileRoute('/dashboard/study-sessions/$sessionId/')({
-  component: RouteComponent,
+  component: Session,
 })
-
-function RouteComponent() {
-  return <div>Hello "/dashboard/study-sessions/$sessionId/"!</div>
-}

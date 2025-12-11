@@ -11,6 +11,7 @@ import {
 import { body, query } from "express-validator";
 import validate from "../utils/validate";
 import tags from "../db/queries/tags";
+import { getResourcesBySessionId } from "../controllers/resources";
 
 const validateCreateSession = [
   body("tagId").notEmpty().withMessage("Tag is required"),
@@ -94,6 +95,7 @@ const router = Router();
 router.get("/", requiredAuth, validate(validateGetSessions), getSessions);
 router.post("/", requiredAuth, validate(validateCreateSession), createSession);
 router.get("/:sessionId", requiredAuth, getSessionById);
+router.get("/:sessionId/resources", requiredAuth, getResourcesBySessionId);
 /* router.patch(
   "/:sessionId",
   requiredAuth,

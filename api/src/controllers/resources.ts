@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult, matchedData } from "express-validator";
 import resources, { StudyResourceCreate } from "../db/queries/resources";
+import sessions from "../db/queries/sessions";
 
 export const getResources = async (
   req: Request<{}, {}, {}, { q: string }>,
@@ -15,7 +16,6 @@ export const getResources = async (
     return res.sendStatus(500);
   }
 };
-
 export const getResourceById = async (
   req: Request<{ resourceId: string }>,
   res: Response
@@ -26,6 +26,26 @@ export const getResourceById = async (
       resourceId,
       req.user!.userId
     );
+    return res.json(result);
+  } catch (e) {
+    console.log(e);
+    return res.sendStatus(500);
+  }
+};
+export const getResourcesBySessionId = async (
+  req: Request<{ sessionId: string }>,
+  res: Response
+) => {
+  const { sessionId } = req.params;
+  try {
+    const existingSession = await sessions.getSessionById(
+      sessionId,
+      req.user!.userId
+    );
+    if (!existingSession) {
+      return res.sendStatus(404);
+    }
+    const result = await resources.getStudyResourcesBySessionId(sessionId);
     return res.json(result);
   } catch (e) {
     console.log(e);
@@ -71,7 +91,10 @@ export const replaceResource = async (
       return res.sendStatus(404);
     }
     const resourceData = matchedData<StudyResourceCreate>(req);
-    const result = await resources.replaceStudyResource(resourceId, resourceData);
+    const result = await resources.replaceStudyResource(
+      resourceId,
+      resourceData
+    );
     return res.json(result);
   } catch (e) {
     console.log(e);

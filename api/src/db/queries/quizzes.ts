@@ -9,8 +9,7 @@ export interface QuizAttemptCreate {
   score: string;
 }
 
-
-export async function getUserQuizzes(userId: string){
+export async function getUserQuizzes(userId: string) {
   const result = await db
     .select({
       quizId: quizzes.quizId,
@@ -19,7 +18,7 @@ export async function getUserQuizzes(userId: string){
       numberOfQuestions: quizzes.numberOfQuestions,
       isMultipleChoice: quizzes.isMultipleChoice,
       createdAt: quizzes.createdAt,
-      tag:{
+      tag: {
         tagId: tags.tagId,
         content: tags.content,
         color: tags.color,
@@ -41,7 +40,7 @@ export async function getQuiz(quizId: string, userId: string) {
       isMultipleChoice: quizzes.isMultipleChoice,
       createdAt: quizzes.createdAt,
       numberOfQuestions: quizzes.numberOfQuestions,
-      tag:{
+      tag: {
         tagId: tags.tagId,
         content: tags.content,
         color: tags.color,
@@ -56,6 +55,18 @@ export async function getQuiz(quizId: string, userId: string) {
   return quiz;
 }
 
+export async function getQuizzesBySessionId(sessionId: string, userId: string) {
+  const result = await db
+    .select({
+      quizId: quizzes.quizId,
+      title: quizzes.title,
+      isMultipleChoice: quizzes.isMultipleChoice,
+      numberOfQuestions: quizzes.numberOfQuestions,
+    })
+    .from(quizzes)
+    .where(and(eq(quizzes.sessionId, sessionId), eq(quizzes.userId, userId)));
+  return result;
+}
 export async function getQuizAttempts(quizId: string, userId: string) {
   const result = await db
     .select({
@@ -70,8 +81,8 @@ export async function getQuizAttempts(quizId: string, userId: string) {
   return result;
 }
 
-export async function getUserAttempts(data: PaginationQuery) { 
-  const { userId, from, to, page = 1, itemsOnPage = 10 } = data;
+export async function getUserAttempts(data: PaginationQuery) {
+  const { userId, from, to, start = 0, limit = 10 } = data;
   const result = await db
     .select({
       quizAttemptId: quizAttempts.quizAttemptId,
@@ -79,7 +90,7 @@ export async function getUserAttempts(data: PaginationQuery) {
       quizTitle: quizzes.title,
       score: quizAttempts.score,
       finishedAt: quizAttempts.finishedAt,
-      tag:{
+      tag: {
         tagId: tags.tagId,
         content: tags.content,
         color: tags.color,
@@ -89,10 +100,15 @@ export async function getUserAttempts(data: PaginationQuery) {
     .innerJoin(quizzes, eq(quizAttempts.quizId, quizzes.quizId))
     .innerJoin(studySessions, eq(quizzes.sessionId, studySessions.sessionId))
     .innerJoin(tags, eq(studySessions.tagId, tags.tagId))
-    .where(and(eq(quizzes.userId, userId), between(quizAttempts.finishedAt, from, to)))
+    .where(
+      and(
+        eq(quizzes.userId, userId),
+        between(quizAttempts.finishedAt, from, to)
+      )
+    )
     .orderBy(desc(quizAttempts.finishedAt))
-    .offset((page - 1) * itemsOnPage)
-    .limit(itemsOnPage);
+    .offset(start)
+    .limit(limit);
   return result;
 }
 export async function getQuizAttempt(quizAttemptId: string, userId: string) {
@@ -107,7 +123,12 @@ export async function getQuizAttempt(quizAttemptId: string, userId: string) {
     })
     .from(quizAttempts)
     .innerJoin(quizzes, eq(quizAttempts.quizId, quizzes.quizId))
-    .where(and(eq(quizAttempts.quizAttemptId, quizAttemptId), eq(quizzes.userId, userId)))
+    .where(
+      and(
+        eq(quizAttempts.quizAttemptId, quizAttemptId),
+        eq(quizzes.userId, userId)
+      )
+    )
     .limit(1);
   return quizAttempt;
 }
@@ -120,21 +141,12 @@ export async function deleteQuiz(quizId: string) {
   return;
 }
 export async function deleteQuizAttempt(quizAttemptId: string) {
-  await db.delete(quizAttempts).where(eq(quizAttempts.quizAttemptId, quizAttemptId))
+  await db
+    .delete(quizAttempts)
+    .where(eq(quizAttempts.quizAttemptId, quizAttemptId));
   return;
 }
 
-export async function getQuizIds(quizId: string){
-  const [quiz] = await db
-    .select({
-      quizId: quizzes.quizId,
-      userId: quizzes.userId,
-    })
-    .from(quizzes)
-    .where(eq(quizzes.quizId, quizId))
-    .limit(1);
-  return quiz;
-}
 export default {
   getUserQuizzes,
   getQuiz,
@@ -143,6 +155,5 @@ export default {
   createQuizAttempt,
   deleteQuiz,
   deleteQuizAttempt,
-  getQuizIds,
   getUserAttempts,
-}
+};

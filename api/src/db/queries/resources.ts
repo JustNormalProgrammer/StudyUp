@@ -85,7 +85,8 @@ export async function getStudyResourcesBySessionId(sessionId: string) {
       studySessionsStudyResources,
       eq(studyResources.resourceId, studySessionsStudyResources.resourceId)
     )
-    .where(eq(studySessionsStudyResources.sessionId, sessionId));
+    .where(eq(studySessionsStudyResources.sessionId, sessionId))
+    .orderBy(studyResources.title);
   return result;
 }
 

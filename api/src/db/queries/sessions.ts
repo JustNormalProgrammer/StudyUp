@@ -6,7 +6,7 @@ import {
   studySessionsStudyResources,
 } from "../schema";
 import { tags } from "../schema";
-import { StudyResourceTypeEnum } from "./resources";
+import { getStudyResourcesBySessionId, StudyResourceTypeEnum } from "./resources";
 
 export interface StudySessionCreate {
   userId: string;
@@ -77,31 +77,9 @@ export async function getSessionById(sessionId: string, userId: string) {
         content: tags.content,
         color: tags.color,
       },
-      studyResources: sql`
-        COALESCE(
-          json_agg(
-            json_build_object(
-              'resourceId', ${studyResources.resourceId},
-              'title', ${studyResources.title},
-              'type', ${studyResources.type},
-              'content', ${studyResources.desc},
-              'label', ${studySessionsStudyResources.label},
-              'url', ${studyResources.url}
-            )
-          ) FILTER (WHERE ${studyResources.resourceId} IS NOT NULL),
-        '[]')::json
-      `.as("studyResources"),
     })
     .from(studySessions)
     .leftJoin(tags, eq(studySessions.tagId, tags.tagId))
-    .leftJoin(
-      studySessionsStudyResources,
-      eq(studySessions.sessionId, studySessionsStudyResources.sessionId)
-    )
-    .leftJoin(
-      studyResources,
-      eq(studySessionsStudyResources.resourceId, studyResources.resourceId)
-    )
     .where(
       and(
         eq(studySessions.sessionId, sessionId),
@@ -110,7 +88,6 @@ export async function getSessionById(sessionId: string, userId: string) {
     )
     .groupBy(studySessions.sessionId, tags.tagId)
     .limit(1);
-
   return result;
 }
 export async function createStudySession(session: StudySessionCreate) {

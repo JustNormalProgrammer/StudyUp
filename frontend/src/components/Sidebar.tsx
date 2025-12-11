@@ -1,10 +1,10 @@
 import {
   BookOpen,
+  BoxIcon,
   Calendar,
   Home,
   MessageCircleQuestionMark,
   Settings,
-  BoxIcon,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import {

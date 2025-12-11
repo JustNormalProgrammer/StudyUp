@@ -5,7 +5,11 @@ import {
   SquarePenIcon,
   TrashIcon,
 } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { ResourceDialog } from './Dialog'
+import type { StudyResource } from '@/api/types'
+import type { ResourceDialogForm } from './Dialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,11 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import type { StudyResource } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { ResourceDialogForm } from './Dialog'
-import { toast } from 'sonner'
 
 export function DropdownMenuDialog({
   resource,
@@ -36,11 +36,15 @@ export function DropdownMenuDialog({
   const queryClient = useQueryClient()
   const mutation = useMutation({
     mutationFn: async (resourceData: ResourceDialogForm) => {
-      const { data } = await api.put(`/resources/${resource.resourceId}`, resourceData)
+      const { data } = await api.put(
+        `/resources/${resource.resourceId}`,
+        resourceData,
+      )
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] })
+      queryClient.invalidateQueries({ queryKey: ['studyResources'] })
       toast.success('Resource updated successfully')
       setShowEditDialog(false)
     },
@@ -65,11 +69,11 @@ export function DropdownMenuDialog({
           <DropdownMenuGroup>
             {inSessionRemoveHandler && (
               <>
-              <DropdownMenuItem onSelect={() => inSessionRemoveHandler()}>
-                <DeleteIcon size={16} />
-                Remove
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => inSessionRemoveHandler()}>
+                  <DeleteIcon size={16} />
+                  Remove
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
               </>
             )}
             <DropdownMenuItem onSelect={() => setShowEditDialog(true)}>
@@ -86,7 +90,13 @@ export function DropdownMenuDialog({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <ResourceDialog open={showEditDialog} setOpen={setShowEditDialog} resource={resource} onSubmit={mutation.mutate} isLoading={mutation.isPending} />
+      <ResourceDialog
+        open={showEditDialog}
+        setOpen={setShowEditDialog}
+        resource={resource}
+        onSubmit={mutation.mutate}
+        isLoading={mutation.isPending}
+      />
     </>
   )
 }

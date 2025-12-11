@@ -41,7 +41,7 @@ export default function CreateSession() {
     resolver: zodResolver(schema),
     defaultValues: {
       title: '',
-      notes: '',
+      notes: undefined,
       startedAt: new Date(),
       durationMinutes: 60,
     },

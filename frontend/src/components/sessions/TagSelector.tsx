@@ -24,23 +24,10 @@ export default function TagSelector({
       {data.map((tag) => (
         <div
           key={tag.tagId}
-          className={`rounded-xl py-1 px-3 whitespace-nowrap flex items-center gap-2 cursor-pointer user-select-none`}
+          className={`rounded-xl py-1 px-3 whitespace-nowrap flex items-center gap-2 cursor-pointer user-select-none ${value === tag.tagId ? 'bg-(--tag-color) brightness-90' : ''}
+            hover:bg-(--tag-color) hover:brightness-80`}
           style={{
-            border: value === tag.tagId ? `1px solid ${tag.color}` : 'none',
-            backgroundColor:
-              value === tag.tagId
-                ? hexToRgba(tag.color || '', 0.1)
-                : 'transparent',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = hexToRgba(
-              tag.color || '',
-              0.1,
-            )
-          }}
-          onMouseLeave={(e) => {
-            if (value === tag.tagId) return
-            e.currentTarget.style.backgroundColor = 'transparent'
+            ['--tag-color' as any]: hexToRgba(tag.color, 0.1),
           }}
           onClick={() => {
             if (value === tag.tagId) {

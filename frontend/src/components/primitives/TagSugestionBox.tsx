@@ -45,15 +45,10 @@ export function TagSuggestionBox({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           asChild
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = hexToRgba(
-              selectedTag?.color || '',
-              0.1,
-            )
+          style={{
+            ['--tag-color' as any]: hexToRgba(selectedTag?.color || '', 0.1),
           }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }}
+          className="hover:bg-(--tag-color)"
         >
           <Button variant="outline" className="w-[150px] justify-start">
             {selectedTag ? (
@@ -82,15 +77,10 @@ export function TagSuggestionBox({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger
         asChild
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = hexToRgba(
-            selectedTag?.color || '',
-            0.1,
-          )
+        style={{
+          ['--tag-color' as any]: hexToRgba(selectedTag?.color || '', 0.1),
         }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent'
-        }}
+        className="hover:bg-(--tag-color)"
       >
         <Button variant="outline" className="w-[150px] justify-start">
           {selectedTag ? (
@@ -140,14 +130,9 @@ function OptionsList({
                 setValue(option.tagId)
                 setOpen(false)
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = hexToRgba(
-                  option.color,
-                  0.1,
-                )
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
+              className="hover:bg-(--tag-color)!"
+              style={{
+                ['--tag-color' as any]: hexToRgba(option.color, 0.1),
               }}
             >
               <div className={`flex items-center gap-2`}>
