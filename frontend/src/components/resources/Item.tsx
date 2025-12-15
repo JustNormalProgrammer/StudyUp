@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import ConditionalWrapper from '../UtilComponents/ConditionalWrapper'
+import { Input } from '../ui/input'
 import type { StudyResource } from '@/api/types'
 import { StudyResourceTypeEnum } from '@/api/types'
 
@@ -21,10 +22,14 @@ export default function ResourceItem({
   disableLink = false,
   resource,
   label,
+  value,
+  setValue,
 }: {
   disableLink?: boolean
   resource: StudyResource
   label?: string
+  value?: string
+  setValue?: (value: string) => void
 }) {
   const ResourceTypeIcon = ResourceTypeIcons[resource.type]
   return (
@@ -53,7 +58,14 @@ export default function ResourceItem({
               {resource.title}
             </div>
           </ConditionalWrapper>
-          {label && <div className="text-xs px-2 py-1 bg-primary/40 rounded-xl" >{label}</div>}
+          {label && (
+            <div className="text-xs px-2 py-1 bg-primary/40 rounded-xl">
+              {label}
+            </div>
+          )}
+          {setValue && (
+            <Input value={value} onChange={(e) => setValue(e.target.value)} className="w-20 text-xs p-0.5 h-fit" name="label" />
+          )}
         </div>
         {resource.desc && (
           <>

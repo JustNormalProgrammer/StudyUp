@@ -61,16 +61,40 @@ export default function Session() {
     },
   })
   return (
-    <div className="flex flex-col max-w-7xl mx-auto gap-10 border rounded-xl p-4">
-      <div className="flex flex-row justify-between gap-1 items-center">
+    <div className="flex flex-col max-w-7xl mx-auto gap-3 md:gap-10 border rounded-xl p-4">
+      <div className="flex flex-col md:flex-row justify-between gap-1 items-center">
         <h1 className="text-2xl font-semibold">{data?.title}</h1>
-        <div className="flex flex-row gap-2 self-start">
+      </div>
+      <div className="flex flex-row gap-5 items-center flex-wrap justify-between">
+        <div className="flex flex-row gap-5 items-center flex-wrap">
+          {data?.tag && <Tag tag={data.tag} />}
+          <div className="flex gap-1 items-center">
+            <Hourglass className="w-4 h-4" />
+            <p className="text-sm text-gray-600 whitespace-nowrap">
+              {data?.durationMinutes} mins
+            </p>
+          </div>
+          <div className="flex gap-1 items-center">
+            <Calendar className="w-4 h-4" />
+            <p className="text-sm text-gray-600 whitespace-nowrap">
+              {new Date(data?.startedAt ?? '').toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-row gap-2  md:gap-4 self-end ">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="secondary"
                 size="icon"
                 onClick={() => setOpen(true)}
+                className="w-fit"
               >
                 <Pencil className="w-4 h-4" />
               </Button>
@@ -81,7 +105,7 @@ export default function Session() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="secondary" size="icon">
+              <Button variant="secondary" size="icon" className="w-fit">
                 <Trash className="w-4 h-4 text-destructive" />
               </Button>
             </TooltipTrigger>
@@ -89,27 +113,6 @@ export default function Session() {
               <p>Delete</p>
             </TooltipContent>
           </Tooltip>
-        </div>
-      </div>
-      <div className="flex flex-row gap-5 items-center flex-wrap">
-        {data?.tag && <Tag tag={data.tag} />}
-        <div className="flex gap-1 items-center">
-          <Hourglass className="w-4 h-4" />
-          <p className="text-sm text-gray-600 whitespace-nowrap">
-            {data?.durationMinutes} mins
-          </p>
-        </div>
-        <div className="flex gap-1 items-center">
-          <Calendar className="w-4 h-4" />
-          <p className="text-sm text-gray-600 whitespace-nowrap">
-            {new Date(data?.startedAt ?? '').toLocaleString(undefined, {
-              year: 'numeric',
-              month: 'numeric',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </p>
         </div>
       </div>
       <div className="text-sm text-gray-600">{data?.notes}</div>

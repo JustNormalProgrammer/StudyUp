@@ -48,7 +48,7 @@ export function ResourcesSuggestionBox({
   )
   if (isDesktop) {
     return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-[150px] justify-start">
             <>
@@ -56,7 +56,7 @@ export function ResourcesSuggestionBox({
             </>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[525px] p-0" align="start">
+        <PopoverContent className="w-[703px] p-0" align="start">
           <OptionsList
             setOpen={setOpen}
             setValue={(option) => {

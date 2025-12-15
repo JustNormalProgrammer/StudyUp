@@ -100,8 +100,8 @@ export default function SessionForm({
   )
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-full  overflow-y-auto max-h-screen">
+    <Dialog open={open} onOpenChange={setOpen} >
+      <DialogContent className="min-w-20/21 md:min-w-3xl overflow-y-auto max-h-[calc(100vh-2rem)] ">
         <DialogHeader>
           <DialogTitle>
             {sessionData?.session ? 'Edit Session' : 'What did you learn?'}
@@ -249,22 +249,17 @@ export default function SessionForm({
                           ),
                         )
                       }}
-                    />
-                    <Input
-                      name="label"
-                      className="min-w-12 flex-1 h-auto p-1 text-xs"
-                      placeholder="eg. 1-5"
                       value={
                         watchedResources?.find(
                           (r) => r.resourceId === resource.resourceId,
                         )?.label || ''
                       }
-                      onChange={(e) => {
+                      setValue={(value) => {
                         form.setValue(
                           'studyResources',
                           watchedResources?.map((r) =>
                             r.resourceId === resource.resourceId
-                              ? { ...r, label: e.target.value }
+                              ? { ...r, label: value }
                               : r,
                           ),
                         )
@@ -276,9 +271,6 @@ export default function SessionForm({
             </div>
           )}
           <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
             <Button
               type="submit"
               className="w-full mt-2"
