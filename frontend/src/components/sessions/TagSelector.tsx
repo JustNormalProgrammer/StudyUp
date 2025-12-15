@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Tag } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { hexToRgba } from '@/utils/hexToRgba'
 
 export default function TagSelector({

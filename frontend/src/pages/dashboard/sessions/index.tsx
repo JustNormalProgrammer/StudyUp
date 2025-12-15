@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query'
-import { Calendar, CirclePlus, Clock, Hourglass, Plus } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Calendar, CirclePlus, Hourglass } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import type { StudySession } from '@/api/types'
+import type { SessionFormData } from '@/components/sessions/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import {
   Card,
@@ -14,16 +16,34 @@ import TagSelector from '@/components/sessions/TagSelector'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { hexToRgba } from '@/utils/hexToRgba'
+import SessionForm from '@/components/sessions/SessionForm'
+import Tag from '@/components/primitives/Tag'
 
 export default function Sessions() {
   const api = useAuthenticatedRequest()
   const [selectedTag, setSelectedTag] = useState<string>('')
+  const [showCreateSessionDialog, setShowCreateSessionDialog] = useState(false)
   const [search, setSearch] = useState('')
+  const queryClient = useQueryClient()
   const { data, isLoading, error } = useQuery({
     queryKey: ['sessions'],
     queryFn: async () => {
       const { data } = await api.get<Array<StudySession>>('/sessions')
       return data
+    },
+  })
+  const mutation = useMutation({
+    mutationFn: (sessionData: SessionFormData) => {
+      return api.post('/sessions', sessionData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      setShowCreateSessionDialog(false)
+      toast.success('Session created successfully')
+    },
+    onError: (error) => {
+      console.log(error)
+      toast.error('Failed to create session')
     },
   })
   const filteredData = selectedTag
@@ -37,11 +57,9 @@ export default function Sessions() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Button asChild>
-          <Link to="/dashboard/study-sessions/create">
-            <CirclePlus />
-            Create new session
-          </Link>
+        <Button onClick={() => setShowCreateSessionDialog(true)}>
+          <CirclePlus />
+          Create new session
         </Button>
       </div>
       <TagSelector value={selectedTag} setValue={setSelectedTag} />
@@ -66,15 +84,19 @@ export default function Sessions() {
               className="absolute top-0 left-0 h-full w-2"
               style={{ backgroundColor: session.tag.color }}
             ></div>
-            <CardContent className="flex flex-row gap-4 items-center ">
-              <div className="flex flex-col gap-2 ">
+            <CardContent className="flex flex-row items-center gap-5">
+              <div className="flex flex-col gap-2 w-2xl">
                 <CardTitle className="text-sm text-ellipsis overflow-hidden ">
                   {session.title}
                 </CardTitle>
-                <CardDescription className="text-xs md:text-sm text-gray-600 max-w-2xl line-clamp-1 text-ellipsis overflow-hidden">
+                <CardDescription className="text-xs md:text-sm text-gray-600  line-clamp-1 text-ellipsis overflow-hidden">
                   {session.notes}
                 </CardDescription>
               </div>
+              <Tag
+                tag={session.tag}
+                className="cursor-pointer hidden md:flex"
+              />
               <div className="flex flex-col  gap-2 w-20 md:flex-row-reverse md:justify-end  md:gap-6 ml-auto min-w-fit">
                 <div className="flex flex-row gap-1 items-center">
                   <Calendar className="w-3 h-3 md:w-4 md:h-4" />
@@ -97,6 +119,11 @@ export default function Sessions() {
           </Card>
         </Link>
       ))}
+      <SessionForm
+        open={showCreateSessionDialog}
+        setOpen={setShowCreateSessionDialog}
+        onSubmit={(data) => mutation.mutate(data)}
+      />
     </div>
   )
 }

@@ -79,6 +79,7 @@ export async function getStudyResourcesBySessionId(sessionId: string) {
       type: studyResources.type,
       desc: studyResources.desc,
       url: studyResources.url,
+      label: studySessionsStudyResources.label,
     })
     .from(studyResources)
     .innerJoin(

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useMediaQuery } from 'usehooks-ts'
 import { useQuery } from '@tanstack/react-query'
-import { ListPlus, Tag as TagIcon } from 'lucide-react'
+import { ListPlus } from 'lucide-react'
 import ResourceItem from '../resources/Item'
-import type { StudyResource, Tag } from '@/api/types'
+import type { StudyResource } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -120,7 +120,7 @@ function OptionsList({
             <CommandItem
               key={option.resourceId}
               value={option.title}
-              onSelect={(value) => {
+              onSelect={() => {
                 setValue(option.resourceId)
                 setOpen(false)
               }}

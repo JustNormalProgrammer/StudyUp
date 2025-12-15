@@ -126,7 +126,7 @@ function OptionsList({
             <CommandItem
               key={option.tagId}
               value={option.content}
-              onSelect={(value) => {
+              onSelect={() => {
                 setValue(option.tagId)
                 setOpen(false)
               }}

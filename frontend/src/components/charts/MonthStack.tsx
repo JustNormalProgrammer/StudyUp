@@ -6,7 +6,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { TrendingUp } from 'lucide-react'
 
 const chartData = [
   {

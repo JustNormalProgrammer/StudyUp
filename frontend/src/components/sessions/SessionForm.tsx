@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import type { StudyResource, StudySession } from '@/api/types'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -46,45 +47,68 @@ const schema = z.object({
     .default([]),
 })
 // ADD
-export default function CreateSession(
-  open: boolean,
-  setOpen: (open: boolean) => void,
+export type SessionFormData = z.infer<typeof schema>
+
+export default function SessionForm({
+  open,
+  setOpen,
+  sessionData,
+  onSubmit,
+}: {
+  open: boolean
+  setOpen: (open: boolean) => void
   sessionData?: {
     session?: StudySession
     resources?: Array<StudyResource>
-  },
-) {
+  }
+  onSubmit: (data: SessionFormData) => void
+}) {
+  console.log(sessionData)
   const form = useForm({
-    mode: 'onTouched',
+    mode: 'onSubmit', // TODO: work on onTouched
     resolver: zodResolver(schema),
     defaultValues: {
-      title: '',
-      notes: undefined,
-      startedAt: new Date(),
-      durationMinutes: 60,
+      title: sessionData?.session?.title || '',
+      notes: sessionData?.session?.notes || '',
+      tagId: sessionData?.session?.tagId || '',
+      studyResources: sessionData?.resources || [],
+      startedAt: sessionData?.session?.startedAt
+        ? new Date(sessionData.session.startedAt)
+        : new Date(),
+      durationMinutes: sessionData?.session?.durationMinutes || 60,
     },
   })
-  const api = useAuthenticatedRequest()
-  const mutation = useMutation({
-    mutationFn: (newSession: z.infer<typeof schema>) => {
-      return api.post('/sessions', newSession)
-    },
-    onError: (error) => {
-      console.log(error)
-    },
+  useEffect(() => {
+    if (sessionData?.session) {
+      form.reset({
+        title: sessionData.session.title,
+        notes: sessionData.session.notes ?? '',
+        tagId: sessionData.session.tagId,
+        studyResources: sessionData.resources ?? [],
+        startedAt: new Date(sessionData.session.startedAt),
+        durationMinutes: sessionData.session.durationMinutes,
+      })
+      setStudyResources(sessionData.resources ?? [])
+    }
+  }, [sessionData, form])
+  const watchedResources = useWatch({
+    control: form.control,
+    name: 'studyResources',
   })
-  const [studyResources, setStudyResources] = useState<Array<StudyResource>>([])
+  const [studyResources, setStudyResources] = useState<Array<StudyResource>>(
+    sessionData?.resources || [],
+  )
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="w-full  overflow-y-auto max-h-screen">
         <DialogHeader>
           <DialogTitle>
             {sessionData?.session ? 'Edit Session' : 'What did you learn?'}
           </DialogTitle>
         </DialogHeader>
         <form
-          onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
+          onSubmit={form.handleSubmit((data) => onSubmit(data))}
           className="space-y-4"
         >
           <Controller
@@ -231,21 +255,18 @@ export default function CreateSession(
                       className="min-w-12 flex-1 h-auto p-1 text-xs"
                       placeholder="eg. 1-5"
                       value={
-                        form
-                          .watch('studyResources')
-                          ?.find((r) => r.resourceId === resource.resourceId)
-                          ?.label || ''
+                        watchedResources?.find(
+                          (r) => r.resourceId === resource.resourceId,
+                        )?.label || ''
                       }
                       onChange={(e) => {
                         form.setValue(
                           'studyResources',
-                          form
-                            .watch('studyResources')
-                            ?.map((r) =>
-                              r.resourceId === resource.resourceId
-                                ? { ...r, label: e.target.value }
-                                : r,
-                            ),
+                          watchedResources?.map((r) =>
+                            r.resourceId === resource.resourceId
+                              ? { ...r, label: e.target.value }
+                              : r,
+                          ),
                         )
                       }}
                     />
@@ -267,6 +288,8 @@ export default function CreateSession(
                 <>
                   <Spinner /> Loading...
                 </>
+              ) : sessionData?.session ? (
+                'Save'
               ) : (
                 'Create'
               )}

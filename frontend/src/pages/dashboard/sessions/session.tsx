@@ -1,20 +1,35 @@
 import { useParams } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   BoxIcon,
   Calendar,
   Hourglass,
   MessageCircleQuestionMark,
+  Pencil,
+  Trash,
 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import type { StudyResource, StudySession } from '@/api/types'
+import type { SessionFormData } from '@/components/sessions/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import ResourceCard from '@/components/resources/Card'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import Tag from '@/components/primitives/Tag'
+import SessionForm from '@/components/sessions/SessionForm'
 
-export default function session() {
+export default function Session() {
   const { sessionId } = useParams({
     from: '/dashboard/study-sessions/$sessionId/',
   })
   const api = useAuthenticatedRequest()
+  const queryClient = useQueryClient()
+  const [open, setOpen] = useState(false)
   const { data, isLoading, error } = useQuery({
     queryKey: ['session', sessionId],
     queryFn: async () => {
@@ -25,19 +40,68 @@ export default function session() {
   const { data: studyResources } = useQuery({
     queryKey: ['studyResources', sessionId],
     queryFn: async () => {
-      const { data } = await api.get<Array<StudyResource>>(
+      const { data } = await api.get<Array<StudyResource & { label?: string }>>(
         `/sessions/${sessionId}/resources`,
       )
       return data
     },
   })
+  const mutation = useMutation({
+    mutationFn: (sessionData: SessionFormData) => {
+      return api.put(`/sessions/${sessionId}`, sessionData)
+    },
+    onSuccess: () => {
+      setOpen(false)
+      queryClient.invalidateQueries({ queryKey: ['session', sessionId] })
+      queryClient.invalidateQueries({ queryKey: ['studyResources', sessionId] })
+      toast.success('Session updated successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to update session')
+    },
+  })
   return (
-    <div className="flex flex-col max-w-7xl mx-auto gap-5">
-      <h1 className="text-2xl font-semibold">{data?.title}</h1>
-      <div className="flex flex-row gap-1">
-        <div className="flex gap-1">
+    <div className="flex flex-col max-w-7xl mx-auto gap-10 border rounded-xl p-4">
+      <div className="flex flex-row justify-between gap-1 items-center">
+        <h1 className="text-2xl font-semibold">{data?.title}</h1>
+        <div className="flex flex-row gap-2 self-start">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => setOpen(true)}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Edit</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="secondary" size="icon">
+                <Trash className="w-4 h-4 text-destructive" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Delete</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      <div className="flex flex-row gap-5 items-center flex-wrap">
+        {data?.tag && <Tag tag={data.tag} />}
+        <div className="flex gap-1 items-center">
+          <Hourglass className="w-4 h-4" />
+          <p className="text-sm text-gray-600 whitespace-nowrap">
+            {data?.durationMinutes} mins
+          </p>
+        </div>
+        <div className="flex gap-1 items-center">
           <Calendar className="w-4 h-4" />
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 whitespace-nowrap">
             {new Date(data?.startedAt ?? '').toLocaleString(undefined, {
               year: 'numeric',
               month: 'numeric',
@@ -47,13 +111,9 @@ export default function session() {
             })}
           </p>
         </div>
-        <div className="flex gap-1">
-          <Hourglass className="w-4 h-4" />
-          <p className="text-sm text-gray-600">{data?.durationMinutes} mins</p>
-        </div>
       </div>
       <div className="text-sm text-gray-600">{data?.notes}</div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <div className="flex flex-row gap-2 items-center">
           <BoxIcon className="w-4 h-4 md:w-6 md:h-6 antialiased" />
           <h2 className="text-lg font-semibold">Resources</h2>
@@ -65,9 +125,15 @@ export default function session() {
             </div>
           )}
           {studyResources?.map((resource) => (
-            <ResourceCard key={resource.resourceId} resource={resource} />
+            <ResourceCard
+              key={resource.resourceId}
+              resource={resource}
+              label={resource.label}
+            />
           ))}
         </div>
+      </div>
+      <div className="flex flex-col gap-5">
         <div className="flex flex-row gap-2 items-center">
           <MessageCircleQuestionMark className="w-4 h-4 md:w-6 md:h-6 antialiased" />
           <h2 className="text-lg font-semibold">Quizzes</h2>
@@ -75,7 +141,7 @@ export default function session() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {studyResources?.length === 0 && (
             <div className="text-sm text-gray-600">
-              No quizzes added to this session
+              No quizzes created for this session
             </div>
           )}
           {studyResources?.map((resource) => (
@@ -83,6 +149,12 @@ export default function session() {
           ))}
         </div>
       </div>
+      <SessionForm
+        open={open}
+        setOpen={setOpen}
+        sessionData={{ session: data, resources: studyResources }}
+        onSubmit={(data) => mutation.mutate(data)}
+      />
     </div>
   )
 }

@@ -46,7 +46,7 @@ export function ResourceDialog({
   open: boolean
   setOpen: (open: boolean) => void
   resource?: StudyResource
-  onSubmit: (data: ResourceDialogForm) => void
+  onSubmit: (data: z.infer<typeof schema>) => void
   isLoading?: boolean
   mutationError?: Error
 }) {
@@ -59,9 +59,6 @@ export function ResourceDialog({
       url: resource?.url || undefined,
     },
   })
-  const [error, setError] = useState<Error | undefined>(mutationError)
-  if (error) {
-  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[425px]">

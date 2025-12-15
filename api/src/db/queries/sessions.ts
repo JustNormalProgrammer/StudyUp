@@ -109,16 +109,19 @@ export async function updateStudySession(
 
 export async function updateStudySessionResources(
   sessionId: string,
-  resourceIds: string[]
+  resources: { resourceId: string; label?: string }[]
 ) {
-  const resourcesToAdd = resourceIds.map((resourceId) => ({
+  const resourcesToAdd = resources.map(({ resourceId, label }) => ({
     sessionId,
     resourceId,
+    label,
   }));
   await db
     .delete(studySessionsStudyResources)
     .where(eq(studySessionsStudyResources.sessionId, sessionId));
-  await db.insert(studySessionsStudyResources).values(resourcesToAdd);
+  if(resourcesToAdd.length > 0) {
+    await db.insert(studySessionsStudyResources).values(resourcesToAdd);
+  }
   return;
 }
 

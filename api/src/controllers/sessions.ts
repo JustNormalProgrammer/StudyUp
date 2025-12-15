@@ -97,7 +97,7 @@ export const replaceSession = async (
     const { sessionId } = req.params;
     const { studyResources, ...sessionData } = matchedData<
       Omit<StudySessionCreate, "userId"> & {
-        studyResources: string[];
+        studyResources: { resourceId: string; label?: string }[];
       }
     >(req);
     const existingSession = await sessions.getSessionById(

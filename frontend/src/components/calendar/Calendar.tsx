@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import {
+  BookOpen,
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  MessageCircleQuestionMark,
 } from 'lucide-react'
 import interactionPlugin from '@fullcalendar/interaction'
 import { toast } from 'sonner'
@@ -108,6 +110,12 @@ export default function Calendar() {
     const dayEvents = allEvents.filter(
       (e) => e.startStr.split('T')[0] === clickedDate,
     )
+    const quizzesAttemptsEvents = dayEvents.filter(
+      (e) => e.extendedProps.type === 'quiz',
+    )
+    const sessionsEvents = dayEvents.filter(
+      (e) => e.extendedProps.type === 'session',
+    )
 
     setSelectedEvents(dayEvents)
     setSelectedDate(new Date(clickedDate).toLocaleDateString('pl-PL'))
@@ -174,7 +182,7 @@ export default function Calendar() {
             eventSources={[
               {
                 events: fetchEvents,
-                failure: (error) => toast.error('Failed to fetch events'),
+                failure: () => toast.error('Failed to fetch events'),
               },
             ]}
             datesSet={(arg) => setCurrentMonthTitle(arg.view.title)}

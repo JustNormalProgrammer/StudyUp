@@ -12,7 +12,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
 
 export function DatePicker({
   onChange,
@@ -29,7 +28,6 @@ export function DatePicker({
     minute: '2-digit',
     hour12: false,
   })
-  console.log(time)
   return (
     <div className={className}>
       <div className="flex flex-col gap-2">

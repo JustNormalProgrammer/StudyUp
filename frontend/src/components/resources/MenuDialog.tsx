@@ -48,8 +48,22 @@ export function DropdownMenuDialog({
       toast.success('Resource updated successfully')
       setShowEditDialog(false)
     },
-    onError: (error) => {
+    onError: () => {
       toast.error('Failed to update resource')
+    },
+  })
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.delete(`/resources/${resource.resourceId}`)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resources'] })
+      queryClient.invalidateQueries({ queryKey: ['studyResources'] })
+      toast.success('Resource deleted successfully')
+    },
+    onError: () => {
+      toast.error('Failed to delete resource')
     },
   })
   return (
@@ -76,13 +90,16 @@ export function DropdownMenuDialog({
                 <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem onSelect={() => setShowEditDialog(true)}>
+            <DropdownMenuItem onSelect={() => setShowEditDialog(true)} disabled={!!inSessionRemoveHandler}>
               <SquarePenIcon size={16} />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() => {}}
+              onSelect={() => {
+                deleteMutation.mutate()
+              }}
               className="text-destructive focus:bg-destructive/10 focus:text-destructive flex flex-row gap-2 items-center"
+              disabled={!!inSessionRemoveHandler}
             >
               <TrashIcon size={16} className="text-destructive" />
               Delete

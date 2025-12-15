@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import axios from 'axios'
 import type { ResourceDialogForm } from '@/components/resources/Dialog'
 import type { StudyResource } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
@@ -32,7 +31,7 @@ function Recources() {
       setShowCreateDialog(false)
       toast.success('Resource created successfully')
     },
-    onError: (error) => {
+    onError: () => {
       toast.error('Failed to create resource')
     },
   })
