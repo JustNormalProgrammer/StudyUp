@@ -66,7 +66,6 @@ export async function getSessionById(sessionId: string, userId: string) {
   const [result] = await db
     .select({
       sessionId: studySessions.sessionId,
-      userId: studySessions.userId,
       tagId: tags.tagId,
       title: studySessions.title,
       notes: studySessions.notes,

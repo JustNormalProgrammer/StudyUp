@@ -18,7 +18,8 @@ export default function ResourceCard({
 }) {
   
   return (
-    <Card className="flex flex-row p-4 gap-5 items-center flex-9">
+    <Card className="flex flex-row p-4 gap-7 items-center flex-9 overflow-hidden box-border relative">
+      <div className="absolute top-0 left-0 h-full w-15 bg-gray-200 z-0"></div>
       <ResourceItem resource={resource} label={label} value={value} setValue={setValue} />
       <DropdownMenuDialog resource={resource} inSessionRemoveHandler={inSessionRemoveHandler}/>
     </Card>

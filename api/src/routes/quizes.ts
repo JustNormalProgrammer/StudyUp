@@ -8,6 +8,7 @@ import {
   getUserQuizAttempts,
   getUserQuizzes,
   createQuizAttempt,
+  createQuiz,
 } from "../controllers/quizzes";
 import { body, param } from "express-validator";
 import validate from "../utils/validate";
@@ -39,5 +40,5 @@ router.post(
 router.get("/:quizId/attempts", requiredAuth, getUserQuizAttempts);
 router.get("/attempts/:quizAttemptId", requiredAuth, getQuizAttempt);
 router.delete("/attempts/:quizAttemptId", requiredAuth, deleteQuizAttempt);
-
+router.post("/generate", requiredAuth, createQuiz);
 export default router;

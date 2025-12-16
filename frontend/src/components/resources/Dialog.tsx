@@ -174,7 +174,7 @@ export function ResourceDialog({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="shadow-md">
               {isLoading ? (
                 <>
                   <Spinner /> Loading...

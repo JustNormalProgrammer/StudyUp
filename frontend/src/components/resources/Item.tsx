@@ -34,8 +34,8 @@ export default function ResourceItem({
   const ResourceTypeIcon = ResourceTypeIcons[resource.type]
   return (
     <>
-      <ResourceTypeIcon size={26} className="shrink-0" />
-      <div className="flex flex-col gap-1 w-full">
+      <ResourceTypeIcon size={26} className="shrink-0 z-10" />
+      <div className="flex flex-col gap-1 w-full overflow-hidden">
         <div className="flex flex-row gap-2 items-center justify-between">
           <ConditionalWrapper
             condition={!!resource.url && !disableLink}
@@ -59,12 +59,17 @@ export default function ResourceItem({
             </div>
           </ConditionalWrapper>
           {label && (
-            <div className="text-xs px-2 py-1 bg-primary/40 rounded-xl">
+            <div className="text-xs px-2 py-1 text-emerald-900 font-bold bg-primary/40 rounded-xl whitespace-nowrap overflow-hidden text-ellipsis line-clamp-1">
               {label}
             </div>
           )}
           {setValue && (
-            <Input value={value} onChange={(e) => setValue(e.target.value)} className="w-20 text-xs p-0.5 h-fit" name="label" />
+            <Input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-20 text-xs p-0.5 h-fit box-border m-0.5"
+              name="label"
+            />
           )}
         </div>
         {resource.desc && (

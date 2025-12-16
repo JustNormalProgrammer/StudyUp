@@ -225,27 +225,11 @@ export default function CreateSession(
                           ),
                         )
                       }}
-                    />
-                    <Input
-                      name="label"
-                      className="min-w-12 flex-1 h-auto p-1 text-xs"
-                      placeholder="eg. 1-5"
-                      value={
-                        form
-                          .watch('studyResources')
-                          ?.find((r) => r.resourceId === resource.resourceId)
-                          ?.label || ''
-                      }
-                      onChange={(e) => {
+                      value={form.getValues('studyResources')?.find((r) => r.resourceId === resource.resourceId)?.label || ''}
+                      setValue={(value) => {
                         form.setValue(
                           'studyResources',
-                          form
-                            .watch('studyResources')
-                            ?.map((r) =>
-                              r.resourceId === resource.resourceId
-                                ? { ...r, label: e.target.value }
-                                : r,
-                            ),
+                          form.getValues('studyResources')?.map((r) => r.resourceId === resource.resourceId ? { ...r, label: value } : r),
                         )
                       }}
                     />
