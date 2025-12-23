@@ -19,8 +19,11 @@ import { Route as DashboardHomeRouteImport } from './routes/dashboard/home'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
 import { Route as DashboardStudySessionsIndexRouteImport } from './routes/dashboard/study-sessions/index'
 import { Route as DashboardResourcesIndexRouteImport } from './routes/dashboard/resources/index'
+import { Route as DashboardQuizzesIndexRouteImport } from './routes/dashboard/quizzes/index'
 import { Route as DashboardStudySessionsCreateRouteImport } from './routes/dashboard/study-sessions/create'
 import { Route as DashboardStudySessionsSessionIdIndexRouteImport } from './routes/dashboard/study-sessions/$sessionId/index'
+import { Route as DashboardQuizzesQuizIdIndexRouteImport } from './routes/dashboard/quizzes/$quizId/index'
+import { Route as DashboardQuizzesQuizIdAttemptsAttemptIdRouteImport } from './routes/dashboard/quizzes/$quizId/attempts/$attemptId'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -73,6 +76,11 @@ const DashboardResourcesIndexRoute = DashboardResourcesIndexRouteImport.update({
   path: '/resources/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardQuizzesIndexRoute = DashboardQuizzesIndexRouteImport.update({
+  id: '/quizzes/',
+  path: '/quizzes/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardStudySessionsCreateRoute =
   DashboardStudySessionsCreateRouteImport.update({
     id: '/study-sessions/create',
@@ -83,6 +91,18 @@ const DashboardStudySessionsSessionIdIndexRoute =
   DashboardStudySessionsSessionIdIndexRouteImport.update({
     id: '/study-sessions/$sessionId/',
     path: '/study-sessions/$sessionId/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardQuizzesQuizIdIndexRoute =
+  DashboardQuizzesQuizIdIndexRouteImport.update({
+    id: '/quizzes/$quizId/',
+    path: '/quizzes/$quizId/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardQuizzesQuizIdAttemptsAttemptIdRoute =
+  DashboardQuizzesQuizIdAttemptsAttemptIdRouteImport.update({
+    id: '/quizzes/$quizId/attempts/$attemptId',
+    path: '/quizzes/$quizId/attempts/$attemptId',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
 
@@ -96,9 +116,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
+  '/dashboard/quizzes': typeof DashboardQuizzesIndexRoute
   '/dashboard/resources': typeof DashboardResourcesIndexRoute
   '/dashboard/study-sessions': typeof DashboardStudySessionsIndexRoute
+  '/dashboard/quizzes/$quizId': typeof DashboardQuizzesQuizIdIndexRoute
   '/dashboard/study-sessions/$sessionId': typeof DashboardStudySessionsSessionIdIndexRoute
+  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,9 +132,12 @@ export interface FileRoutesByTo {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
+  '/dashboard/quizzes': typeof DashboardQuizzesIndexRoute
   '/dashboard/resources': typeof DashboardResourcesIndexRoute
   '/dashboard/study-sessions': typeof DashboardStudySessionsIndexRoute
+  '/dashboard/quizzes/$quizId': typeof DashboardQuizzesQuizIdIndexRoute
   '/dashboard/study-sessions/$sessionId': typeof DashboardStudySessionsSessionIdIndexRoute
+  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,9 +150,12 @@ export interface FileRoutesById {
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
+  '/dashboard/quizzes/': typeof DashboardQuizzesIndexRoute
   '/dashboard/resources/': typeof DashboardResourcesIndexRoute
   '/dashboard/study-sessions/': typeof DashboardStudySessionsIndexRoute
+  '/dashboard/quizzes/$quizId/': typeof DashboardQuizzesQuizIdIndexRoute
   '/dashboard/study-sessions/$sessionId/': typeof DashboardStudySessionsSessionIdIndexRoute
+  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,9 +169,12 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
+    | '/dashboard/quizzes'
     | '/dashboard/resources'
     | '/dashboard/study-sessions'
+    | '/dashboard/quizzes/$quizId'
     | '/dashboard/study-sessions/$sessionId'
+    | '/dashboard/quizzes/$quizId/attempts/$attemptId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,9 +185,12 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard'
     | '/dashboard/study-sessions/create'
+    | '/dashboard/quizzes'
     | '/dashboard/resources'
     | '/dashboard/study-sessions'
+    | '/dashboard/quizzes/$quizId'
     | '/dashboard/study-sessions/$sessionId'
+    | '/dashboard/quizzes/$quizId/attempts/$attemptId'
   id:
     | '__root__'
     | '/'
@@ -167,9 +202,12 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
+    | '/dashboard/quizzes/'
     | '/dashboard/resources/'
     | '/dashboard/study-sessions/'
+    | '/dashboard/quizzes/$quizId/'
     | '/dashboard/study-sessions/$sessionId/'
+    | '/dashboard/quizzes/$quizId/attempts/$attemptId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -251,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardResourcesIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/quizzes/': {
+      id: '/dashboard/quizzes/'
+      path: '/quizzes'
+      fullPath: '/dashboard/quizzes'
+      preLoaderRoute: typeof DashboardQuizzesIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/study-sessions/create': {
       id: '/dashboard/study-sessions/create'
       path: '/study-sessions/create'
@@ -265,6 +310,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudySessionsSessionIdIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/quizzes/$quizId/': {
+      id: '/dashboard/quizzes/$quizId/'
+      path: '/quizzes/$quizId'
+      fullPath: '/dashboard/quizzes/$quizId'
+      preLoaderRoute: typeof DashboardQuizzesQuizIdIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/quizzes/$quizId/attempts/$attemptId': {
+      id: '/dashboard/quizzes/$quizId/attempts/$attemptId'
+      path: '/quizzes/$quizId/attempts/$attemptId'
+      fullPath: '/dashboard/quizzes/$quizId/attempts/$attemptId'
+      preLoaderRoute: typeof DashboardQuizzesQuizIdAttemptsAttemptIdRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
@@ -274,9 +333,12 @@ interface DashboardRouteRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardStudySessionsCreateRoute: typeof DashboardStudySessionsCreateRoute
+  DashboardQuizzesIndexRoute: typeof DashboardQuizzesIndexRoute
   DashboardResourcesIndexRoute: typeof DashboardResourcesIndexRoute
   DashboardStudySessionsIndexRoute: typeof DashboardStudySessionsIndexRoute
+  DashboardQuizzesQuizIdIndexRoute: typeof DashboardQuizzesQuizIdIndexRoute
   DashboardStudySessionsSessionIdIndexRoute: typeof DashboardStudySessionsSessionIdIndexRoute
+  DashboardQuizzesQuizIdAttemptsAttemptIdRoute: typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -285,10 +347,14 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardStudySessionsCreateRoute: DashboardStudySessionsCreateRoute,
+  DashboardQuizzesIndexRoute: DashboardQuizzesIndexRoute,
   DashboardResourcesIndexRoute: DashboardResourcesIndexRoute,
   DashboardStudySessionsIndexRoute: DashboardStudySessionsIndexRoute,
+  DashboardQuizzesQuizIdIndexRoute: DashboardQuizzesQuizIdIndexRoute,
   DashboardStudySessionsSessionIdIndexRoute:
     DashboardStudySessionsSessionIdIndexRoute,
+  DashboardQuizzesQuizIdAttemptsAttemptIdRoute:
+    DashboardQuizzesQuizIdAttemptsAttemptIdRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

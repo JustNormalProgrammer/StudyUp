@@ -8,7 +8,6 @@ import {
   getUserQuizAttempts,
   getUserQuizzes,
   createQuizAttempt,
-  createQuiz,
 } from "../controllers/quizzes";
 import { body, param } from "express-validator";
 import validate from "../utils/validate";
@@ -22,23 +21,23 @@ const validateCreateQuizAttempt = [
     .isArray({ min: 1 })
     .withMessage("Answers must be an array and cannot be empty"),
   body("userAttemptContent.*.answers.*")
-    .isBoolean()
+    .isIn(["A", "B", "C", "D", "E", "F"])
     .withMessage("Answers must be a boolean"),
 ];
 
 const router = Router();
 
 router.get("/", requiredAuth, getUserQuizzes);
-router.get("/:quizId", requiredAuth, getQuiz);
-router.delete("/:quizId", requiredAuth, deleteQuiz);
+router.get("/attempts/:quizAttemptId", requiredAuth, getQuizAttempt);
+router.delete("/attempts/:quizAttemptId", requiredAuth, deleteQuizAttempt);
+router.get("/:quizId/attempts", requiredAuth, getUserQuizAttempts);
 router.post(
   "/:quizId/attempts",
   requiredAuth,
   validate(validateCreateQuizAttempt),
   createQuizAttempt
 );
-router.get("/:quizId/attempts", requiredAuth, getUserQuizAttempts);
-router.get("/attempts/:quizAttemptId", requiredAuth, getQuizAttempt);
-router.delete("/attempts/:quizAttemptId", requiredAuth, deleteQuizAttempt);
-router.post("/generate", requiredAuth, createQuiz);
+router.get("/:quizId", requiredAuth, getQuiz);
+router.delete("/:quizId", requiredAuth, deleteQuiz);
+
 export default router;

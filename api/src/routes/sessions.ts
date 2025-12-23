@@ -7,6 +7,7 @@ import {
   createSession,
   deleteSession,
   replaceSession,
+  createQuiz
 } from "../controllers/sessions";
 import { body, query } from "express-validator";
 import validate from "../utils/validate";
@@ -90,18 +91,32 @@ const validateGetSessions = [
     .withMessage("Limit must be a positive integer"),
 ];
 
+const validateCreateQuiz = [
+  body("title").notEmpty().withMessage("Title is required"),
+  body("numberOfQuestions")
+    .notEmpty()
+    .withMessage("Number of questions is required")
+    .isInt({ min: 1, max: 10 })
+    .withMessage(
+      "Number of questions must be a positive integer between 1 and 10"
+    ),
+  body("isMultipleChoice")
+    .notEmpty()
+    .withMessage("Is multiple choice is required")
+    .isBoolean()
+    .withMessage("Is multiple choice must be a boolean"),
+  body("additionalInfo")
+    .optional()
+    .notEmpty()
+    .withMessage("Additional information cannot be empty"),
+];
+
 const router = Router();
 
 router.get("/", requiredAuth, validate(validateGetSessions), getSessions);
 router.post("/", requiredAuth, validate(validateCreateSession), createSession);
 router.get("/:sessionId", requiredAuth, getSessionById);
 router.get("/:sessionId/resources", requiredAuth, getResourcesBySessionId);
-/* router.patch(
-  "/:sessionId",
-  requiredAuth,
-  validate(validateUpdateSession),
-  updateSession
-); */
 router.put(
   "/:sessionId",
   requiredAuth,
@@ -109,4 +124,10 @@ router.put(
   replaceSession
 );
 router.delete("/:sessionId", requiredAuth, deleteSession);
+router.post(
+  "/:sessionId/quiz",
+  requiredAuth,
+  validate(validateCreateQuiz),
+  createQuiz
+);
 export default router;

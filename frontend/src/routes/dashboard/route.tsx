@@ -25,9 +25,9 @@ function AppLayoutComponent() {
     <>
       <SidebarProvider defaultOpen={false}>
         <AppSidebar />
-        <div className="w-full">
+        <div className="w-full overflow-hidden">
           <Header />
-          <main className="p-3 md:p-10 h-full">
+          <main className="p-5 md:p-10 h-full">
             <Outlet />
           </main>
         </div>

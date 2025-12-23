@@ -106,6 +106,7 @@ export const quizzes = pgTable("quizzes", {
   title: varchar({ length: 255 }).notNull(),
   isMultipleChoice: boolean().default(false).notNull(),
   numberOfQuestions: integer().notNull(),
+  maxScore: integer().notNull(),
   quizContent: jsonb().notNull(),
 });
 
@@ -116,7 +117,7 @@ export const quizAttempts = pgTable("quiz_attempts", {
     .references(() => quizzes.quizId, { onDelete: "cascade" }),
   finishedAt: timestamp().defaultNow().notNull(),
   userAttemptContent: jsonb().notNull(),
-  score: numeric({ precision: 5, scale: 2 }),
+  score: numeric().notNull(),
 });
 
 export const challenges = pgTable("challenges", {

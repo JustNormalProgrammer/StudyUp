@@ -284,28 +284,6 @@ async function seed() {
     // ----------------------------------------
     console.log("📝 Dodawanie quizów...");
 
-    await db.insert(quizzes).values({
-      userId,
-      sessionId: insertedSessions[4].sessionId, // Historia
-      title: "II Wojna Światowa - Quiz",
-      isMultipleChoice: true,
-      numberOfQuestions: 10,
-      quizContent: {
-        questions: [
-          {
-            content: "Kiedy rozpoczęła się II wojna światowa?",
-            isMultipleChoice: true,
-            choices: [
-              { content: "1 września 1939", isCorrect: true },
-              { content: "3 września 1939", isCorrect: false },
-              { content: "7 grudnia 1941", isCorrect: false },
-              { content: "6 czerwca 1944", isCorrect: false },
-            ],
-          },
-        ],
-      },
-    });
-
     console.log("✅ Seedowanie zakończone!");
   } catch (error) {
     console.error("❌ Błąd podczas seedowania:", error);

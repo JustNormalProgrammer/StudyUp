@@ -53,9 +53,11 @@ export default function Sessions() {
     <div className="flex flex-col gap-4 max-w-7xl mx-auto">
       <div className="flex flex-row gap-2">
         <Input
+          id="search"
           placeholder="Search resources..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
         <Button onClick={() => setShowCreateSessionDialog(true)}>
           <CirclePlus />
@@ -85,7 +87,7 @@ export default function Sessions() {
               style={{ backgroundColor: session.tag.color }}
             ></div>
             <CardContent className="flex flex-row items-center gap-5">
-              <div className="flex flex-col gap-2 w-2xl">
+              <div className="flex flex-col gap-2 w-2xl ">
                 <CardTitle className="text-sm text-ellipsis overflow-hidden ">
                   {session.title}
                 </CardTitle>

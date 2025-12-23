@@ -70,14 +70,12 @@ export function DropdownMenuDialog({
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
+          <button
             aria-label="Open menu"
-            size="icon-sm"
-            className={cn('', className)}
+            className={cn('p-2', className)}
           >
-            <MoreHorizontalIcon />
-          </Button>
+            <MoreHorizontalIcon size={16} />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40" align="end">
           <DropdownMenuGroup>

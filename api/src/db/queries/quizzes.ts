@@ -9,11 +9,21 @@ export interface QuizAttemptCreate {
   score: string;
 }
 
+export interface QuizCreate {
+  userId: string;
+  sessionId: string;
+  title: string;
+  isMultipleChoice: boolean;
+  numberOfQuestions: number;
+  maxScore: number;
+  quizContent: any;
+}
+
 export async function getUserQuizzes(userId: string) {
   const result = await db
     .select({
       quizId: quizzes.quizId,
-      userId: quizzes.userId,
+      sessionId: quizzes.sessionId,
       title: quizzes.title,
       numberOfQuestions: quizzes.numberOfQuestions,
       isMultipleChoice: quizzes.isMultipleChoice,
@@ -35,11 +45,12 @@ export async function getQuiz(quizId: string, userId: string) {
   const [quiz] = await db
     .select({
       quizId: quizzes.quizId,
-      userId: quizzes.userId,
+      sessionId: quizzes.sessionId,
       title: quizzes.title,
       isMultipleChoice: quizzes.isMultipleChoice,
       createdAt: quizzes.createdAt,
       numberOfQuestions: quizzes.numberOfQuestions,
+      maxScore: quizzes.maxScore,
       tag: {
         tagId: tags.tagId,
         content: tags.content,
@@ -66,6 +77,10 @@ export async function getQuizzesBySessionId(sessionId: string, userId: string) {
     .from(quizzes)
     .where(and(eq(quizzes.sessionId, sessionId), eq(quizzes.userId, userId)));
   return result;
+}
+export async function createQuiz(data: QuizCreate) {
+  const [quiz] = await db.insert(quizzes).values(data).returning();
+  return quiz;
 }
 export async function getQuizAttempts(quizId: string, userId: string) {
   const result = await db
@@ -115,7 +130,6 @@ export async function getQuizAttempt(quizAttemptId: string, userId: string) {
   const [quizAttempt] = await db
     .select({
       quizAttemptId: quizAttempts.quizAttemptId,
-      userId: quizzes.userId,
       quizId: quizAttempts.quizId,
       finishedAt: quizAttempts.finishedAt,
       userAttemptContent: quizAttempts.userAttemptContent,
@@ -152,6 +166,7 @@ export default {
   getQuiz,
   getQuizAttempts,
   getQuizAttempt,
+  createQuiz,
   createQuizAttempt,
   deleteQuiz,
   deleteQuizAttempt,
