@@ -78,7 +78,7 @@ export default function Session() {
   return (
     <div className="flex flex-col max-w-7xl mx-auto gap-3 md:gap-10 border rounded-xl p-4">
       <div className="flex flex-col md:flex-row justify-between gap-1 items-center">
-        <h1 className="text-2xl font-semibold">{data?.title}</h1>
+        <h1 className="text-2xl font-semibold break-all text-ellipsis overflow-hidden">{data?.title}</h1>
       </div>
       <div className="flex flex-row gap-5 items-center flex-wrap justify-between">
         <div className="flex flex-row gap-5 items-center flex-wrap">

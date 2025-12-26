@@ -7,12 +7,16 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
+  Hourglass,
   MessageCircleQuestionMark,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-
 import { Link, useNavigate } from '@tanstack/react-router'
+import Tag from '../primitives/Tag'
+import DateEvent from './DateEvent'
+import Event from './Event'
+import type { Tag as TagType } from '@/api/types'
 import { useSidebar } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
@@ -24,8 +28,8 @@ import {
 } from '@/components/ui/dialog'
 import { hexToRgba } from '@/utils/hexToRgba'
 import { Separator } from '@/components/ui/separator'
-
 import '@/components/calendar/styles.css'
+import { getColor } from '@/utils/utilFunc'
 
 type CalendarEvent = {
   title: string
@@ -36,8 +40,11 @@ type CalendarEvent = {
   extendedProps: {
     sessionId?: string
     attemptId?: string
-    score?: number
+    score?: string
     quizId?: string
+    durationMinutes?: number
+    tag?: TagType
+    maxScore?: number
   }
 }
 
@@ -83,6 +90,8 @@ export default function Calendar() {
           type: 'session',
           extendedProps: {
             sessionId: session.sessionId,
+            durationMinutes: session.durationMinutes,
+            tag: session.tag,
           },
         }),
       )
@@ -98,40 +107,21 @@ export default function Calendar() {
             attemptId: attempt.quizAttemptId,
             score: attempt.score,
             quizId: attempt.quizId,
+            tag: attempt.tag,
+            maxScore: attempt.maxScore,
           },
         }))
-
+      console.log('sessions:', sessionsEvents)
       return { sessions: sessionsEvents, quizzes: quizzesAttemptsEvents }
     },
   })
 
   function renderEventContent(eventInfo: any) {
-    return (
-      <div className="w-full m-0 p-1 border cursor-pointer rounded-md overflow-hidden relative hover:bg-muted">
-        <div
-          className="w-1 h-full absolute top-0 left-0"
-          style={{ backgroundColor: eventInfo.event.extendedProps.colorBorder }}
-        />
-        <div className="flex flex-row items-center gap-2 ml-2 text-muted-foreground  ">
-          <div className="w-fit self-start">
-            {eventInfo.event.extendedProps.type === 'session' ? (
-              <BookOpenIcon size={14} />
-            ) : (
-              <MessageCircleQuestionMark size={14} />
-            )}
-          </div>
-          <div
-            className="text-xs font-medium hidden  md:line-clamp-3 "
-          >
-            {eventInfo.event.title}
-          </div>
-        </div>
-      </div>
-    )
+    return <Event event={eventInfo.event} />
   }
 
   function handleDateClick(info: any) {
-    setSelectedDate(info.dateStr)
+    setSelectedDate(info.date.toDateString())
     setDialogOpen(true)
   }
   function handleEventClick(info: any) {
@@ -154,12 +144,13 @@ export default function Calendar() {
   const quizzes = events?.quizzes ?? []
 
   const sessionsForDate = sessions.filter(
-    (session) => session.start.split('T')[0] === selectedDate,
+    (session) => new Date(session.start).toDateString() === selectedDate,
   )
   const quizzesForDate = quizzes.filter(
-    (quiz) => quiz.start.split('T')[0] === selectedDate,
+    (quiz) => new Date(quiz.start).toDateString() === selectedDate,
   )
-
+  console.log('sessionsForDate:', sessionsForDate)
+  console.log('quizzesForDate:', quizzesForDate)
   return (
     <>
       <div className="overflow-y-hidden">
@@ -251,7 +242,21 @@ export default function Calendar() {
                       params={{ sessionId: session.extendedProps.sessionId! }}
                       key={session.extendedProps.sessionId}
                     >
-                      <div>{session.title}</div>
+                      <DateEvent
+                        title={session.title}
+                        colorBorder={session.colorBorder}
+                        secInfo={
+                          <div className="flex flex-row items-center gap-5">
+                            <Tag tag={session.extendedProps.tag!} size="sm" />
+                            <div className="flex flex-row items-center gap-1">
+                              <Hourglass className="w-3 h-4" />
+                              <span className="text-xs text-gray-600">
+                                {session.extendedProps.durationMinutes} mins
+                              </span>
+                            </div>
+                          </div>
+                        }
+                      />
                     </Link>
                   ))
                 )}
@@ -263,24 +268,46 @@ export default function Calendar() {
                 <div className="text-md font-medium">Quiz attempts</div>
               </div>
               <Separator />
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
                 {quizzesForDate.length === 0 && (
                   <div className="text-sm text-gray-600">
                     No quiz attempts found for this date
                   </div>
                 )}
-                {quizzesForDate.map((quiz) => (
-                  <Link
-                    to="/dashboard/quizzes/$quizId/attempts/$attemptId"
-                    params={{
-                      quizId: quiz.extendedProps.quizId!,
-                      attemptId: quiz.extendedProps.attemptId!,
-                    }}
-                    key={quiz.extendedProps.attemptId}
-                  >
-                    <div>{quiz.title}</div>
-                  </Link>
-                ))}
+                {quizzesForDate.map((quiz) => {
+                  const percent =
+                    (Number(quiz.extendedProps.score) / Number(quiz.extendedProps.maxScore)) * 100
+                  return (
+                    <Link
+                      to="/dashboard/quizzes/$quizId/attempts/$attemptId"
+                      params={{
+                        quizId: quiz.extendedProps.quizId!,
+                        attemptId: quiz.extendedProps.attemptId!,
+                      }}
+                      key={quiz.extendedProps.attemptId}
+                    >
+                      <DateEvent
+                        title={quiz.title}
+                        colorBorder={quiz.colorBorder}
+                        secInfo={
+                          <div className="flex flex-row items-center gap-5">
+                            <Tag tag={quiz.extendedProps.tag!} size="sm" />
+                            <div
+                              className="text-xs font-semibold bg-(--score-color)/10 px-2 py-1 rounded-md"
+                              style={{
+                                ['--score-color' as any]: getColor(
+                                  percent,
+                                ),
+                              }}
+                            >
+                              {quiz.extendedProps.score} / {quiz.extendedProps.maxScore}
+                            </div>
+                          </div>
+                        }
+                      />
+                    </Link>
+                  )
+                })}
               </div>
             </div>
           </div>

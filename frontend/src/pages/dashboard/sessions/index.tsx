@@ -92,7 +92,7 @@ export default function Sessions() {
             ></div>
             <CardContent className="flex flex-row items-center gap-5">
               <div className="flex flex-col gap-2 w-2xl ">
-                <CardTitle className="text-sm text-ellipsis overflow-hidden ">
+                <CardTitle className="text-sm break-all line-clamp-3 text-ellipsis overflow-hidden ">
                   {session.title}
                 </CardTitle>
                 <CardDescription className="text-xs md:text-sm text-gray-600  line-clamp-1 text-ellipsis overflow-hidden">

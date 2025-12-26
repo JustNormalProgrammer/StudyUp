@@ -5,10 +5,12 @@ import { cn } from '@/lib/utils'
 export default function Tag({
   tag,
   className,
+  size = 'md',
   onClick,
 }: {
   tag: TagType
   className?: string
+  size?: 'sm' | 'md'
   onClick?: () => void
 }) {
   return (
@@ -23,10 +25,10 @@ export default function Tag({
       onClick={onClick}
     >
       <div
-        className="w-2 h-2 rounded-full"
+        className={`${size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full`}
         style={{ backgroundColor: tag.color || '' }}
       />
-      <div className="text-sm">{tag.content}</div>
+      <div className={`${size === 'sm' ? 'text-xs font-medium' : 'text-sm'}`}>{tag.content}</div>
     </div>
   )
 }

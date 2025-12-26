@@ -1,4 +1,4 @@
-import { useParams } from '@tanstack/react-router'
+import { Link, useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
   PolarAngleAxis,
@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import QuizHeader from '@/components/quiz/QuizHeader'
 import { ChartContainer } from '@/components/ui/chart'
 import { getColor } from '@/utils/utilFunc'
+import { Button } from '@/components/ui/button'
 
 export default function Attempt() {
   const { quizId, attemptId } = useParams({
@@ -80,6 +81,11 @@ export default function Attempt() {
         numberOfQuestions={quizQuery.data.numberOfQuestions}
         isMultipleChoice={quizQuery.data.isMultipleChoice}
         createdAt={attemptQuery.data.finishedAt}
+        ContextButton={
+          <Button variant="link" className="p-0 text-muted-foreground">
+            <Link to="/dashboard/quizzes/$quizId" params={{ quizId: quizId }}>Quiz</Link>
+          </Button>
+        }
       />
       <div className="flex flex-row items-center justify-center gap-0">
         <ChartContainer

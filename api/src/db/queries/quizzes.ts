@@ -89,10 +89,12 @@ export async function getQuizAttempts(quizId: string, userId: string) {
       quizId: quizAttempts.quizId,
       finishedAt: quizAttempts.finishedAt,
       score: quizAttempts.score,
+      maxScore: quizzes.maxScore,
     })
     .from(quizAttempts)
     .innerJoin(quizzes, eq(quizAttempts.quizId, quizzes.quizId))
-    .where(and(eq(quizAttempts.quizId, quizId), eq(quizzes.userId, userId)));
+    .where(and(eq(quizAttempts.quizId, quizId), eq(quizzes.userId, userId)))
+    .orderBy(desc(quizAttempts.finishedAt));
   return result;
 }
 
@@ -105,6 +107,7 @@ export async function getUserAttempts(data: PaginationQuery) {
       quizTitle: quizzes.title,
       score: quizAttempts.score,
       finishedAt: quizAttempts.finishedAt,
+      maxScore: quizzes.maxScore,
       tag: {
         tagId: tags.tagId,
         content: tags.content,
