@@ -18,19 +18,26 @@ import { Input } from '@/components/ui/input'
 import { hexToRgba } from '@/utils/hexToRgba'
 import SessionForm from '@/components/sessions/SessionForm'
 import Tag from '@/components/primitives/Tag'
+import useDebounce from '@/hooks/useDebounce'
 
 export default function Sessions() {
   const api = useAuthenticatedRequest()
   const [selectedTag, setSelectedTag] = useState<string>('')
   const [showCreateSessionDialog, setShowCreateSessionDialog] = useState(false)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
   const queryClient = useQueryClient()
   const { data, isLoading, error } = useQuery({
-    queryKey: ['sessions'],
+    queryKey: ['sessions', selectedTag, debouncedSearch],
     queryFn: async () => {
-      const { data } = await api.get<Array<StudySession>>('/sessions')
+      const { data } = await api.get<Array<StudySession>>('/sessions', {
+        params: {
+          ...(selectedTag && { tagId: selectedTag }),
+          ...(debouncedSearch && { q: debouncedSearch }),
+        },
+      })
       return data
-    },
+    }, 
   })
   const mutation = useMutation({
     mutationFn: (sessionData: SessionFormData) => {
@@ -46,15 +53,12 @@ export default function Sessions() {
       toast.error('Failed to create session')
     },
   })
-  const filteredData = selectedTag
-    ? data?.filter((session) => session.tagId === selectedTag)
-    : data
   return (
     <div className="flex flex-col gap-4 max-w-7xl mx-auto">
       <div className="flex flex-row gap-2">
         <Input
           id="search"
-          placeholder="Search resources..."
+          placeholder="Search sessions..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full"
@@ -65,12 +69,12 @@ export default function Sessions() {
         </Button>
       </div>
       <TagSelector value={selectedTag} setValue={setSelectedTag} />
-      {filteredData?.length === 0 && (
+      {data?.length === 0 && (
         <div className="text-center text-lg text-gray-600 mt-20">
           No sessions found
         </div>
       )}
-      {filteredData?.map((session) => (
+      {data?.map((session) => (
         <Link
           to="/dashboard/study-sessions/$sessionId"
           params={{ sessionId: session.sessionId }}

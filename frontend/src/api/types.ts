@@ -25,7 +25,12 @@ export interface StudySession {
   durationMinutes: number
   tag: Tag
 }
-
+export interface QuizInfo {
+  quizId: string
+  title: string
+  isMultipleChoice: boolean
+  numberOfQuestions: number
+}
 export interface Quiz {
   quizId: string
   sessionId: string
@@ -33,8 +38,9 @@ export interface Quiz {
   numberOfQuestions: number
   isMultipleChoice: boolean
   createdAt: string
-  tag: Tag
+  tag: Tag  
   quizContent: Array<QuizQuestion>
+  maxScore: number
 }
 
 export interface QuizQuestion {

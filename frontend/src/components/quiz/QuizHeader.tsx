@@ -18,17 +18,20 @@ export default function QuizHeader({
   numberOfQuestions,
   isMultipleChoice,
   createdAt,
+  ContextButton
 }: {
   title: string
   tag: TagType
   numberOfQuestions: number
   isMultipleChoice: boolean
   createdAt: string
+  ContextButton?: React.ReactNode
 }) {
   return (
     <>
-      <div className="flex flex-col md:flex-row justify-between gap-1 items-center">
+      <div className="flex flex-row justify-between gap-1 items-center flex-wrap">
         <h1 className="text-2xl font-semibold">{title}</h1>
+        {ContextButton}
       </div>
       <div className="flex flex-row gap-5 items-center flex-wrap justify-between">
         <div className="flex flex-row gap-5 items-center flex-wrap">

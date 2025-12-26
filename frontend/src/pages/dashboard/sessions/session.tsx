@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import type { StudyResource, StudySession } from '@/api/types'
+import type { Quiz, StudyResource, StudySession } from '@/api/types'
 import type { SessionFormData } from '@/components/sessions/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import ResourceCard from '@/components/resources/Card'
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/tooltip'
 import Tag from '@/components/primitives/Tag'
 import SessionForm from '@/components/sessions/SessionForm'
+import QuizCard from '@/components/quiz/QuizCard'
 
 export default function Session() {
   const { sessionId } = useParams({
@@ -43,6 +44,20 @@ export default function Session() {
       const { data } = await api.get<Array<StudyResource & { label?: string }>>(
         `/sessions/${sessionId}/resources`,
       )
+      return data
+    },
+  })
+  const { data: quizzes } = useQuery({
+    queryKey: ['quizzes', sessionId],
+    queryFn: async () => {
+      const { data } = await api.get<
+        Array<{
+          quizId: string
+          title: string
+          isMultipleChoice: boolean
+          numberOfQuestions: number
+        }>
+      >(`/sessions/${sessionId}/quizzes`)
       return data
     },
   })
@@ -142,13 +157,13 @@ export default function Session() {
           <h2 className="text-lg font-semibold">Quizzes</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {studyResources?.length === 0 && (
+          {quizzes?.length === 0 && (
             <div className="text-sm text-gray-600">
               No quizzes created for this session
             </div>
           )}
-          {studyResources?.map((resource) => (
-            <ResourceCard key={resource.resourceId} resource={resource} />
+          {quizzes?.map((quiz) => (
+            <QuizCard key={quiz.quizId} quiz={quiz} />
           ))}
         </div>
       </div>

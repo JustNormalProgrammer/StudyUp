@@ -10,7 +10,6 @@ import { toast } from 'sonner'
 import { ResourceDialog } from './Dialog'
 import type { StudyResource } from '@/api/types'
 import type { ResourceDialogForm } from './Dialog'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -171,4 +171,5 @@ export default {
   deleteQuiz,
   deleteQuizAttempt,
   getUserAttempts,
+  getQuizzesBySessionId,
 };

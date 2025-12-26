@@ -47,14 +47,16 @@ export const getSessions = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, start, limit } =
-      matchedData<Omit<PaginationQuery, "userId">>(req);
+    const { from, to, start, limit, tagId, q } =
+      matchedData<Omit<PaginationQuery, "userId"> & { tagId?: string, q?: string }>(req);
     const result = await sessions.getSessions({
       userId: req.user!.userId,
       from: from ? new Date(from) : new Date(0),
       to: to ? new Date(to) : new Date(),
       start: start ? start : 0,
       limit: limit ? limit : 999,
+      tagId: tagId ? tagId : undefined,
+      q: q ? q : undefined,
     });
     return res.json(result);
   } catch (e) {
@@ -250,6 +252,30 @@ Data: ${JSON.stringify(quizData)}`,
       quizContent,
     });
     return res.json(quizContent);
+  } catch (e) {
+    console.log(e);
+    return res.sendStatus(500);
+  }
+};
+
+export const getSessionQuizzes = async (
+  req: Request<{ sessionId: string }>,
+  res: Response
+) => {
+  try {
+    const { sessionId } = req.params;
+    const existingSession = await sessions.getSessionById(
+      sessionId,
+      req.user!.userId
+    );
+    if (!existingSession) {
+      return res.sendStatus(404);
+    }
+    const result = await quizzes.getQuizzesBySessionId(
+      sessionId,
+      req.user!.userId
+    );
+    return res.json(result);
   } catch (e) {
     console.log(e);
     return res.sendStatus(500);

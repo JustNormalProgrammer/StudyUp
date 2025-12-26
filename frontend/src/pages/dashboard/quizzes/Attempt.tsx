@@ -1,15 +1,22 @@
 import { useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  RadialBar,
+  RadialBarChart,
+  Label as RechartsLabel,
+} from 'recharts'
 import type { Quiz, QuizAttempt } from '@/api/types'
+import type { ChartConfig } from '@/components/ui/chart'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import QuizHeader from '@/components/quiz/QuizHeader'
-
-const getAnswerClass = (isCorrect: boolean, isChecked: boolean) => {
-  return isCorrect ? 'text-green-600' : 'text-red-600'
-}
+import { ChartContainer } from '@/components/ui/chart'
+import { getColor } from '@/utils/utilFunc'
 
 export default function Attempt() {
   const { quizId, attemptId } = useParams({
@@ -35,6 +42,23 @@ export default function Attempt() {
       return data
     },
   })
+  const percentage = Math.round(
+    (Number(attemptQuery.data?.score) / Number(quizQuery.data?.maxScore)) * 100,
+  )
+
+
+  const chartData = [
+    {
+      name: 'score',
+      value: percentage,
+      fill: getColor(percentage),
+    },
+  ]
+  const chartConfig = {
+    score: {
+      label: 'Wynik',
+    },
+  } satisfies ChartConfig
 
   if (attemptQuery.isLoading || quizQuery.isLoading) {
     return <div>Loading...</div>
@@ -55,9 +79,54 @@ export default function Attempt() {
         tag={quizQuery.data.tag}
         numberOfQuestions={quizQuery.data.numberOfQuestions}
         isMultipleChoice={quizQuery.data.isMultipleChoice}
-        createdAt={quizQuery.data.createdAt}
+        createdAt={attemptQuery.data.finishedAt}
       />
+      <div className="flex flex-row items-center justify-center gap-0">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-square h-[100px] w-fit"
+        >
+          <RadialBarChart
+            data={chartData}
+            startAngle={90}
+            endAngle={-270}
+            innerRadius={40}
+            outerRadius={55}
+          >
+            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
 
+            <PolarGrid
+              gridType="circle"
+              radialLines={false}
+              stroke="none"
+              polarRadius={[40, 30]}
+              className="fill-"
+            />
+
+            <RadialBar dataKey="value" background cornerRadius={10} />
+
+            <PolarRadiusAxis tick={false} axisLine={false}>
+              <RechartsLabel
+                content={({ viewBox }) => {
+                  if (!viewBox || !('cx' in viewBox)) return null
+
+                  return (
+                    <text
+                      x={viewBox.cx}
+                      y={viewBox.cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="fill-foreground text-xl font-semibold"
+                    >
+                        {percentage}%
+                    </text>
+                  )
+                }}
+              />
+            </PolarRadiusAxis>
+          </RadialBarChart>
+        </ChartContainer>
+      </div>
       <div className="flex flex-col gap-6">
         {quizQuery.data.quizContent.map((question) => {
           const attempt =
@@ -85,7 +154,7 @@ export default function Attempt() {
                     return (
                       <div
                         key={choice.id}
-                        className={`flex items-center gap-3 cursor-default ${attempt.correctAnswers[0] === choice.id && 'text-green-600'} ${attempt.correctAnswers[0] !== choice.id && 'text-red-600'}`}
+                        className={`flex items-center gap-3 cursor-default ${attempt.correctAnswers[0] === choice.id && 'text-green-600'} ${attempt.correctAnswers[0] !== choice.id && isChecked && 'text-red-600'}`}
                       >
                         <RadioGroupItem
                           value={choice.id}
@@ -108,7 +177,7 @@ export default function Attempt() {
                     return (
                       <div
                         key={choice.id}
-                        className={`flex items-center gap-3 cursor-default  ${attempt.correctAnswers.includes(choice.id) && 'text-green-600'} ${!attempt.correctAnswers.includes(choice.id) && 'text-red-600'}`}
+                        className={`flex items-center gap-3 cursor-default  ${attempt.correctAnswers.includes(choice.id) && 'text-green-600'} ${!attempt.correctAnswers.includes(choice.id) && isChecked && 'text-red-600'}`}
                       >
                         <Checkbox
                           id={`${question.questionNumber}-${choice.id}`}

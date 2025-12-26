@@ -1,10 +1,13 @@
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   BadgeQuestionMark,
+  BookOpen,
   Calendar,
   Check,
   CheckCheck,
+  ChevronRight,
+  ChevronUp,
   Pencil,
   Trash,
 } from 'lucide-react'
@@ -15,6 +18,7 @@ import type {
   Quiz as QuizType,
 } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+
 import {
   Tooltip,
   TooltipContent,
@@ -28,17 +32,42 @@ import { Button } from '@/components/ui/button'
 
 import Tag from '@/components/primitives/Tag'
 import QuizHeader from '@/components/quiz/QuizHeader'
+import { getColor } from '@/utils/utilFunc'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 
 export default function Quiz() {
   const { quizId } = useParams({
     from: '/dashboard/quizzes/$quizId/',
   })
+  const [showAttempts, setShowAttempts] = useState(false)
+  const handleShowAttempts = () => {
+    setShowAttempts(!showAttempts)
+  }
   const navigate = useNavigate()
   const api = useAuthenticatedRequest()
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, isSuccess } = useQuery({
     queryKey: ['quiz', quizId],
     queryFn: async () => {
       const { data } = await api.get<QuizType>(`/quizzes/${quizId}`)
+      return data
+    },
+  })
+  const {
+    data: attemptsData,
+    isLoading: attemptsLoading,
+    error: attemptsError,
+    isSuccess: attemptsSuccess,
+  } = useQuery({
+    queryKey: ['attempt', quizId],
+    queryFn: async () => {
+      const { data } = await api.get<
+        Array<{ quizAttemptId: string; score: number; finishedAt: string }>
+      >(`/quizzes/${quizId}/attempts`)
       return data
     },
   })
@@ -81,7 +110,7 @@ export default function Quiz() {
   }
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const {data: attemptData} = await mutation.mutateAsync(
+    const { data: attemptData } = await mutation.mutateAsync(
       answers as Array<Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>>,
       {
         onError: (error) => {
@@ -94,24 +123,95 @@ export default function Quiz() {
       params: { quizId, attemptId: attemptData.quizAttemptId },
     })
   }
-  if(isLoading) {
+  if (isLoading || attemptsLoading) {
     return <div>Loading...</div>
   }
-  if(error) {
+  if (error || attemptsError) {
     return <div>Error</div>
   }
-  if(!data) {
+  if (!isSuccess || !attemptsSuccess) {
     return <div>No data</div>
   }
   return (
     <div className="flex flex-col max-w-7xl mx-auto gap-3 md:gap-10 border rounded-xl p-4">
-      <QuizHeader
-        title={data.title}
-        tag={data.tag}
-        numberOfQuestions={data.numberOfQuestions}
-        isMultipleChoice={data.isMultipleChoice}
-        createdAt={data.createdAt}
-      />
+      <div className="flex flex-col gap-3">
+        <QuizHeader
+          title={data.title}
+          tag={data.tag}
+          numberOfQuestions={data.numberOfQuestions}
+          isMultipleChoice={data.isMultipleChoice}
+          createdAt={data.createdAt}
+          ContextButton={
+            <Button
+              variant="link"
+              className="p-0 text-muted-foreground"
+              onClick={(e) => {
+                e.preventDefault()
+                navigate({
+                  to: '/dashboard/study-sessions/$sessionId',
+                  params: { sessionId: data.sessionId },
+                })
+              }}
+            >
+              Session
+            </Button>
+          }
+        />
+        <Accordion type="single" collapsible>
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="cursor-pointer justify-start">
+              Show previous attempts
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-row items-center justify-between w-full overflow-x-scroll gap-4 py-2">
+                {attemptsData.map((attempt) => {
+                  const percent =
+                    (Number(attempt.score) / Number(data.maxScore)) * 100
+
+                  return (
+                    <Link
+                      to="/dashboard/quizzes/$quizId/attempts/$attemptId"
+                      params={{ quizId, attemptId: attempt.quizAttemptId }}
+                    >
+                      <div
+                        key={attempt.quizAttemptId}
+                        className="
+                        flex flex-col justify-between
+                        md:w-[150px] rounded-xl border
+                        bg-(--score-color)/10
+                        border-(--score-color)/30
+                        p-2 transition cursor-pointer
+                        hover:shadow-md
+                      "
+                        style={{
+                          ['--score-color' as any]: getColor(percent),
+                        }}
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <p className="text-sm text-muted-foreground">Wynik</p>
+                          <p
+                            className="text-xl font-semibold"
+                            style={{ color: 'var(--score-color)' }}
+                          >
+                            {Number(percent.toFixed(2))}%
+                          </p>
+                        </div>
+                        <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            {new Date(attempt.finishedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+
       <div className="flex flex-col gap-5">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {data.quizContent.map((question) => {
@@ -161,9 +261,7 @@ export default function Quiz() {
                 {question.isMultipleChoice && (
                   <>
                     {question.questionChoices.map((choice) => {
-                      const checked = questionAnswers.includes(
-                        choice.id,
-                      )
+                      const checked = questionAnswers.includes(choice.id)
 
                       return (
                         <div

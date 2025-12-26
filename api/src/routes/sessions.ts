@@ -7,7 +7,8 @@ import {
   createSession,
   deleteSession,
   replaceSession,
-  createQuiz
+  createQuiz,
+  getSessionQuizzes
 } from "../controllers/sessions";
 import { body, query } from "express-validator";
 import validate from "../utils/validate";
@@ -89,6 +90,8 @@ const validateGetSessions = [
     .toInt()
     .isInt({ min: 1 })
     .withMessage("Limit must be a positive integer"),
+  query("tagId").optional().isUUID().withMessage("TagId must be a valid UUID"),
+  query("q").optional().isString().withMessage("Search must be a string"),
 ];
 
 const validateCreateQuiz = [
@@ -125,9 +128,10 @@ router.put(
 );
 router.delete("/:sessionId", requiredAuth, deleteSession);
 router.post(
-  "/:sessionId/quiz",
+  "/:sessionId/quizzes",
   requiredAuth,
   validate(validateCreateQuiz),
   createQuiz
 );
+router.get("/:sessionId/quizzes", requiredAuth, getSessionQuizzes);
 export default router;

@@ -1,4 +1,4 @@
-import { and, eq, between, desc, sql } from "drizzle-orm";
+import { and, eq, between, desc, sql, ilike } from "drizzle-orm";
 import { db } from "../index";
 import {
   studyResources,
@@ -33,8 +33,8 @@ export interface PaginationQuery {
   limit?: number;
 }
 
-export async function getSessions(data: Required<PaginationQuery>) {
-  const { userId, from, to, start, limit } = data;
+export async function getSessions(data: Required<PaginationQuery> & { tagId?: string, q?: string }) {
+  const { userId, from, to, start, limit, tagId, q } = data;
   const result = await db
     .select({
       sessionId: studySessions.sessionId,
@@ -54,7 +54,9 @@ export async function getSessions(data: Required<PaginationQuery>) {
     .where(
       and(
         eq(studySessions.userId, userId),
-        between(studySessions.startedAt, from, to)
+        between(studySessions.startedAt, from, to),
+        tagId ? eq(studySessions.tagId, tagId) : undefined,
+        q ? ilike(studySessions.title, `%${q}%`) : undefined,
       )
     )
     .orderBy(desc(studySessions.startedAt))

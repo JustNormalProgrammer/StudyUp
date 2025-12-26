@@ -1,4 +1,7 @@
-
+.fc-day-today {
+  background: transparent !important;
+  border: 2px solid var(--color-black) !important;
+} 
 .fc-toolbar-chunk > div {
     display: flex;
     gap: 10px;

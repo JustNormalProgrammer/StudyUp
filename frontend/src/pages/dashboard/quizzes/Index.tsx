@@ -63,9 +63,9 @@ export default function Quizzes() {
               <div className="flex flex-row gap-2 w-20 md:justify-start  md:gap-6 ml-auto min-w-fit">
                 <Tooltip>
                   <TooltipTrigger>
-                    <div className="flex flex-row gap-1 items-center w-10">
+                    <div className="flex flex-row gap-1.5 items-center w-10">
                       <BadgeQuestionMark className="w-4 h-4" />
-                      <div className="text-xs text-gray-600 ">
+                      <div className="text-sm text-gray-600 ">
                         {quiz.numberOfQuestions}
                       </div>
                     </div>
@@ -74,7 +74,7 @@ export default function Quizzes() {
                     <p>Number of questions</p>
                   </TooltipContent>
                 </Tooltip>
-                <div className="flex flex-row gap-1 items-center">
+                <div className="flex flex-row gap-1 w-5 items-center">
                   <Tooltip>
                     <TooltipTrigger>
                       {quiz.isMultipleChoice ? (
