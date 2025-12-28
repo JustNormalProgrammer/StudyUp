@@ -23,6 +23,7 @@ import {
 import Tag from '@/components/primitives/Tag'
 import SessionForm from '@/components/sessions/SessionForm'
 import QuizCard from '@/components/quiz/QuizCard'
+import CreateQuizDialog from '@/components/sessions/CreateQuizDialog'
 
 export default function Session() {
   const { sessionId } = useParams({
@@ -31,6 +32,7 @@ export default function Session() {
   const api = useAuthenticatedRequest()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
+  const [openAiSLOP, setOpenAiSLOP] = useState(false)
   const { data, isLoading, error } = useQuery({
     queryKey: ['session', sessionId],
     queryFn: async () => {
@@ -38,7 +40,7 @@ export default function Session() {
       return data
     },
   })
-  const { data: studyResources } = useQuery({
+  const { data: studyResources, isSuccess: isStudyResourcesSuccess } = useQuery({
     queryKey: ['studyResources', sessionId],
     queryFn: async () => {
       const { data } = await api.get<Array<StudyResource & { label?: string }>>(
@@ -78,7 +80,9 @@ export default function Session() {
   return (
     <div className="flex flex-col max-w-7xl mx-auto gap-3 md:gap-10 border rounded-xl p-4">
       <div className="flex flex-col md:flex-row justify-between gap-1 items-center">
-        <h1 className="text-2xl font-semibold break-all text-ellipsis overflow-hidden">{data?.title}</h1>
+        <h1 className="text-2xl font-semibold break-all text-ellipsis overflow-hidden">
+          {data?.title}
+        </h1>
       </div>
       <div className="flex flex-row gap-5 items-center flex-wrap justify-between">
         <div className="flex flex-row gap-5 items-center flex-wrap">
@@ -147,14 +151,20 @@ export default function Session() {
               key={resource.resourceId}
               resource={resource}
               label={resource.label}
+              disableDropdown={true}
             />
           ))}
         </div>
       </div>
       <div className="flex flex-col gap-5">
-        <div className="flex flex-row gap-2 items-center">
-          <MessageCircleQuestionMark className="w-4 h-4 md:w-6 md:h-6 antialiased" />
-          <h2 className="text-lg font-semibold">Quizzes</h2>
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-row gap-2 items-center">
+            <MessageCircleQuestionMark className="w-4 h-4 md:w-6 md:h-6 antialiased" />
+            <h2 className="text-lg font-semibold">Quizzes</h2>
+          </div>
+          <Button variant="destructive" onClick={() => setOpenAiSLOP(true)}>
+            AI SLOP
+          </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {quizzes?.length === 0 && (
@@ -167,12 +177,15 @@ export default function Session() {
           ))}
         </div>
       </div>
-      <SessionForm
-        open={open}
-        setOpen={setOpen}
-        sessionData={{ session: data, resources: studyResources }}
-        onSubmit={(data) => mutation.mutate(data)}
-      />
+      {isStudyResourcesSuccess && (
+        <SessionForm
+          open={open}
+          setOpen={setOpen}
+          sessionData={{ session: data, resources: studyResources }}
+          onSubmit={(data) => mutation.mutate(data)}
+        />
+      )}
+      <CreateQuizDialog open={openAiSLOP} setOpen={setOpenAiSLOP} />
     </div>
   )
 }

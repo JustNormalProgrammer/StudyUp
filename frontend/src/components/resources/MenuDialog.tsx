@@ -15,7 +15,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -69,38 +68,36 @@ export function DropdownMenuDialog({
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <button
-            aria-label="Open menu"
-            className={cn('p-2', className)}
-          >
+          <button aria-label="Open menu" className={cn('p-2', className)}>
             <MoreHorizontalIcon size={16} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40" align="end">
           <DropdownMenuGroup>
-            {inSessionRemoveHandler && (
+            {inSessionRemoveHandler ? (
               <>
                 <DropdownMenuItem onSelect={() => inSessionRemoveHandler()}>
                   <DeleteIcon size={16} />
                   Remove
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem onSelect={() => setShowEditDialog(true)}>
+                  <SquarePenIcon size={16} />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    deleteMutation.mutate()
+                  }}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive flex flex-row gap-2 items-center"
+                >
+                  <TrashIcon size={16} className="text-destructive" />
+                  Delete
+                </DropdownMenuItem>
               </>
             )}
-            <DropdownMenuItem onSelect={() => setShowEditDialog(true)} disabled={!!inSessionRemoveHandler}>
-              <SquarePenIcon size={16} />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => {
-                deleteMutation.mutate()
-              }}
-              className="text-destructive focus:bg-destructive/10 focus:text-destructive flex flex-row gap-2 items-center"
-              disabled={!!inSessionRemoveHandler}
-            >
-              <TrashIcon size={16} className="text-destructive" />
-              Delete
-            </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

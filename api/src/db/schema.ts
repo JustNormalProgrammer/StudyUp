@@ -31,13 +31,6 @@ export const users = pgTable("users", {
   createdAt: timestamp().defaultNow().notNull(),
 });
 
-export const userApiTokens = pgTable("user_api_tokens", {
-  userId: uuid()
-    .references(() => users.userId)
-    .primaryKey(),
-  apiToken: text().notNull(),
-});
-
 export const refreshTokens = pgTable("refresh_tokens", {
   userId: uuid()
     .references(() => users.userId)

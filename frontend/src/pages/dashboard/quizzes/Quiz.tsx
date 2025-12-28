@@ -1,16 +1,6 @@
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  BadgeQuestionMark,
-  BookOpen,
-  Calendar,
-  Check,
-  CheckCheck,
-  ChevronRight,
-  ChevronUp,
-  Pencil,
-  Trash,
-} from 'lucide-react'
+import { Calendar, CircleX } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type {
@@ -30,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 
 import { Button } from '@/components/ui/button'
 
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import Tag from '@/components/primitives/Tag'
 import QuizHeader from '@/components/quiz/QuizHeader'
 import { getColor } from '@/utils/utilFunc'
@@ -157,25 +148,36 @@ export default function Quiz() {
             </Button>
           }
         />
-        <Accordion type="single" collapsible>
+        <Accordion
+          type="single"
+          collapsible
+          className="border rounded-xl px-2 py-0 bg-muted/5"
+        >
           <AccordionItem value="item-1">
-            <AccordionTrigger className="cursor-pointer justify-start">
+            <AccordionTrigger className="cursor-pointer justify-start gap-1">
               Show previous attempts
             </AccordionTrigger>
             <AccordionContent>
-              <div className="flex flex-row items-center justify-between w-full overflow-x-scroll gap-4 py-2">
-                {attemptsData.map((attempt) => {
-                  const percent =
-                    (Number(attempt.score) / Number(data.maxScore)) * 100
+              <ScrollArea>
+                <div className="flex flex-row items-center w-full overflow-x-auto gap-4 pb-4">
+                  {attemptsData.length === 0 && (
+                    <div className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
+                      <CircleX className="size-4" />
+                      No previous attempts found
+                    </div>
+                  )}
+                  {attemptsData.map((attempt) => {
+                    const percent =
+                      (Number(attempt.score) / Number(data.maxScore)) * 100
 
-                  return (
-                    <Link
-                      to="/dashboard/quizzes/$quizId/attempts/$attemptId"
-                      params={{ quizId, attemptId: attempt.quizAttemptId }}
-                    >
-                      <div
-                        key={attempt.quizAttemptId}
-                        className="
+                    return (
+                      <Link
+                        to="/dashboard/quizzes/$quizId/attempts/$attemptId"
+                        params={{ quizId, attemptId: attempt.quizAttemptId }}
+                      >
+                        <div
+                          key={attempt.quizAttemptId}
+                          className="
                         flex flex-col justify-between
                         md:w-[150px] rounded-xl border
                         bg-(--score-color)/10
@@ -183,30 +185,36 @@ export default function Quiz() {
                         p-2 transition cursor-pointer
                         hover:shadow-md
                       "
-                        style={{
-                          ['--score-color' as any]: getColor(percent),
-                        }}
-                      >
-                        <div className="flex flex-col items-center gap-1">
-                          <p className="text-sm text-muted-foreground">Wynik</p>
-                          <p
-                            className="text-xl font-semibold"
-                            style={{ color: 'var(--score-color)' }}
-                          >
-                            {Number(percent.toFixed(2))}%
-                          </p>
+                          style={{
+                            ['--score-color' as any]: getColor(percent),
+                          }}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <p className="text-sm text-muted-foreground">
+                              Wynik
+                            </p>
+                            <p
+                              className="text-xl font-semibold"
+                              style={{ color: 'var(--score-color)' }}
+                            >
+                              {Number(percent.toFixed(2))}%
+                            </p>
+                          </div>
+                          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              {new Date(
+                                attempt.finishedAt,
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>
-                            {new Date(attempt.finishedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

@@ -8,7 +8,6 @@ import React, {
 import type { LoginResponse } from '@/pages/Auth/Login'
 import { api } from '@/api/api'
 
-
 export interface User {
   userId: string
   username: string
@@ -26,7 +25,6 @@ export interface AuthContext {
   logout: () => void
   updateToken: (updatedToken: string) => void
 }
-
 
 const AuthContext = createContext<AuthContext | null>(null)
 
@@ -50,7 +48,6 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     })
     return
   }, [])
-  // TODO: ERRORS
   const logout = useCallback(() => {
     setState({ user: null, isAuthenticated: false, token: null })
     return
@@ -63,7 +60,6 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     return
   }, [])
 
-  // LOADING STATE TODO
   useEffect(() => {
     const fetchUser = async () => {
       try {

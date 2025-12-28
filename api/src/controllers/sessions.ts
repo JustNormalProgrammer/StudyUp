@@ -242,7 +242,7 @@ Data: ${JSON.stringify(quizData)}`,
         maxScore += 1;
       }
     });
-    await quizzes.createQuiz({
+    const quiz = await quizzes.createQuiz({
       userId: req.user!.userId,
       sessionId,
       title,
@@ -251,7 +251,7 @@ Data: ${JSON.stringify(quizData)}`,
       maxScore,
       quizContent,
     });
-    return res.json(quizContent);
+    return res.json(quiz);
   } catch (e) {
     console.log(e);
     return res.sendStatus(500);

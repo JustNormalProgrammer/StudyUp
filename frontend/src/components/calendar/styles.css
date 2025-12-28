@@ -1,6 +1,5 @@
 .fc-day-today {
-  background: transparent !important;
-  border: 2px solid var(--color-black) !important;
+  background: hsl(0 0% 96.1%) !important;
 } 
 .fc-toolbar-chunk > div {
     display: flex;

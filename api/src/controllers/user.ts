@@ -4,7 +4,6 @@ import { PaginationQuery } from "../db/queries/sessions";
 import sessions from "../db/queries/sessions";
 import quizzes from "../db/queries/quizzes";
 import user from "../db/queries/user";
-import { JSEncrypt } from 'jsencrypt';
 
 export const getUserDetails = async (req: Request, res: Response) => {
   try {
@@ -31,14 +30,14 @@ export const getUserEvents = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, page, itemsOnPage } =
+    const { from, to, start, limit } =
       matchedData<Omit<PaginationQuery, "userId">>(req);
-    const data: PaginationQuery = {
+    const data: Required<PaginationQuery> = {
       userId: req.user!.userId,
       from: from ? new Date(from) : new Date(0),
       to: to ? new Date(to) : new Date(),
-      page,
-      itemsOnPage,
+      start: start ? start : 0,
+      limit: limit ? limit : 999,
     };
     const userSessions = await sessions.getSessions(data);
     const userQuizzesAttempts = await quizzes.getUserAttempts(data);
@@ -48,14 +47,3 @@ export const getUserEvents = async (req: Request, res: Response) => {
     return res.sendStatus(500);
   }
 };
-
-export const updateUserApiToken = async (req: Request, res: Response) => {
-  const { apiToken } = matchedData<{ apiToken: string }>(req);
-  try {
-    await user.upsertApiToken(req.user!.userId, apiToken);
-    return res.sendStatus(200);
-  } catch (e) {
-    console.log(e);
-    return res.sendStatus(500);
-  }
-}

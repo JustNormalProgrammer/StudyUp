@@ -8,7 +8,6 @@ export const Route = createFileRoute('/dashboard')({
   beforeLoad: ({ context, location }) => {
     if (!context.auth.isAuthenticated) {
       toast.error('Please log in')
-      toast.info(JSON.stringify(context.auth))
       throw redirect({
         to: '/login',
         search: {
@@ -23,7 +22,7 @@ export const Route = createFileRoute('/dashboard')({
 function AppLayoutComponent() {
   return (
     <>
-      <SidebarProvider defaultOpen={false}>
+      <SidebarProvider defaultOpen={true}>
         <AppSidebar />
         <div className="w-full overflow-hidden">
           <Header />

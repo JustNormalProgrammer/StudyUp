@@ -77,7 +77,7 @@ export default function ResourceItem({
               onChange={(e) => setValue(e.target.value)}
               className="w-20 text-xs p-0.5 h-fit box-border m-0.5"
               name="label"
-              placeholder="eg. 1-12"
+              placeholder={`${(resource.type === StudyResourceTypeEnum.VIDEO ? '1h:30' : resource.type === StudyResourceTypeEnum.BOOK ? 'Chapter 1' : resource.type === StudyResourceTypeEnum.WEBSITE ? '#1' : '1-12')}`}
             />
           )}
         </div>

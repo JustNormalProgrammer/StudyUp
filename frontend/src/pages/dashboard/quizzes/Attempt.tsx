@@ -18,6 +18,8 @@ import QuizHeader from '@/components/quiz/QuizHeader'
 import { ChartContainer } from '@/components/ui/chart'
 import { getColor } from '@/utils/utilFunc'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { getScoreMessage } from '@/utils/scoreMessages'
 
 export default function Attempt() {
   const { quizId, attemptId } = useParams({
@@ -46,7 +48,6 @@ export default function Attempt() {
   const percentage = Math.round(
     (Number(attemptQuery.data?.score) / Number(quizQuery.data?.maxScore)) * 100,
   )
-
 
   const chartData = [
     {
@@ -83,11 +84,16 @@ export default function Attempt() {
         createdAt={attemptQuery.data.finishedAt}
         ContextButton={
           <Button variant="link" className="p-0 text-muted-foreground">
-            <Link to="/dashboard/quizzes/$quizId" params={{ quizId: quizId }}>Quiz</Link>
+            <Link to="/dashboard/quizzes/$quizId" params={{ quizId: quizId }}>
+              Quiz
+            </Link>
           </Button>
         }
       />
-      <div className="flex flex-row items-center justify-center gap-0">
+      <div
+        className="flex flex-col md:flex-row  mx-auto items-center gap-2 w-fit bg-(--score-color)/10 border border-(--score-color) rounded-xl p-4"
+        style={{ ['--score-color' as any]: getColor(percentage) }}
+      >
         <ChartContainer
           config={chartConfig}
           className="aspect-square h-[100px] w-fit"
@@ -124,7 +130,7 @@ export default function Attempt() {
                       dominantBaseline="middle"
                       className="fill-foreground text-xl font-semibold"
                     >
-                        {percentage}%
+                      {percentage}%
                     </text>
                   )
                 }}
@@ -132,6 +138,15 @@ export default function Attempt() {
             </PolarRadiusAxis>
           </RadialBarChart>
         </ChartContainer>
+        <div className="flex flex-col items-center justify-center gap-1">
+          <div className="text-lg font-medium ">
+            {getScoreMessage(percentage)}
+          </div>
+          <div className=" text-md font-medium tracking-tighter">
+            {attemptQuery.data.score} / {quizQuery.data.maxScore}
+            <span className="text-sm ml-1">points</span>
+          </div>
+        </div>
       </div>
       <div className="flex flex-col gap-6">
         {quizQuery.data.quizContent.map((question) => {

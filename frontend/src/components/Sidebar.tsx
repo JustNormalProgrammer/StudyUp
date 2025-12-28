@@ -46,11 +46,6 @@ const items = [
     url: '/dashboard/quizzes',
     icon: MessageCircleQuestionMark,
   },
-  {
-    title: 'Settings',
-    url: '/dashboard/settings',
-    icon: Settings,
-  },
 ]
 
 export function AppSidebar() {
@@ -58,8 +53,6 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
       className="overflow-hidden"
     >
       <SidebarHeader>

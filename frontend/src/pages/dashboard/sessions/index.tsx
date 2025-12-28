@@ -1,130 +1,173 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { Calendar, CirclePlus, Hourglass } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import type { StudySession } from '@/api/types'
 import type { SessionFormData } from '@/components/sessions/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+import useDebounce from '@/hooks/useDebounce'
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
 } from '@/components/ui/card'
-import TagSelector from '@/components/sessions/TagSelector'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { hexToRgba } from '@/utils/hexToRgba'
+import TagSelector from '@/components/sessions/TagSelector'
 import SessionForm from '@/components/sessions/SessionForm'
 import Tag from '@/components/primitives/Tag'
-import useDebounce from '@/hooks/useDebounce'
+import { hexToRgba } from '@/utils/hexToRgba'
+import { Spinner } from '@/components/ui/spinner'
+
+const LIMIT = 20
 
 export default function Sessions() {
   const api = useAuthenticatedRequest()
-  const [selectedTag, setSelectedTag] = useState<string>('')
+  const queryClient = useQueryClient()
+  const observerRef = useRef<HTMLLIElement | null>(null)
+
+  const [selectedTag, setSelectedTag] = useState('')
   const [showCreateSessionDialog, setShowCreateSessionDialog] = useState(false)
   const [search, setSearch] = useState('')
+
   const debouncedSearch = useDebounce(search, 500)
-  const queryClient = useQueryClient()
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['sessions', selectedTag, debouncedSearch],
-    queryFn: async () => {
-      const { data } = await api.get<Array<StudySession>>('/sessions', {
-        params: {
-          ...(selectedTag && { tagId: selectedTag }),
-          ...(debouncedSearch && { q: debouncedSearch }),
-        },
-      })
-      return data
-    }, 
-  })
-  const mutation = useMutation({
-    mutationFn: (sessionData: SessionFormData) => {
-      return api.post('/sessions', sessionData)
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ['sessions', selectedTag, debouncedSearch],
+      initialPageParam: 0,
+      queryFn: async ({ pageParam }) => {
+        const { data } = await api.get<Array<StudySession>>('/sessions', {
+          params: {
+            ...(selectedTag && { tagId: selectedTag }),
+            ...(debouncedSearch && { q: debouncedSearch }),
+            start: pageParam,
+            limit: LIMIT,
+          },
+        })
+
+        return {
+          data,
+          nextPage: pageParam + LIMIT,
+        }
+      },
+      getNextPageParam: (lastPage) =>
+        lastPage.data.length < LIMIT ? undefined : lastPage.nextPage,
+    })
+  const onIntersect = useCallback(
+    (entries: Array<IntersectionObserverEntry>) => {
+      const entry = entries[0]
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage()
+      }
     },
+    [fetchNextPage, hasNextPage, isFetchingNextPage],
+  )
+
+  useEffect(() => {
+    if (!observerRef.current) return
+
+    const observer = new IntersectionObserver(onIntersect, {
+      threshold: 0.1,
+    })
+
+    observer.observe(observerRef.current)
+
+    return () => observer.disconnect()
+  }, [onIntersect])
+
+  const mutation = useMutation({
+    mutationFn: (sessionData: SessionFormData) =>
+      api.post('/sessions', sessionData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
       setShowCreateSessionDialog(false)
       toast.success('Session created successfully')
     },
-    onError: (error) => {
-      console.log(error)
+    onError: () => {
       toast.error('Failed to create session')
     },
   })
+
   return (
     <div className="flex flex-col gap-4 max-w-7xl mx-auto">
-      <div className="flex flex-row gap-2">
+      <div className="flex gap-2">
         <Input
-          id="search"
           placeholder="Search sessions..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
         />
         <Button onClick={() => setShowCreateSessionDialog(true)}>
           <CirclePlus />
-          Create new session
+          Create session
         </Button>
       </div>
+
       <TagSelector value={selectedTag} setValue={setSelectedTag} />
-      {data?.length === 0 && (
-        <div className="text-center text-lg text-gray-600 mt-20">
-          No sessions found
+
+      {isLoading && (
+        <div className="text-center text-muted-foreground mt-10">
+          Loading sessions...
         </div>
       )}
-      {data?.map((session) => (
-        <Link
-          to="/dashboard/study-sessions/$sessionId"
-          params={{ sessionId: session.sessionId }}
-          key={session.sessionId}
-        >
-          <Card
-            className="relative overflow-hidden py-4 hover:shadow-md  transition-all duration-200 hover:bg-(--tag-color)"
-            style={{
-              ['--tag-color' as any]: hexToRgba(session.tag.color, 0.02),
-            }}
+
+      {data?.pages.flatMap((page) =>
+        page.data.map((session) => (
+          <Link
+            key={session.sessionId}
+            to="/dashboard/study-sessions/$sessionId"
+            params={{ sessionId: session.sessionId }}
           >
-            <div
-              className="absolute top-0 left-0 h-full w-2"
-              style={{ backgroundColor: session.tag.color }}
-            ></div>
-            <CardContent className="flex flex-row items-center gap-5">
-              <div className="flex flex-col gap-2 w-2xl ">
-                <CardTitle className="text-sm break-all line-clamp-3 text-ellipsis overflow-hidden ">
-                  {session.title}
-                </CardTitle>
-                <CardDescription className="text-xs md:text-sm text-gray-600  line-clamp-1 text-ellipsis overflow-hidden">
-                  {session.notes}
-                </CardDescription>
-              </div>
-              <Tag
-                tag={session.tag}
-                className="cursor-pointer hidden md:flex"
+            <Card
+              className="relative overflow-hidden py-4 transition hover:shadow-md"
+              style={{
+                ['--tag-color' as any]: hexToRgba(session.tag.color, 0.04),
+                backgroundColor: 'var(--tag-color)',
+              }}
+            >
+              <div
+                className="absolute left-0 top-0 h-full w-1"
+                style={{ backgroundColor: session.tag.color }}
               />
-              <div className="flex flex-col  gap-2 w-20 md:flex-row-reverse md:justify-end  md:gap-6 ml-auto min-w-fit">
-                <div className="flex flex-row gap-1 items-center">
-                  <Calendar className="w-3 h-3 md:w-4 md:h-4" />
-                  <div className="text-xs text-gray-600">
-                    {new Date(session.startedAt).toLocaleString(undefined, {
-                      day: 'numeric',
-                      month: 'numeric',
-                      year: 'numeric',
-                    })}
+
+              <CardContent className="flex items-center gap-5">
+                <div className="flex flex-col gap-1 max-w-xl">
+                  <CardTitle className="text-sm line-clamp-2">
+                    {session.title}
+                  </CardTitle>
+                  <CardDescription className="text-xs line-clamp-1">
+                    {session.notes}
+                  </CardDescription>
+                </div>
+
+                <Tag tag={session.tag} className="hidden md:flex ml-4" />
+
+                <div className="ml-auto flex gap-6 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    {new Date(session.startedAt).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Hourglass className="h-4 w-4" />
+                    {session.durationMinutes} min
                   </div>
                 </div>
-                <div className="flex flex-row gap-1 items-center">
-                  <Hourglass className="w-3 h-3 md:w-4 md:h-4" />
-                  <div className="text-xs text-gray-600">
-                    {session.durationMinutes} mins
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
+              </CardContent>
+            </Card>
+          </Link>
+        )),
+      )}
+
+      <li ref={observerRef} className="flex justify-center py-6">
+        {isFetchingNextPage && <Spinner />}
+      </li>
+
       <SessionForm
         open={showCreateSessionDialog}
         setOpen={setShowCreateSessionDialog}

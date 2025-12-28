@@ -1,6 +1,6 @@
 import { and, eq, or} from "drizzle-orm";
 import { db } from "../index";
-import { users, userApiTokens } from "../schema";
+import { users } from "../schema";
 
 export interface UserRegister{
   username: string;
@@ -55,16 +55,7 @@ export async function createUser(data: UserRegister) {
     .returning();
   return result;
 }
-export async function upsertApiToken(userId: string, apiToken: string) {
-  await db
-    .insert(userApiTokens)
-    .values({ userId, apiToken })
-    .onConflictDoUpdate({
-      target: userApiTokens.userId,
-      set: { apiToken },
-    });
-  return;
-}
+
 
 export default {
   getUserByUsername,
@@ -72,5 +63,4 @@ export default {
   getUserById,
   getUserByCredentials,
   createUser,
-  upsertApiToken,
 };

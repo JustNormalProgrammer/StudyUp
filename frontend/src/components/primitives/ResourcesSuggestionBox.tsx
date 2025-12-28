@@ -19,31 +19,23 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 export function ResourcesSuggestionBox({
   value,
   setValue,
-  setSelectedResources,
+  resourcesData,
 }: {
   value: Array<{ resourceId: string; label?: string }>
   setValue: (value: Array<{ resourceId: string; label?: string }>) => void
-  setSelectedResources: (value: Array<StudyResource>) => void
+  resourcesData: Array<StudyResource>
 }) {
-  const api = useAuthenticatedRequest()
-  const { data = [] } = useQuery({
-    queryKey: ['resources'],
-    queryFn: async () => {
-      const { data } = await api.get<Array<StudyResource>>('/resources')
-      return data
-    },
-  })
+
   const [open, setOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 768px)')
-  const selectedResources = data.filter((resource) =>
+  const selectedResources = resourcesData.filter((resource) =>
     value.some((r) => r.resourceId === resource.resourceId),
   )
-  const remainingResources = data.filter(
+  const remainingResources = resourcesData.filter(
     (resource) => !selectedResources.includes(resource),
   )
   if (isDesktop) {
@@ -61,10 +53,6 @@ export function ResourcesSuggestionBox({
             setOpen={setOpen}
             setValue={(option) => {
               setValue([{ resourceId: option }, ...value])
-              setSelectedResources([
-                ...selectedResources,
-                data.find((resource) => resource.resourceId === option)!,
-              ])
             }}
             options={remainingResources}
           />
@@ -88,12 +76,8 @@ export function ResourcesSuggestionBox({
             setOpen={setOpen}
             setValue={(option) => {
               setValue([...value, { resourceId: option }])
-              setSelectedResources([
-                ...selectedResources,
-                data.find((resource) => resource.resourceId === option)!,
-              ])
             }}
-            options={data}
+            options={resourcesData}
           />
         </div>
       </DrawerContent>

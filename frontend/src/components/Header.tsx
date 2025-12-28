@@ -1,12 +1,42 @@
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { Button } from './ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useSidebar } from '@/components/ui/sidebar'
+import { useAuth } from '@/contexts/AuthProvider'
 
 export default function Header() {
+  const { user, logout } = useAuth()
   return (
     <nav className="flex border-b h-[65px] items-center justify-between md:justify-end p-5">
       <SidebarToggle />
-      <div className="rounded-full border-2 border-red-200 h-12 w-12"></div>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <div className="rounded-full bg-primary/80 h-12 w-12 flex items-center justify-center font-semibold text-xl cursor-pointer">
+            {user?.username.split('').slice(0, 2).join('').toUpperCase()}
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-40">
+          <DropdownMenuItem asChild>
+            <Link to="/dashboard/settings" className="w-full cursor-default">
+              <Settings size={16} />
+              Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <div className="w-full" onClick={() => logout()}>
+              <LogOut size={16} />
+              Logout
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </nav>
   )
 }
@@ -16,10 +46,10 @@ function SidebarToggle() {
   return (
     <Button
       variant="ghost"
-      className="md:hidden"
       onClick={() => setOpenMobile(!openMobile)}
+      className="md:hidden"
     >
-      {openMobile ? <PanelLeftClose /> : <PanelLeftOpen/>}
+      {openMobile ? <PanelLeftClose /> : <PanelLeftOpen />}
     </Button>
   )
 }

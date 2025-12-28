@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { StudyResource, StudySession } from '@/api/types'
 import { Input } from '@/components/ui/input'
@@ -17,17 +17,16 @@ import {
 } from '@/components/ui/field'
 import { DatePicker } from '@/components/primitives/DatePicker'
 import { Textarea } from '@/components/ui/textarea'
-import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import { ResourcesSuggestionBox } from '@/components/primitives/ResourcesSuggestionBox'
 import ResourceCard from '@/components/resources/Card'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 const schema = z.object({
   tagId: z.string({ error: 'Tag is required' }).min(1, 'Tag is required'),
@@ -64,6 +63,14 @@ export default function SessionForm({
   onSubmit: (data: SessionFormData) => void
 }) {
   console.log(sessionData)
+  const api = useAuthenticatedRequest()
+  const { data: resourcesData = [] } = useQuery({
+    queryKey: ['resources'],
+    queryFn: async () => {
+      const { data } = await api.get<Array<StudyResource>>('/resources')
+      return data
+    },
+  })
   const form = useForm({
     mode: 'onSubmit', // TODO: work on onTouched
     resolver: zodResolver(schema),
@@ -78,29 +85,14 @@ export default function SessionForm({
       durationMinutes: sessionData?.session?.durationMinutes || 60,
     },
   })
-  useEffect(() => {
-    if (sessionData?.session) {
-      form.reset({
-        title: sessionData.session.title,
-        notes: sessionData.session.notes ?? '',
-        tagId: sessionData.session.tagId,
-        studyResources: sessionData.resources ?? [],
-        startedAt: new Date(sessionData.session.startedAt),
-        durationMinutes: sessionData.session.durationMinutes,
-      })
-      setStudyResources(sessionData.resources ?? [])
-    }
-  }, [sessionData, form])
+
   const watchedResources = useWatch({
     control: form.control,
     name: 'studyResources',
   })
-  const [studyResources, setStudyResources] = useState<Array<StudyResource>>(
-    sessionData?.resources || [],
-  )
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="min-w-20/21 md:min-w-3xl overflow-y-auto max-h-[calc(100vh-2rem)] ">
         <DialogHeader>
           <DialogTitle>
@@ -173,7 +165,7 @@ export default function SessionForm({
                 <ResourcesSuggestionBox
                   value={value || []}
                   setValue={onChange}
-                  setSelectedResources={setStudyResources}
+                  resourcesData={resourcesData}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -223,41 +215,38 @@ export default function SessionForm({
               )}
             />
           </FieldGroup>
-          {studyResources.length > 0 && (
+          {watchedResources && watchedResources.length > 0 && (
             <div className="mb-4 flex flex-col gap-2">
               <div className="text-lg font-semibold">Selected Resources</div>
               <div className="max-h-[300px] overflow-y-auto p-1 flex flex-col gap-2">
-                {studyResources.map((resource) => (
+                {watchedResources.map((resource) => (
                   <div
                     key={resource.resourceId}
                     className="flex flex-row gap-2"
                   >
                     <ResourceCard
-                      resource={resource}
+                      resource={
+                        resourcesData.find(
+                          (r) => r.resourceId === resource.resourceId,
+                        )!
+                      }
                       inSessionRemoveHandler={() => {
                         form.setValue(
                           'studyResources',
-                          form
-                            .getValues('studyResources')
-                            ?.filter(
-                              (r) => r.resourceId !== resource.resourceId,
-                            ),
-                        )
-                        setStudyResources(
-                          studyResources.filter(
+                          watchedResources.filter(
                             (r) => r.resourceId !== resource.resourceId,
                           ),
                         )
                       }}
                       value={
-                        watchedResources?.find(
+                        watchedResources.find(
                           (r) => r.resourceId === resource.resourceId,
                         )?.label || ''
                       }
                       setValue={(value) => {
                         form.setValue(
                           'studyResources',
-                          watchedResources?.map((r) =>
+                          watchedResources.map((r) =>
                             r.resourceId === resource.resourceId
                               ? { ...r, label: value }
                               : r,
