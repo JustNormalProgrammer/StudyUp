@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+import DeleteDialog from '@/components/dialogs/Delete'
 
 export function DropdownMenuDialog({
   resource,
@@ -30,6 +31,7 @@ export function DropdownMenuDialog({
   inSessionRemoveHandler?: () => void
 }) {
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const api = useAuthenticatedRequest()
   const queryClient = useQueryClient()
   const mutation = useMutation({
@@ -51,9 +53,8 @@ export function DropdownMenuDialog({
     },
   })
   const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.delete(`/resources/${resource.resourceId}`)
-      return data
+    mutationFn: () => {
+      return api.delete(`/resources/${resource.resourceId}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resources'] })
@@ -89,7 +90,7 @@ export function DropdownMenuDialog({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() => {
-                    deleteMutation.mutate()
+                    setShowDeleteDialog(true)
                   }}
                   className="text-destructive focus:bg-destructive/10 focus:text-destructive flex flex-row gap-2 items-center"
                 >
@@ -107,6 +108,11 @@ export function DropdownMenuDialog({
         resource={resource}
         onSubmit={mutation.mutate}
         isLoading={mutation.isPending}
+      />
+      <DeleteDialog
+        open={showDeleteDialog}
+        setOpen={setShowDeleteDialog}
+        mutation={deleteMutation}
       />
     </>
   )

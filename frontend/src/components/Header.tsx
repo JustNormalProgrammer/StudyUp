@@ -1,5 +1,5 @@
 import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from './ui/button'
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthProvider'
 
 export default function Header() {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   return (
     <nav className="flex border-b h-[65px] items-center justify-between md:justify-end p-5">
       <SidebarToggle />
@@ -30,7 +31,13 @@ export default function Header() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <div className="w-full" onClick={() => logout()}>
+            <div
+              className="w-full"
+              onClick={() => {
+                logout()
+                navigate({ to: '/login' })
+              }}
+            >
               <LogOut size={16} />
               Logout
             </div>

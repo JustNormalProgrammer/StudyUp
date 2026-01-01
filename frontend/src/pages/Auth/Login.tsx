@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import {
+  Link,
+  useNavigate,
+} from '@tanstack/react-router'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { z } from 'zod'
 import type { SubmitHandler } from 'react-hook-form'
 import type { User } from '@/contexts/AuthProvider'
-
 import type { ExpressValidatorError } from '@/types'
 import {
   Card,
@@ -39,6 +41,7 @@ const schema = z.object({
 type LoginForm = z.infer<typeof schema>
 
 export default function Login() {
+  const redirect = new URLSearchParams(window.location.search).get('redirect') || '/'
   const form = useForm<LoginForm>({
     mode: 'onTouched',
     resolver: zodResolver(schema),
@@ -58,7 +61,7 @@ export default function Login() {
     try {
       const response = await api.post<LoginResponse>('/auth/login', data)
       login(response.data)
-      navigate({ to: '/dashboard' })
+      navigate({ to: redirect })
     } catch (e) {
       if (!axios.isAxiosError(e) || !e.response) {
         setFormError('Unexpected error occurred')

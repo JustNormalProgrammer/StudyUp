@@ -3,12 +3,12 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
-import { Calendar, CirclePlus, Hourglass } from 'lucide-react'
+import { Calendar, Hourglass, Plus } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import type { StudySession } from '@/api/types'
-import type { SessionFormData } from '@/components/sessions/SessionForm'
+import type { StudySession, Tag as TagType } from '@/api/types'
+import type { SessionFormData } from '@/components/dialogs/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import useDebounce from '@/hooks/useDebounce'
 import {
@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import TagSelector from '@/components/sessions/TagSelector'
-import SessionForm from '@/components/sessions/SessionForm'
+import SessionForm from '@/components/dialogs/SessionForm'
 import Tag from '@/components/primitives/Tag'
 import { hexToRgba } from '@/utils/hexToRgba'
 import { Spinner } from '@/components/ui/spinner'
@@ -104,12 +104,21 @@ export default function Sessions() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <Button onClick={() => setShowCreateSessionDialog(true)}>
-          <CirclePlus />
+          <Plus />
           Create session
         </Button>
       </div>
 
-      <TagSelector value={selectedTag} setValue={setSelectedTag} />
+      <TagSelector
+        value={selectedTag}
+        onClick={(tag: TagType) => {
+          if (selectedTag === tag.tagId) {
+            setSelectedTag('')
+            return
+          }
+          setSelectedTag(tag.tagId)
+        }}
+      />
 
       {isLoading && (
         <div className="text-center text-muted-foreground mt-10">
@@ -137,8 +146,8 @@ export default function Sessions() {
               />
 
               <CardContent className="flex items-center gap-5">
-                <div className="flex flex-col gap-1 max-w-xl">
-                  <CardTitle className="text-sm line-clamp-2">
+                <div className="flex flex-col gap-1 w-xl overflow-hidden text-ellipsis">
+                  <CardTitle className="text-sm line-clamp-2 text-ellipsis overflow-hidden">
                     {session.title}
                   </CardTitle>
                   <CardDescription className="text-xs line-clamp-1">
@@ -146,16 +155,19 @@ export default function Sessions() {
                   </CardDescription>
                 </div>
 
-                <Tag tag={session.tag} className="hidden md:flex ml-4" />
+                <Tag
+                  tag={session.tag}
+                  className="hidden md:flex ml-4 max-w-[200px] min-w-0 overflow-hidden text-ellipsis"
+                />
 
                 <div className="ml-auto flex gap-6 text-xs text-muted-foreground">
+                  <div className="hidden xl:flex items-center gap-1">
+                    <Hourglass className="h-4 w-4" />
+                    {session.durationMinutes} min
+                  </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {new Date(session.startedAt).toLocaleDateString()}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Hourglass className="h-4 w-4" />
-                    {session.durationMinutes} min
                   </div>
                 </div>
               </CardContent>

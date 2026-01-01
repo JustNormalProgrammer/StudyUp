@@ -1,4 +1,4 @@
-import { and, eq, between, desc, sql, ilike } from "drizzle-orm";
+import { and, eq, between, desc, sql, ilike, gte, lte, sum } from "drizzle-orm";
 import { db } from "../index";
 import {
   studyResources,
@@ -6,7 +6,11 @@ import {
   studySessionsStudyResources,
 } from "../schema";
 import { tags } from "../schema";
-import { getStudyResourcesBySessionId, StudyResourceTypeEnum } from "./resources";
+import {
+  getStudyResourcesBySessionId,
+  StudyResourceTypeEnum,
+} from "./resources";
+import { withPagination } from "../withPagination";
 
 export interface StudySessionCreate {
   userId: string;
@@ -26,16 +30,23 @@ export interface StudySessionResource {
 }
 
 export interface PaginationQuery {
-  userId: string;
-  from: Date;
-  to: Date;
+  from?: Date;
+  to?: Date;
   start?: number;
   limit?: number;
 }
 
-export async function getSessions(data: Required<PaginationQuery> & { tagId?: string, q?: string }) {
-  const { userId, from, to, start, limit, tagId, q } = data;
-  const result = await db
+export interface FilterQuery {
+  tagId?: string;
+  q?: string;
+}
+
+export async function getSessions(
+  userId: string,
+  paginationQuery: PaginationQuery & FilterQuery
+) {
+  const { from, to, start, limit, tagId, q } = paginationQuery;
+  const query = db
     .select({
       sessionId: studySessions.sessionId,
       tagId: studySessions.tagId,
@@ -54,16 +65,47 @@ export async function getSessions(data: Required<PaginationQuery> & { tagId?: st
     .where(
       and(
         eq(studySessions.userId, userId),
-        between(studySessions.startedAt, from, to),
+        from ? gte(studySessions.startedAt, from) : undefined,
+        to ? lte(studySessions.startedAt, to) : undefined,
         tagId ? eq(studySessions.tagId, tagId) : undefined,
-        q ? ilike(studySessions.title, `%${q}%`) : undefined,
+        q ? ilike(studySessions.title, `%${q}%`) : undefined
       )
     )
-    .orderBy(desc(studySessions.startedAt))
-    .offset(start)
-    .limit(limit);
+    .orderBy(desc(studySessions.startedAt), desc(studySessions.sessionId))
+    .$dynamic();
+  const result = await withPagination(query, start, limit);
   return result;
 }
+
+export async function getSessionsDurationByDay(
+  userId: string,
+  paginationQuery: PaginationQuery & FilterQuery
+) {
+  const { from, to, start, limit, tagId, q } = paginationQuery;
+  const result = await db
+    .select({
+      sum: sum(studySessions.durationMinutes),
+      day: sql<number>`extract(dow from ${studySessions.startedAt})`,
+      color: tags.color,
+    })
+    .from(studySessions)
+    .leftJoin(tags, eq(studySessions.tagId, tags.tagId))
+    .where(
+      and(
+        eq(studySessions.userId, userId),
+        from ? gte(studySessions.startedAt, from) : undefined,
+        to ? lte(studySessions.startedAt, to) : undefined,
+        tagId ? eq(studySessions.tagId, tagId) : undefined,
+        q ? ilike(studySessions.title, `%${q}%`) : undefined
+      )
+    )
+    .groupBy(
+      sql<number>`extract(dow from ${studySessions.startedAt})`,
+      tags.color
+    )
+  return result;
+}
+
 export async function getSessionById(sessionId: string, userId: string) {
   const [result] = await db
     .select({
@@ -120,7 +162,7 @@ export async function updateStudySessionResources(
   await db
     .delete(studySessionsStudyResources)
     .where(eq(studySessionsStudyResources.sessionId, sessionId));
-  if(resourcesToAdd.length > 0) {
+  if (resourcesToAdd.length > 0) {
     await db.insert(studySessionsStudyResources).values(resourcesToAdd);
   }
   return;
@@ -141,4 +183,5 @@ export default {
   updateStudySession,
   updateStudySessionResources,
   deleteStudySession,
+  getSessionsDurationByDay,
 };

@@ -58,7 +58,6 @@ export default function Quiz({
                 {question.questionContent}
               </p>
 
-              {/* SINGLE CHOICE */}
               {!question.isMultipleChoice && (
                 <RadioGroup
                   value={questionAnswers[0] ?? undefined}
@@ -85,7 +84,6 @@ export default function Quiz({
                 </RadioGroup>
               )}
 
-              {/* MULTIPLE CHOICE */}
               {question.isMultipleChoice && (
                 <>
                   {question.questionChoices.map((choice) => {

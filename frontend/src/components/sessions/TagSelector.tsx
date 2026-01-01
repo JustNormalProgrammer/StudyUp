@@ -4,11 +4,11 @@ import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import { hexToRgba } from '@/utils/hexToRgba'
 
 export default function TagSelector({
-  value = '9336e0dc-133a-4e0f-80c2-b1b04fe2e586',
-  setValue,
+  value,
+  onClick,
 }: {
-  value: string
-  setValue: (value: string) => void
+  value?: string
+  onClick?: (value: Tag) => void
 }) {
   const api = useAuthenticatedRequest()
   const { data = [] } = useQuery({
@@ -23,21 +23,17 @@ export default function TagSelector({
       {data.map((tag) => (
         <div
           key={tag.tagId}
-          className={`rounded-xl py-1 px-3 whitespace-nowrap flex items-center gap-2 cursor-pointer user-select-none ${value === tag.tagId ? 'bg-(--tag-color) brightness-90' : ''}
+          className={`rounded-xl py-1 px-3 whitespace-nowrap flex items-center gap-2 cursor-pointer user-select-none text-ellipsis overflow-hidden ${value === tag.tagId ? 'bg-(--tag-color) brightness-90' : ''}
             hover:bg-(--tag-color) hover:brightness-80`}
           style={{
             ['--tag-color' as any]: hexToRgba(tag.color, 0.1),
           }}
           onClick={() => {
-            if (value === tag.tagId) {
-              setValue('')
-              return
-            }
-            setValue(tag.tagId)
+            onClick?.(tag)
           }}
         >
           <div
-            className="w-2 h-2 rounded-full"
+            className="w-2 h-2 rounded-full shrink-0"
             style={{ backgroundColor: tag.color }}
           />
           <div className="text-sm">{tag.content}</div>

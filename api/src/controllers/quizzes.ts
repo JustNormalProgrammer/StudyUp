@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import quizzes, { QuizAttemptCreate } from "../db/queries/quizzes";
 import { matchedData, validationResult } from "express-validator";
-import { QuestionChoiceType, QuestionType, QuizType } from "./sessions";
+import { QuestionType, QuizType } from "./sessions";
 
 export type QuizAttemptContent = Array<
   Array<"A" | "B" | "C" | "D" | "E" | "F" | undefined>

@@ -11,22 +11,17 @@ import { body } from "express-validator";
 
 const validateTag = [
   body("content").notEmpty().withMessage("Content is required"),
-  body("color").notEmpty().withMessage("Color is required"),
+  body("color")
+    .notEmpty()
+    .withMessage("Color is required")
+    .isHexColor()
+    .withMessage("Color must be a valid hex color"),
 ];
 
 const router = Router();
 
 router.get("/", requiredAuth, getUserTags);
 router.post("/", requiredAuth, validate(validateTag), createTag);
-router.delete(
-  "/:tagId",
-  requiredAuth,
-  deleteTag
-);
-router.put(
-  "/:tagId",
-  requiredAuth,
-  validate(validateTag),
-  updateTag
-);
+router.delete("/:tagId", requiredAuth, deleteTag);
+router.put("/:tagId", requiredAuth, validate(validateTag), updateTag);
 export default router;

@@ -1,6 +1,7 @@
 import sessions, {
   StudySessionCreate,
   PaginationQuery,
+  FilterQuery,
 } from "../db/queries/sessions";
 import resources from "../db/queries/resources";
 import { Request, Response } from "express";
@@ -8,6 +9,7 @@ import { validationResult, matchedData } from "express-validator";
 import * as z from "zod";
 import { GoogleGenAI } from "@google/genai";
 import quizzes from "../db/queries/quizzes";
+import tags from "../db/queries/tags";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
 
@@ -47,16 +49,16 @@ export const getSessions = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, start, limit, tagId, q } =
-      matchedData<Omit<PaginationQuery, "userId"> & { tagId?: string, q?: string }>(req);
-    const result = await sessions.getSessions({
-      userId: req.user!.userId,
-      from: from ? new Date(from) : new Date(0),
-      to: to ? new Date(to) : new Date(),
-      start: start ? start : 0,
-      limit: limit ? limit : 999,
-      tagId: tagId ? tagId : undefined,
-      q: q ? q : undefined,
+    const { from, to, start, limit, tagId, q } = matchedData<
+      PaginationQuery & FilterQuery
+    >(req);
+    const result = await sessions.getSessions(req.user!.userId, {
+      from,
+      to,
+      start,
+      limit,
+      tagId,
+      q,
     });
     return res.json(result);
   } catch (e) {
@@ -94,6 +96,26 @@ export const createSession = async (req: Request, res: Response) => {
           studyResources: { resourceId: string; label?: string }[];
         }
       >(req);
+    const requestResourcesIds = studyResources.map(
+      (resource) => resource.resourceId
+    );
+    const existingResources = await resources.getResourceByIds(
+      requestResourcesIds,
+      req.user!.userId
+    );
+    if (existingResources.length !== requestResourcesIds.length) {
+      return res.status(400).json({
+        errors: [
+          { path: "studyResources", msg: "Some resources do not exist" },
+        ],
+      });
+    }
+    const foundTag = await tags.getTagById(tagId, req.user!.userId);
+    if (!foundTag) {
+      return res
+        .status(400)
+        .json({ errors: [{ path: "tagId", msg: "Tag not found" }] });
+    }
     const session: StudySessionCreate = {
       userId: req.user!.userId,
       tagId,
@@ -141,6 +163,26 @@ export const replaceSession = async (
     );
     if (!existingSession) {
       return res.sendStatus(404);
+    }
+    const requestResourcesIds = studyResources.map(
+      (resource) => resource.resourceId
+    );
+    const existingResources = await resources.getResourceByIds(
+      requestResourcesIds,
+      req.user!.userId
+    );
+    if (existingResources.length !== requestResourcesIds.length) {
+      return res.status(400).json({
+        errors: [
+          { path: "studyResources", msg: "Some resources do not exist" },
+        ],
+      });
+    }
+    const foundTag = await tags.getTagById(sessionData.tagId, req.user!.userId);
+    if (!foundTag) {
+      return res
+        .status(400)
+        .json({ errors: [{ path: "tagId", msg: "Tag not found" }] });
     }
     await sessions.updateStudySession(sessionId, sessionData);
     await sessions.updateStudySessionResources(sessionId, studyResources);

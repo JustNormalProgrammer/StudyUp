@@ -62,7 +62,6 @@ export default function SessionForm({
   }
   onSubmit: (data: SessionFormData) => void
 }) {
-  console.log(sessionData)
   const api = useAuthenticatedRequest()
   const { data: resourcesData = [] } = useQuery({
     queryKey: ['resources'],

@@ -1,4 +1,4 @@
-import { and, eq, between, desc, sql, or, ilike } from "drizzle-orm";
+import { and, eq, between, desc, sql, or, ilike, inArray } from "drizzle-orm";
 import { db } from "../index";
 import { studyResources, studySessionsStudyResources } from "../schema";
 
@@ -35,9 +35,22 @@ export async function getResourceById(resourceId: string, userId: string) {
     .limit(1);
   return result[0];
 }
-
-export async function getResourceByTitle(title: string, userId: string) {
+export async function getResourceByIds(resourceIds: string[], userId: string) {
   const result = await db
+    .select({
+      resourceId: studyResources.resourceId,
+    })
+    .from(studyResources)
+    .where(
+      and(
+        inArray(studyResources.resourceId, resourceIds),
+        eq(studyResources.userId, userId)
+      )
+    );
+  return result;
+}
+export async function getResourceByTitle(title: string, userId: string) {
+  const [result] = await db
     .select({
       resourceId: studyResources.resourceId,
     })
@@ -46,7 +59,7 @@ export async function getResourceByTitle(title: string, userId: string) {
       and(eq(studyResources.title, title), eq(studyResources.userId, userId))
     )
     .limit(1);
-  return result[0];
+  return result;
 }
 
 export async function getStudyResources(userId: string, query: string = "") {
@@ -67,7 +80,8 @@ export async function getStudyResources(userId: string, query: string = "") {
           ilike(studyResources.desc, `%${query}%`)
         )
       )
-    ).orderBy(studyResources.title);
+    )
+    .orderBy(studyResources.title);
   return result;
 }
 
@@ -149,4 +163,5 @@ export default {
   addResourcesToSession,
   getResourceByTitle,
   replaceStudyResource,
+  getResourceByIds,
 };

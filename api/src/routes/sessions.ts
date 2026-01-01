@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { requiredAuth } from "../middleware/requiredAuth";
-import resources from "../db/queries/resources";
 import {
   getSessions,
   getSessionById,
@@ -8,12 +7,13 @@ import {
   deleteSession,
   replaceSession,
   createQuiz,
-  getSessionQuizzes
+  getSessionQuizzes,
 } from "../controllers/sessions";
-import { body, query } from "express-validator";
+import { body } from "express-validator";
 import validate from "../utils/validate";
-import tags from "../db/queries/tags";
 import { getResourcesBySessionId } from "../controllers/resources";
+import { validatePaginationQuery } from "../utils/validatePagination";
+import { validateFilterQuery } from "../utils/validateFilter";
 
 const validateCreateSession = [
   body("tagId").notEmpty().withMessage("Tag is required"),
@@ -27,7 +27,7 @@ const validateCreateSession = [
     .toDate()
     .custom(async (value) => {
       if (value > new Date()) {
-        throw new Error("Starting time cannot be set in the future");
+        throw new Error("Date cannot be set in the future");
       }
       return true;
     }),
@@ -46,52 +46,6 @@ const validateCreateSession = [
     .optional()
     .isString()
     .withMessage("Label must be a string"),
-  body("studyResources.*.resourceId").custom(async (value, { req }) => {
-    try {
-      const existingResource = await resources.getResourceById(
-        value,
-        req.user!.userId
-      );
-      if (!existingResource) {
-        throw new Error();
-      }
-    } catch (error) {
-      console.log(error);
-      throw new Error("Resource not found");
-    }
-    return true;
-  }),
-  body("tagId").custom(async (value, { req }) => {
-    if (value) {
-      try {
-        const existingTag = await tags.getTagById(value, req.user!.userId);
-        if (!existingTag) {
-          throw new Error();
-        }
-      } catch (error) {
-        console.log(error);
-        throw new Error("Tag not found");
-      }
-    }
-    return true;
-  }),
-];
-
-const validateGetSessions = [
-  query("from").optional().isISO8601().withMessage("From must be a date"),
-  query("to").optional().isISO8601().withMessage("To must be a date"),
-  query("start")
-    .optional()
-    .toInt()
-    .isInt({ min: 0 })
-    .withMessage("Start must be a positive integer"),
-  query("limit")
-    .optional()
-    .toInt()
-    .isInt({ min: 1 })
-    .withMessage("Limit must be a positive integer"),
-  query("tagId").optional().isUUID().withMessage("TagId must be a valid UUID"),
-  query("q").optional().isString().withMessage("Search must be a string"),
 ];
 
 const validateCreateQuiz = [
@@ -114,9 +68,16 @@ const validateCreateQuiz = [
     .withMessage("Additional information cannot be empty"),
 ];
 
+
 const router = Router();
 
-router.get("/", requiredAuth, validate(validateGetSessions), getSessions);
+router.get(
+  "/",
+  requiredAuth,
+  validate(validatePaginationQuery),
+  validate(validateFilterQuery),
+  getSessions
+);
 router.post("/", requiredAuth, validate(validateCreateSession), createSession);
 router.get("/:sessionId", requiredAuth, getSessionById);
 router.get("/:sessionId/resources", requiredAuth, getResourcesBySessionId);

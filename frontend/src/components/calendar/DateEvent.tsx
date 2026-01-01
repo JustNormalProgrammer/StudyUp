@@ -17,9 +17,9 @@ export default function DateEvent({
         ['--tag-color' as any]: hexToRgba(colorBorder || '', 0.05),
       }}
     >
-      <CardContent className="flex flex-row flex-wrap items-center p-1 gap-4" >
+      <CardContent className="flex flex-row items-center p-1 gap-4" >
         <div className="text-sm font-medium break-all line-clamp-2 overflow-hidden text-ellipsis flex-1">{title}</div>
-        <div className="min-w-fit">{secInfo}</div>
+        <div>{secInfo}</div>
       </CardContent>
     </Card>
   )

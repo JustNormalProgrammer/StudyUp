@@ -2,8 +2,6 @@ import { BadgeQuestionMark, BookOpen, Check, CheckCheck } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Card, CardTitle } from '../ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-
-import { Button } from '../ui/button'
 import type { QuizInfo } from '@/api/types'
 
 export default function QuizCard({ quiz }: { quiz: QuizInfo }) {

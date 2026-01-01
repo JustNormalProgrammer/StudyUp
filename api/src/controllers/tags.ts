@@ -20,6 +20,10 @@ export const createTag = async (req: Request, res: Response) => {
   }
   try {
     const { content, color } = matchedData<Omit<TagCreate, "userId">>(req);
+    const existingTag = await tags.getTagByContent(content, req.user!.userId);
+    if (existingTag) {
+      return res.status(400).json({ errors: [{ path: 'content', msg: 'Tag already in use' }] });
+    }
     const tag: TagCreate = {
       userId: req.user!.userId,
       content,
@@ -62,6 +66,12 @@ export const updateTag = async (req: Request<{ tagId: string }>, res: Response) 
       return res.sendStatus(404);
     }
     const { content, color } = matchedData<Omit<TagCreate, "userId">>(req);
+    if(content !== existingTag.content) {
+      const existingTagWithSameContent = await tags.getTagByContent(content, req.user!.userId);
+      if(existingTagWithSameContent) {
+        return res.status(400).json({ errors: [{ path: "content", msg: "Tag already in use" }] });
+      }
+    }
     const tag: TagCreate = {
       userId: req.user!.userId,
       content,

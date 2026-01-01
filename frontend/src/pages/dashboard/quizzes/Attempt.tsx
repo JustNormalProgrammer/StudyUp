@@ -1,5 +1,6 @@
-import { Link, useParams } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -11,15 +12,14 @@ import {
 import type { Quiz, QuizAttempt } from '@/api/types'
 import type { ChartConfig } from '@/components/ui/chart'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+import { getColor } from '@/utils/utilFunc'
+import QuizHeader from '@/components/quiz/QuizHeader'
+import { Button } from '@/components/ui/button'
+import { ChartContainer } from '@/components/ui/chart'
+import { getScoreMessage } from '@/utils/scoreMessages'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import QuizHeader from '@/components/quiz/QuizHeader'
-import { ChartContainer } from '@/components/ui/chart'
-import { getColor } from '@/utils/utilFunc'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { getScoreMessage } from '@/utils/scoreMessages'
 
 export default function Attempt() {
   const { quizId, attemptId } = useParams({
@@ -27,7 +27,8 @@ export default function Attempt() {
   })
 
   const api = useAuthenticatedRequest()
-
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const attemptQuery = useQuery({
     queryKey: ['attempt', attemptId],
     queryFn: async () => {
@@ -45,6 +46,21 @@ export default function Attempt() {
       return data
     },
   })
+
+  const deleteAttemptMutation = useMutation({
+    mutationFn: () => {
+      return api.delete<void>(`/quizzes/attempts/${attemptId}`)
+    },
+    onSuccess: () => {
+      toast.success('Attempt deleted successfully')
+      queryClient.invalidateQueries({ queryKey: ['attempt'] })
+      navigate({
+        to: '/dashboard/quizzes/$quizId',
+        params: { quizId: quizId },
+      })
+    },
+  })
+
   const percentage = Math.round(
     (Number(attemptQuery.data?.score) / Number(quizQuery.data?.maxScore)) * 100,
   )
@@ -82,6 +98,7 @@ export default function Attempt() {
         numberOfQuestions={quizQuery.data.numberOfQuestions}
         isMultipleChoice={quizQuery.data.isMultipleChoice}
         createdAt={attemptQuery.data.finishedAt}
+        mutation={deleteAttemptMutation}
         ContextButton={
           <Button variant="link" className="p-0 text-muted-foreground">
             <Link to="/dashboard/quizzes/$quizId" params={{ quizId: quizId }}>
@@ -112,7 +129,6 @@ export default function Attempt() {
               radialLines={false}
               stroke="none"
               polarRadius={[40, 30]}
-              className="fill-"
             />
 
             <RadialBar dataKey="value" background cornerRadius={10} />

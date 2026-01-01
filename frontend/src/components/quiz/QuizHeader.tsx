@@ -7,10 +7,14 @@ import {
   Trash,
 } from 'lucide-react'
 import { Tooltip, TooltipTrigger } from '@radix-ui/react-tooltip'
+import { useState } from 'react'
 import { Button } from '../ui/button'
 import { TooltipContent } from '../ui/tooltip'
 import Tag from '../primitives/Tag'
+import DeleteDialog from '../dialogs/Delete'
 import type { Tag as TagType } from '@/api/types'
+import type { UseMutationResult } from '@tanstack/react-query'
+import type { AxiosResponse } from 'axios'
 
 export default function QuizHeader({
   title,
@@ -18,7 +22,8 @@ export default function QuizHeader({
   numberOfQuestions,
   isMultipleChoice,
   createdAt,
-  ContextButton
+  ContextButton,
+  mutation,
 }: {
   title: string
   tag: TagType
@@ -26,7 +31,14 @@ export default function QuizHeader({
   isMultipleChoice: boolean
   createdAt: string
   ContextButton?: React.ReactNode
+  mutation: UseMutationResult<
+    AxiosResponse<void, any, {}>,
+    Error,
+    void,
+    unknown
+  >
 }) {
+  const [open, setOpen] = useState(false)
   return (
     <>
       <div className="flex flex-row justify-between gap-1 items-center flex-wrap">
@@ -71,19 +83,9 @@ export default function QuizHeader({
               <Button
                 variant="secondary"
                 size="icon"
-                onClick={() => setOpen(true)}
                 className="w-fit"
+                onClick={() => setOpen(true)}
               >
-                <Pencil className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Edit</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="secondary" size="icon" className="w-fit">
                 <Trash className="w-4 h-4 text-destructive" />
               </Button>
             </TooltipTrigger>
@@ -93,6 +95,7 @@ export default function QuizHeader({
           </Tooltip>
         </div>
       </div>
+      <DeleteDialog open={open} setOpen={setOpen} mutation={mutation} />
     </>
   )
 }

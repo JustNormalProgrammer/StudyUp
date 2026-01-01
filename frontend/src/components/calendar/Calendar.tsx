@@ -26,7 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { hexToRgba } from '@/utils/hexToRgba'
 import { Separator } from '@/components/ui/separator'
 import '@/components/calendar/styles.css'
 import { getColor } from '@/utils/utilFunc'
@@ -35,26 +34,34 @@ type CalendarEvent = {
   title: string
   start: string
   allDay: boolean
-  colorBorder: string
-  type: 'session' | 'quiz'
+  borderColor: string
+}
+
+export type SessionEvent = CalendarEvent & {
   extendedProps: {
-    sessionId?: string
-    attemptId?: string
-    score?: string
-    quizId?: string
-    durationMinutes?: number
-    tag?: TagType
-    maxScore?: number
+    type: 'session'
+    sessionId: string
+    durationMinutes: number
+    tag: TagType
+  }
+}
+
+export type QuizEvent = CalendarEvent & {
+  extendedProps: {
+    type: 'quiz'
+    attemptId: string
+    score: number
+    quizId: string
+    tag: TagType
+    maxScore: number
   }
 }
 
 export default function Calendar() {
   const calendarRef = useRef<FullCalendar>(null)
-  const { open } = useSidebar()
   const api = useAuthenticatedRequest()
   const navigate = useNavigate()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedEvents, setSelectedEvents] = useState<Array<any>>([])
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [currentMonthTitle, setCurrentMonthTitle] = useState('')
   const [range, setRange] = useState<{ start: string; end: string } | null>(
@@ -66,8 +73,8 @@ export default function Calendar() {
     isLoading,
     isError,
   } = useQuery<{
-    sessions: Array<CalendarEvent>
-    quizzes: Array<CalendarEvent>
+    sessions: Array<SessionEvent>
+    quizzes: Array<QuizEvent>
   }>({
     queryKey: ['calendar-events', range],
     enabled: !!range,
@@ -81,14 +88,14 @@ export default function Calendar() {
 
       const data = response.data
 
-      const sessionsEvents: Array<CalendarEvent> = data.userSessions.map(
+      const sessionsEvents: Array<SessionEvent> = data.userSessions.map(
         (session: any) => ({
           title: session.title,
           start: session.startedAt,
           allDay: true,
-          colorBorder: session.tag.color,
-          type: 'session',
+          borderColor: session.tag.color,
           extendedProps: {
+            type: 'session',
             sessionId: session.sessionId,
             durationMinutes: session.durationMinutes,
             tag: session.tag,
@@ -96,14 +103,14 @@ export default function Calendar() {
         }),
       )
 
-      const quizzesAttemptsEvents: Array<CalendarEvent> =
+      const quizzesAttemptsEvents: Array<QuizEvent> =
         data.userQuizzesAttempts.map((attempt: any) => ({
           title: attempt.quizTitle,
           start: attempt.finishedAt,
           allDay: true,
-          colorBorder: attempt.tag.color,
-          type: 'quiz',
+          borderColor: attempt.tag.color,
           extendedProps: {
+            type: 'quiz',
             attemptId: attempt.quizAttemptId,
             score: attempt.score,
             quizId: attempt.quizId,
@@ -111,34 +118,34 @@ export default function Calendar() {
             maxScore: attempt.maxScore,
           },
         }))
-      console.log('sessions:', sessionsEvents)
       return { sessions: sessionsEvents, quizzes: quizzesAttemptsEvents }
     },
   })
 
-  function renderEventContent(eventInfo: any) {
+  function renderEventContent(eventInfo: { event: SessionEvent | QuizEvent }) {
     return <Event event={eventInfo.event} />
   }
 
-  function handleDateClick(info: any) {
-    setSelectedDate(info.date.toDateString())
+  function handleDateClick(date: Date) {
+    setSelectedDate(date.toDateString())
     setDialogOpen(true)
   }
-  function handleEventClick(info: any) {
-    if (info.event.extendedProps.type === 'session') {
+  function handleEventClick(event: SessionEvent | QuizEvent | any) {
+    if (event.extendedProps.type === 'session') {
       navigate({
         to: '/dashboard/study-sessions/$sessionId',
-        params: { sessionId: info.event.extendedProps.sessionId! },
+        params: { sessionId: event.extendedProps.sessionId },
       })
-    } else {
+    } else if (event.extendedProps.type === 'quiz') {
       navigate({
         to: '/dashboard/quizzes/$quizId/attempts/$attemptId',
         params: {
-          quizId: info.event.extendedProps.quizId!,
-          attemptId: info.event.extendedProps.attemptId!,
+          quizId: event.extendedProps.quizId,
+          attemptId: event.extendedProps.attemptId,
         },
       })
     }
+    return
   }
   const sessions = events?.sessions ?? []
   const quizzes = events?.quizzes ?? []
@@ -199,8 +206,8 @@ export default function Calendar() {
             events={[...sessions, ...quizzes]}
             displayEventTime={false}
             eventDisplay="block"
-            dateClick={handleDateClick}
-            eventClick={handleEventClick}
+            dateClick={(info) => handleDateClick(info.date)}
+            eventClick={(info) => handleEventClick(info.event as any)}
             eventContent={renderEventContent}
             datesSet={(arg) => {
               setCurrentMonthTitle(arg.view.title)
@@ -239,15 +246,19 @@ export default function Calendar() {
                   sessionsForDate.map((session) => (
                     <Link
                       to="/dashboard/study-sessions/$sessionId"
-                      params={{ sessionId: session.extendedProps.sessionId! }}
+                      params={{ sessionId: session.extendedProps.sessionId }}
                       key={session.extendedProps.sessionId}
                     >
                       <DateEvent
                         title={session.title}
-                        colorBorder={session.colorBorder}
+                        colorBorder={session.borderColor}
                         secInfo={
-                          <div className="flex flex-row items-center gap-5">
-                            <Tag tag={session.extendedProps.tag!} size="sm" />
+                          <div className="flex flex-row items-center gap-5 overflow-hidden">
+                            <Tag
+                              tag={session.extendedProps.tag}
+                              size="sm"
+                              className="min-w-0 text-ellipsis shrink"
+                            />
                             <div className="flex flex-row items-center gap-1">
                               <Hourglass className="w-3 h-4" />
                               <span className="text-xs text-gray-600">
@@ -276,31 +287,32 @@ export default function Calendar() {
                 )}
                 {quizzesForDate.map((quiz) => {
                   const percent =
-                    (Number(quiz.extendedProps.score) / Number(quiz.extendedProps.maxScore)) * 100
+                    (Number(quiz.extendedProps.score) /
+                      Number(quiz.extendedProps.maxScore)) *
+                    100
                   return (
                     <Link
                       to="/dashboard/quizzes/$quizId/attempts/$attemptId"
                       params={{
-                        quizId: quiz.extendedProps.quizId!,
-                        attemptId: quiz.extendedProps.attemptId!,
+                        quizId: quiz.extendedProps.quizId,
+                        attemptId: quiz.extendedProps.attemptId,
                       }}
                       key={quiz.extendedProps.attemptId}
                     >
                       <DateEvent
                         title={quiz.title}
-                        colorBorder={quiz.colorBorder}
+                        colorBorder={quiz.borderColor}
                         secInfo={
                           <div className="flex flex-row items-center gap-5">
-                            <Tag tag={quiz.extendedProps.tag!} size="sm" />
+                            <Tag tag={quiz.extendedProps.tag} size="sm" />
                             <div
                               className="text-xs font-semibold bg-(--score-color)/10 px-2 py-1 rounded-md"
                               style={{
-                                ['--score-color' as any]: getColor(
-                                  percent,
-                                ),
+                                ['--score-color' as any]: getColor(percent),
                               }}
                             >
-                              {quiz.extendedProps.score} / {quiz.extendedProps.maxScore}
+                              {quiz.extendedProps.score} /{' '}
+                              {quiz.extendedProps.maxScore}
                             </div>
                           </div>
                         }

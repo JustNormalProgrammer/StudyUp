@@ -1,4 +1,4 @@
-import { useParams } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   BoxIcon,
@@ -11,7 +11,7 @@ import {
 import { useState } from 'react'
 import { toast } from 'sonner'
 import type { Quiz, StudyResource, StudySession } from '@/api/types'
-import type { SessionFormData } from '@/components/sessions/SessionForm'
+import type { SessionFormData } from '@/components/dialogs/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import ResourceCard from '@/components/resources/Card'
 import { Button } from '@/components/ui/button'
@@ -21,18 +21,21 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import Tag from '@/components/primitives/Tag'
-import SessionForm from '@/components/sessions/SessionForm'
+import SessionForm from '@/components/dialogs/SessionForm'
 import QuizCard from '@/components/quiz/QuizCard'
-import CreateQuizDialog from '@/components/sessions/CreateQuizDialog'
+import CreateQuizDialog from '@/components/dialogs/CreateQuizDialog'
+import DeleteDialog from '@/components/dialogs/Delete'
 
 export default function Session() {
   const { sessionId } = useParams({
     from: '/dashboard/study-sessions/$sessionId/',
   })
+  const navigate = useNavigate()
   const api = useAuthenticatedRequest()
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
   const [openAiSLOP, setOpenAiSLOP] = useState(false)
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const { data, isLoading, error } = useQuery({
     queryKey: ['session', sessionId],
     queryFn: async () => {
@@ -40,15 +43,17 @@ export default function Session() {
       return data
     },
   })
-  const { data: studyResources, isSuccess: isStudyResourcesSuccess } = useQuery({
-    queryKey: ['studyResources', sessionId],
-    queryFn: async () => {
-      const { data } = await api.get<Array<StudyResource & { label?: string }>>(
-        `/sessions/${sessionId}/resources`,
-      )
-      return data
+  const { data: studyResources, isSuccess: isStudyResourcesSuccess } = useQuery(
+    {
+      queryKey: ['studyResources', sessionId],
+      queryFn: async () => {
+        const { data } = await api.get<
+          Array<StudyResource & { label?: string }>
+        >(`/sessions/${sessionId}/resources`)
+        return data
+      },
     },
-  })
+  )
   const { data: quizzes } = useQuery({
     queryKey: ['quizzes', sessionId],
     queryFn: async () => {
@@ -63,7 +68,7 @@ export default function Session() {
       return data
     },
   })
-  const mutation = useMutation({
+  const editMutation = useMutation({
     mutationFn: (sessionData: SessionFormData) => {
       return api.put(`/sessions/${sessionId}`, sessionData)
     },
@@ -77,16 +82,36 @@ export default function Session() {
       toast.error('Failed to update session')
     },
   })
+  const deleteMutation = useMutation({
+    mutationFn: () => {
+      return api.delete<void>(`/sessions/${sessionId}`)
+    },
+    onSuccess: () => {
+      toast.success('Session deleted successfully')
+      navigate({
+        to: '/dashboard/study-sessions',
+      })
+      queryClient.invalidateQueries({ queryKey: ['session'] })
+    },
+    onError: (error) => {
+      toast.error('Failed to delete session')
+    },
+  })
   return (
-    <div className="flex flex-col max-w-7xl mx-auto gap-3 md:gap-10 border rounded-xl p-4">
+    <div className="flex flex-col max-w-7xl mx-auto gap-3 md:gap-10 border rounded-xl p-4 overflow-hidden">
       <div className="flex flex-col md:flex-row justify-between gap-1 items-center">
         <h1 className="text-2xl font-semibold break-all text-ellipsis overflow-hidden">
           {data?.title}
         </h1>
       </div>
       <div className="flex flex-row gap-5 items-center flex-wrap justify-between">
-        <div className="flex flex-row gap-5 items-center flex-wrap">
-          {data?.tag && <Tag tag={data.tag} />}
+        <div className="flex flex-row gap-5 items-center flex-wrap overflow-hidden">
+          {data?.tag && (
+            <Tag
+              tag={data.tag}
+              className="min-w-0 overflow-hidden text-ellipsis"
+            />
+          )}
           <div className="flex gap-1 items-center">
             <Hourglass className="w-4 h-4" />
             <p className="text-sm text-gray-600 whitespace-nowrap">
@@ -124,7 +149,12 @@ export default function Session() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="secondary" size="icon" className="w-fit">
+              <Button
+                variant="secondary"
+                size="icon"
+                className="w-fit"
+                onClick={() => setOpenDeleteDialog(true)}
+              >
                 <Trash className="w-4 h-4 text-destructive" />
               </Button>
             </TooltipTrigger>
@@ -182,10 +212,15 @@ export default function Session() {
           open={open}
           setOpen={setOpen}
           sessionData={{ session: data, resources: studyResources }}
-          onSubmit={(data) => mutation.mutate(data)}
+          onSubmit={(data) => editMutation.mutate(data)}
         />
       )}
       <CreateQuizDialog open={openAiSLOP} setOpen={setOpenAiSLOP} />
+      <DeleteDialog
+        open={openDeleteDialog}
+        setOpen={setOpenDeleteDialog}
+        mutation={deleteMutation}
+      />
     </div>
   )
 }

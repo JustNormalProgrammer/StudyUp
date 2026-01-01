@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Calendar, CircleX } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -8,20 +8,11 @@ import type {
   Quiz as QuizType,
 } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
-
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
-
 import { Button } from '@/components/ui/button'
-
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import Tag from '@/components/primitives/Tag'
 import QuizHeader from '@/components/quiz/QuizHeader'
 import { getColor } from '@/utils/utilFunc'
 import {
@@ -40,6 +31,7 @@ export default function Quiz() {
     setShowAttempts(!showAttempts)
   }
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const api = useAuthenticatedRequest()
   const { data, isLoading, error, isSuccess } = useQuery({
     queryKey: ['quiz', quizId],
@@ -48,6 +40,7 @@ export default function Quiz() {
       return data
     },
   })
+
   const {
     data: attemptsData,
     isLoading: attemptsLoading,
@@ -62,13 +55,31 @@ export default function Quiz() {
       return data
     },
   })
-  const mutation = useMutation({
+
+  const createAttemptMutation = useMutation({
     mutationFn: (answers: Array<Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>>) => {
       return api.post<QuizAttemptType>(`/quizzes/${quizId}/attempts`, {
         userAttemptContent: answers,
       })
     },
   })
+
+  const deleteQuizMutation = useMutation({
+    mutationFn: () => {
+      return api.delete<void>(`/quizzes/${quizId}`)
+    },
+    onSuccess: () => {
+      toast.success('Quiz deleted successfully')
+      navigate({
+        to: '/dashboard/quizzes',
+      })
+      queryClient.invalidateQueries({ queryKey: ['quiz'] })
+    },
+    onError: (error) => {
+      toast.error('Failed to delete quiz')
+    },
+  })
+
   const [answers, setAnswers] = useState<
     Array<Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F'> | undefined>
   >([])
@@ -101,18 +112,20 @@ export default function Quiz() {
   }
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { data: attemptData } = await mutation.mutateAsync(
+    createAttemptMutation.mutate(
       answers as Array<Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F'>>,
       {
+        onSuccess: (data) => {
+          navigate({
+            to: '/dashboard/quizzes/$quizId/attempts/$attemptId',
+            params: { quizId, attemptId: data.data.quizAttemptId },
+          })
+        },
         onError: (error) => {
           toast.error('Failed to submit quiz')
         },
       },
     )
-    navigate({
-      to: '/dashboard/quizzes/$quizId/attempts/$attemptId',
-      params: { quizId, attemptId: attemptData.quizAttemptId },
-    })
   }
   if (isLoading || attemptsLoading) {
     return <div>Loading...</div>
@@ -132,6 +145,7 @@ export default function Quiz() {
           numberOfQuestions={data.numberOfQuestions}
           isMultipleChoice={data.isMultipleChoice}
           createdAt={data.createdAt}
+          mutation={deleteQuizMutation}
           ContextButton={
             <Button
               variant="link"
@@ -232,13 +246,12 @@ export default function Quiz() {
                 className="flex flex-col gap-3"
               >
                 <p>
-                  <span className="font-bold text-gray-600">
+                  <span className="font-bold text-gray-600 mr-1">
                     {question.questionNumber}.
-                  </span>{' '}
+                  </span>
                   {question.questionContent}
                 </p>
 
-                {/* SINGLE CHOICE */}
                 {!question.isMultipleChoice && (
                   <RadioGroup
                     value={questionAnswers[0] ?? undefined}
@@ -265,7 +278,6 @@ export default function Quiz() {
                   </RadioGroup>
                 )}
 
-                {/* MULTIPLE CHOICE */}
                 {question.isMultipleChoice && (
                   <>
                     {question.questionChoices.map((choice) => {

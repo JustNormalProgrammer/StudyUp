@@ -1,7 +1,8 @@
 import { db } from "..";
 import { quizzes, quizAttempts, tags, studySessions } from "../schema";
-import { and, between, desc, eq } from "drizzle-orm";
+import { and, between, desc, eq, gte, lte } from "drizzle-orm";
 import sessions, { PaginationQuery } from "./sessions";
+import { withPagination } from "../withPagination";
 
 export interface QuizAttemptCreate {
   quizId: string;
@@ -98,9 +99,12 @@ export async function getQuizAttempts(quizId: string, userId: string) {
   return result;
 }
 
-export async function getUserAttempts(data: PaginationQuery) {
-  const { userId, from, to, start = 0, limit = 10 } = data;
-  const result = await db
+export async function getUserAttempts(
+  userId: string,
+  paginationQuery: PaginationQuery
+) {
+  const { from, to, start, limit } = paginationQuery;
+  const query = db
     .select({
       quizAttemptId: quizAttempts.quizAttemptId,
       quizId: quizAttempts.quizId,
@@ -121,12 +125,12 @@ export async function getUserAttempts(data: PaginationQuery) {
     .where(
       and(
         eq(quizzes.userId, userId),
-        between(quizAttempts.finishedAt, from, to)
+        from ? gte(quizAttempts.finishedAt, from) : undefined,
+        to ? lte(quizAttempts.finishedAt, to) : undefined
       )
     )
-    .orderBy(desc(quizAttempts.finishedAt))
-    .offset(start)
-    .limit(limit);
+    .orderBy(desc(quizAttempts.finishedAt), desc(quizAttempts.quizAttemptId)).$dynamic();
+  const result = await withPagination(query, start, limit);
   return result;
 }
 export async function getQuizAttempt(quizAttemptId: string, userId: string) {

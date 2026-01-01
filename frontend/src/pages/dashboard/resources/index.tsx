@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { ResourceDialog } from '@/components/resources/Dialog'
 import ResourceCard from '@/components/resources/Card'
 
-function Recources() {
+function Resources() {
   const queryClient = useQueryClient()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const api = useAuthenticatedRequest()
@@ -69,4 +69,4 @@ function Recources() {
   )
 }
 
-export default Recources
+export default Resources

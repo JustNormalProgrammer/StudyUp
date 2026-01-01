@@ -13,8 +13,20 @@ export const getTagsByUserId = async (userId: string) => {
   return userTags;
 };
 
+export const getTagByContent = async (content: string, userId: string) => {
+  const [result] = await db
+    .select()
+    .from(tags)
+    .where(and(eq(tags.content, content), eq(tags.userId, userId)))
+    .limit(1);
+  return result;
+};
 export const getTagById = async (tagId: string, userId: string) => {
-  const [result] = await db.select().from(tags).where(and(eq(tags.tagId, tagId), eq(tags.userId, userId))).limit(1);
+  const [result] = await db
+    .select()
+    .from(tags)
+    .where(and(eq(tags.tagId, tagId), eq(tags.userId, userId)))
+    .limit(1);
   return result;
 };
 
@@ -23,19 +35,31 @@ export const createTag = async (tag: TagCreate) => {
   return result;
 };
 
-export const deleteTag = async(tagId: string, userId: string) => {
-  await db.delete(tags).where(and(eq(tags.tagId, tagId), eq(tags.userId, userId))).returning();
+export const deleteTag = async (tagId: string, userId: string) => {
+  await db
+    .delete(tags)
+    .where(and(eq(tags.tagId, tagId), eq(tags.userId, userId)))
+    .returning();
   return;
 };
 
-export const updateTag = async(tagId: string, tag: TagCreate, userId: string) => {
-  const [result] = await db.update(tags).set(tag).where(and(eq(tags.tagId, tagId), eq(tags.userId, userId))).returning();
+export const updateTag = async (
+  tagId: string,
+  tag: TagCreate,
+  userId: string
+) => {
+  const [result] = await db
+    .update(tags)
+    .set(tag)
+    .where(and(eq(tags.tagId, tagId), eq(tags.userId, userId)))
+    .returning();
   return result;
 };
 
 export default {
   getTagsByUserId,
   getTagById,
+  getTagByContent,
   createTag,
   deleteTag,
   updateTag,

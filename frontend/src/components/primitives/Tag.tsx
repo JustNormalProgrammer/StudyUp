@@ -1,4 +1,3 @@
-import type { Tag as TagType } from '@/api/types'
 import { hexToRgba } from '@/utils/hexToRgba'
 import { cn } from '@/lib/utils'
 
@@ -8,7 +7,10 @@ export default function Tag({
   size = 'md',
   onClick,
 }: {
-  tag: TagType
+  tag: {
+    content: string
+    color: string
+  }
   className?: string
   size?: 'sm' | 'md'
   onClick?: () => void
@@ -25,10 +27,10 @@ export default function Tag({
       onClick={onClick}
     >
       <div
-        className={`${size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full`}
+        className={`${size === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'} rounded-full shrink-0`}
         style={{ backgroundColor: tag.color || '' }}
       />
-      <div className={`${size === 'sm' ? 'text-xs font-medium' : 'text-sm'}`}>{tag.content}</div>
+      <div className={`${size === 'sm' ? 'text-xs font-medium' : 'text-sm'} text-ellipsis overflow-hidden`}>{tag.content}</div>
     </div>
   )
 }
