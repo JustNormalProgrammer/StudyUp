@@ -3,6 +3,7 @@ import {
   BarChart,
   BarStack,
   CartesianGrid,
+  Label as RechartsLabel,
   ReferenceLine,
   XAxis,
   YAxis,
@@ -166,14 +167,19 @@ export function WeeklyChartStack() {
                 y={settings?.dailyStudyGoal}
                 stroke="#000"
                 strokeDasharray="3 4"
-              />
+              >
+                <RechartsLabel
+                  value={settings?.dailyStudyGoal ?? 10}
+                  position="insideTopRight"
+                />
+              </ReferenceLine>
             </BarChart>
           </ChartContainer>
           <div className="flex flex-row w-full justify-between gap-2 items-center flex-wrap">
             <Label
               icon={<CircleSlash2 size={16} className="mr-1" />}
               value={Number(avgDuration).toFixed(2)}
-              label="min"
+              label="min/day"
             />
             <Label
               icon={<ListOrdered size={16} className="mr-1" />}
@@ -206,7 +212,9 @@ function Label({
       {icon}
       <div>
         {value}
-        <span className="text-xs text-gray-500 font-normal mx-0.25">{label}</span>
+        <span className="text-xs text-gray-500 font-normal mx-0.25">
+          {label}
+        </span>
       </div>
     </div>
   )

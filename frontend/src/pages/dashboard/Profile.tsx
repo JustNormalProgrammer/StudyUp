@@ -66,7 +66,7 @@ export default function Profile() {
     },
   })
   const studyGoalEditMutation = useMutation({
-    mutationFn: (data: { dailyStudyGoal?: number; weeklyQuizGoal?: number }) => {
+    mutationFn: (data: { dailyStudyGoal: number; weeklyQuizGoal: number }) => {
       return api.put('/user/settings', data)
     },
     onSuccess: () => {
@@ -87,8 +87,34 @@ export default function Profile() {
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <div className="text-lg font-semibold">Daily Study Goal</div>
+        <div className="flex flex-row justify-between items-center">
+          <div className="text-lg font-semibold">Preferences</div>
+          <Button
+            size="sm"
+            disabled={
+              (quizSliderValue === settings?.weeklyQuizGoal && studySliderValue === settings?.dailyStudyGoal) ||
+              studyGoalEditMutation.isPending
+            }
+            onClick={() =>
+              studyGoalEditMutation.mutate({
+                weeklyQuizGoal: quizSliderValue || 0,
+                dailyStudyGoal: studySliderValue || 0,
+              })
+            }
+          >
+            {studyGoalEditMutation.isPending ? (
+              <>
+                <Spinner />
+              </>
+            ) : (
+              'Save'
+            )}
+          </Button>
+        </div>
         <Separator />
+        <div className="flex flex-col gap-2">
+          <div className="text-sm font-semibold">Daily Study Goal</div>
+        </div>
         <div className="flex flex-col md:flex-row gap-2 items-center">
           <Slider
             value={[studySliderValue || 0]}
@@ -102,29 +128,10 @@ export default function Profile() {
             {studySliderValue}{' '}
             <span className="text-sm text-gray-600 font-normal">min/day</span>
           </div>
-          <Button
-            className="flex-1 w-full min-w-[63px]"
-            disabled={
-              studySliderValue === settings?.dailyStudyGoal ||
-              studyGoalEditMutation.isPending
-            }
-            onClick={() =>
-              studyGoalEditMutation.mutate({ dailyStudyGoal: studySliderValue || 0 })
-            }
-          >
-            {studyGoalEditMutation.isPending ? (
-              <>
-                <Spinner />
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
         </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="text-lg font-semibold">Weekly Quiz Goal</div>
-        <Separator />
+        <div className="flex flex-col gap-2">
+          <div className="text-sm font-semibold">Weekly Quiz Goal</div>
+        </div>
         <div className="flex flex-col md:flex-row gap-2 items-center">
           <Slider
             value={[quizSliderValue || 0]}
@@ -136,26 +143,10 @@ export default function Profile() {
           />
           <div className="text-nowrap font-semibold w-30">
             {quizSliderValue}{' '}
-            <span className="text-sm text-gray-600 font-normal">quizzes/week</span>
+            <span className="text-sm text-gray-600 font-normal">
+              quizzes/week
+            </span>
           </div>
-          <Button
-            className="flex-1 w-full min-w-[63px]"
-            disabled={
-              quizSliderValue === settings?.weeklyQuizGoal ||
-              studyGoalEditMutation.isPending
-            }
-            onClick={() =>
-              studyGoalEditMutation.mutate({ weeklyQuizGoal: quizSliderValue || 0 })
-            }
-          >
-            {studyGoalEditMutation.isPending ? (
-              <>
-                <Spinner />
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
         </div>
       </div>
       <div className="flex flex-col gap-2">
@@ -220,8 +211,13 @@ export default function Profile() {
             title="Average quiz score"
             value={
               <>
-                {stats?.quizzesStats.averageQuizScore || <CircleOff className="size-5 mt-1 text-gray-600"  /> }
-                <span hidden={!stats?.quizzesStats.averageQuizScore} className="text-sm text-gray-500 mx-0.5 font-normal">
+                {stats?.quizzesStats.averageQuizScore || (
+                  <CircleOff className="size-5 mt-1 text-gray-600" />
+                )}
+                <span
+                  hidden={!stats?.quizzesStats.averageQuizScore}
+                  className="text-sm text-gray-500 mx-0.5 font-normal"
+                >
                   %
                 </span>
               </>
@@ -255,9 +251,7 @@ function ProfileStat({
         {icon}
         <div className="text-lg text-gray-600 tracking-wide">{title}</div>
       </div>
-      <div className="text-2xl font-semibold">
-        {value}
-      </div>
+      <div className="text-2xl font-semibold">{value}</div>
     </div>
   )
 }

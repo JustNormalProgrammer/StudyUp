@@ -1,6 +1,8 @@
 import { and, eq, between, desc, sql, or, ilike, inArray } from "drizzle-orm";
 import { db } from "../index";
 import { studyResources, studySessionsStudyResources } from "../schema";
+import { withPagination } from "../withPagination";
+import { PaginationQuery } from "./sessions";
 
 export enum StudyResourceTypeEnum {
   VIDEO = "video",
@@ -62,8 +64,16 @@ export async function getResourceByTitle(title: string, userId: string) {
   return result;
 }
 
-export async function getStudyResources(userId: string, query: string = "") {
-  const result = await db
+export async function getStudyResources(
+  userId: string,
+  {
+    q,
+    type,
+    start,
+    limit,
+  }: PaginationQuery & { q: string; type: StudyResourceTypeEnum }
+) {
+  const query = db
     .select({
       resourceId: studyResources.resourceId,
       title: studyResources.title,
@@ -75,13 +85,20 @@ export async function getStudyResources(userId: string, query: string = "") {
     .where(
       and(
         eq(studyResources.userId, userId),
-        or(
-          ilike(studyResources.title, `%${query}%`),
-          ilike(studyResources.desc, `%${query}%`)
+        and(
+          q
+            ? or(
+                ilike(studyResources.title, `%${q}%`),
+                ilike(studyResources.desc, `%${q}%`)
+              )
+            : undefined,
+          type ? eq(studyResources.type, type) : undefined
         )
       )
     )
-    .orderBy(studyResources.title);
+    .orderBy(studyResources.title)
+    .$dynamic();
+  const result = await withPagination(query, start, limit);
   return result;
 }
 

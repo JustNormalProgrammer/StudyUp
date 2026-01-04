@@ -15,6 +15,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { Spinner } from '../ui/spinner'
+import ResourceTypeSelect from '../primitives/ResourceTypeSelect'
 import type { StudyResource } from '@/api/types'
 import {
   Dialog,
@@ -94,33 +95,11 @@ export function ResourceDialog({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="type">Type</FieldLabel>
-                <Select
+                <ResourceTypeSelect
                   name="type"
                   value={field.value}
                   onValueChange={field.onChange}
-                >
-                  <SelectTrigger aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={StudyResourceTypeEnum.VIDEO}>
-                      <SquarePlayIcon size={16} />
-                      Video
-                    </SelectItem>
-                    <SelectItem value={StudyResourceTypeEnum.BOOK}>
-                      <BookIcon size={16} />
-                      Book
-                    </SelectItem>
-                    <SelectItem value={StudyResourceTypeEnum.WEBSITE}>
-                      <GlobeIcon size={16} />
-                      Website
-                    </SelectItem>
-                    <SelectItem value={StudyResourceTypeEnum.OTHER}>
-                      <LayersIcon size={16} />
-                      Other
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

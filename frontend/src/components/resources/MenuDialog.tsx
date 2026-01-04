@@ -7,9 +7,9 @@ import {
 } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { ResourceDialog } from './Dialog'
+import { ResourceDialog } from '../dialogs/ResourceDialog'
 import type { StudyResource } from '@/api/types'
-import type { ResourceDialogForm } from './Dialog'
+import type { ResourceDialogForm } from '../dialogs/ResourceDialog'
 import {
   DropdownMenu,
   DropdownMenuContent,

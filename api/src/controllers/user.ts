@@ -4,6 +4,7 @@ import { PaginationQuery } from "../db/queries/sessions";
 import sessions from "../db/queries/sessions";
 import quizzes from "../db/queries/quizzes";
 import user from "../db/queries/user";
+import { TimeRangeQuery } from "../db/queries/sessions";
 
 export const getUserDetails = async (req: Request, res: Response) => {
   try {
@@ -39,7 +40,9 @@ export const getUserEvents = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, start, limit } = matchedData<PaginationQuery>(req);
+    const { from, to, start, limit } = matchedData<
+      PaginationQuery & TimeRangeQuery
+    >(req);
     let userSessions = await sessions.getSessions(req.user!.userId, {
       from,
       to,
@@ -77,7 +80,11 @@ export const getUserChartData = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, goal } = matchedData<{ from: Date; to: Date, goal: boolean}>(req);
+    const { from, to, goal } = matchedData<{
+      from: Date;
+      to: Date;
+      goal: boolean;
+    }>(req);
     if (goal) {
       const result = await user.getUserProgressData(req.user!.userId, from, to);
       return res.json(result);
@@ -97,15 +104,15 @@ export const updateUserSettings = async (req: Request, res: Response) => {
       .status(400)
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
-  const { dailyStudyGoal, weeklyQuizGoal } = matchedData<{ dailyStudyGoal: number; weeklyQuizGoal: number }>(req);
-  if (!(dailyStudyGoal || weeklyQuizGoal)) {
-    return res.status(400).json({error: [{msg: "No values set"}]});
-  }
+  const { dailyStudyGoal, weeklyQuizGoal } = matchedData<{
+    dailyStudyGoal: number;
+    weeklyQuizGoal: number;
+  }>(req);
   try {
-    const result = await user.updateUserSettings(
-      req.user!.userId,
-      { dailyStudyGoal, weeklyQuizGoal }
-    );
+    const result = await user.updateUserSettings(req.user!.userId, {
+      dailyStudyGoal,
+      weeklyQuizGoal,
+    });
     return res.json(result);
   } catch (e) {
     console.log(e);

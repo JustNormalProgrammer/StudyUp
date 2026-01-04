@@ -8,9 +8,9 @@ import {
   replaceResource,
 } from "../controllers/resources";
 import validate from "../utils/validate";
-import { body } from "express-validator";
+import { body, query } from "express-validator";
 import { StudyResourceTypeEnum } from "../db/queries/resources";
-
+import { validatePaginationQuery } from "../utils/validatePagination";
 const validateResource = [
   body("title").notEmpty().withMessage("Title is required"),
   body("type").notEmpty().withMessage("Type is required"),
@@ -25,7 +25,14 @@ const validateResource = [
 ];
 
 const router = Router();
-router.get("/", requiredAuth, getResources);
+router.get(
+  "/",
+  requiredAuth,
+  validate(validatePaginationQuery),
+  query("q").optional().isString().withMessage("Search must be a string"),
+  query("type").optional().isIn(Object.values(StudyResourceTypeEnum)).withMessage("Invalid study resource type"),
+  getResources
+);
 router.get("/:resourceId", requiredAuth, getResourceById);
 router.post("/", requiredAuth, validate(validateResource), createResource);
 router.put(

@@ -4,7 +4,6 @@ import {
   Calendar,
   Home,
   MessageCircleQuestionMark,
-  Settings,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import {
@@ -16,7 +15,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from '@/components/ui/sidebar'
 
 // Menu items.
@@ -49,7 +47,6 @@ const items = [
 ]
 
 export function AppSidebar() {
-  const { open, setOpen } = useSidebar()
   return (
     <Sidebar
       collapsible="icon"
@@ -59,11 +56,11 @@ export function AppSidebar() {
         <div className="flex items-center">
           <img src="/favicon.png" width="64px" height="64px" />
           <div
-            className={`text-4xl font-semibold ${open ? 'opacity-100 w-full transition-all duration-300 delay-100' : 'opacity-0 w-0'} `}
+            className={`text-4xl font-semibold `}
           >
             Study
             <span
-              className={`text-green-500 font-bold transition-all duration-300`}
+              className={`text-[#49C17A] font-bold transition-all duration-300`}
             >
               Up
             </span>

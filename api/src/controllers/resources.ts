@@ -1,15 +1,39 @@
 import { Request, Response } from "express";
 import { validationResult, matchedData } from "express-validator";
-import resources, { StudyResourceCreate } from "../db/queries/resources";
-import sessions from "../db/queries/sessions";
+import resources, {
+  StudyResourceCreate,
+  StudyResourceTypeEnum,
+} from "../db/queries/resources";
+import sessions, { PaginationQuery } from "../db/queries/sessions";
 
 export const getResources = async (
-  req: Request<{}, {}, {}, { q: string }>,
+  req: Request<{}, {}, {}, { q: string; type: StudyResourceTypeEnum }>,
   res: Response
 ) => {
-  const { q = "" } = req.query;
+  const valResult = validationResult(req);
+  if (!valResult.isEmpty()) {
+    return res
+      .status(400)
+      .json({ error: valResult.array({ onlyFirstError: true }) });
+  }
   try {
-    const result = await resources.getStudyResources(req.user!.userId, q);
+    const {
+      q = "",
+      type,
+      start,
+      limit,
+    } = matchedData<
+      PaginationQuery & {
+        q: string;
+        type: StudyResourceTypeEnum;
+      }
+    >(req);
+    const result = await resources.getStudyResources(req.user!.userId, {
+      q,
+      type,
+      start,
+      limit,
+    });
     return res.json(result);
   } catch (e) {
     console.log(e);
@@ -61,9 +85,14 @@ export const createResource = async (req: Request, res: Response) => {
   }
   try {
     const { title, type, desc, url } = matchedData<StudyResourceCreate>(req);
-    const existingResource = await resources.getResourceByTitle(title, req.user!.userId);
+    const existingResource = await resources.getResourceByTitle(
+      title,
+      req.user!.userId
+    );
     if (existingResource) {
-      return res.status(400).json({ errors: [{ path: "title", msg: "Title already in use" }] });
+      return res
+        .status(400)
+        .json({ errors: [{ path: "title", msg: "Title already in use" }] });
     }
     const result = await resources.createStudyResource(
       { title, type, desc, url },
@@ -95,11 +124,16 @@ export const replaceResource = async (
       return res.sendStatus(404);
     }
     const resourceData = matchedData<StudyResourceCreate>(req);
-    
-    if(resourceData.title !== existingResource.title) {
-      const resourceWithSameTitle = await resources.getResourceByTitle(resourceData.title, req.user!.userId);
-      if(resourceWithSameTitle) {
-        return res.status(400).json({ errors: [{ path: "title", msg: "Title already in use" }] });
+
+    if (resourceData.title !== existingResource.title) {
+      const resourceWithSameTitle = await resources.getResourceByTitle(
+        resourceData.title,
+        req.user!.userId
+      );
+      if (resourceWithSameTitle) {
+        return res
+          .status(400)
+          .json({ errors: [{ path: "title", msg: "Title already in use" }] });
       }
     }
     const result = await resources.replaceStudyResource(

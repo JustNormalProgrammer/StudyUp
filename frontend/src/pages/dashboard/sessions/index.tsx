@@ -7,7 +7,7 @@ import { Calendar, Hourglass, Plus } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import type { StudySession, Tag as TagType } from '@/api/types'
+import type { StudySession } from '@/api/types'
 import type { SessionFormData } from '@/components/dialogs/SessionForm'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import useDebounce from '@/hooks/useDebounce'
@@ -18,13 +18,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import TagSelector from '@/components/sessions/TagSelector'
 import SessionForm from '@/components/dialogs/SessionForm'
 import Tag from '@/components/primitives/Tag'
 import { hexToRgba } from '@/utils/hexToRgba'
 import { Spinner } from '@/components/ui/spinner'
-import { TagSuggestionBox } from '@/components/primitives/TagSugestionBox'
+import Search from '@/components/primitives/Search'
 
 const LIMIT = 20
 
@@ -98,23 +96,19 @@ export default function Sessions() {
 
   return (
     <div className="flex flex-col gap-4 max-w-7xl mx-auto">
-      <div className="flex gap-2 flex-wrap">
-        <Input
-          placeholder="Search sessions..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1"
-        />
-        <TagSuggestionBox
-          value={selectedTag}
-          setValue={(tag: string) => setSelectedTag(tag)}
-          reset={true}
-        />
-        <Button onClick={() => setShowCreateSessionDialog(true)}>
-          <Plus />
-          <div className="hidden xl:block">Create session</div>
-        </Button>
-      </div>
+      <Search
+        placeholder="Search sessions..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        selectedTag={selectedTag}
+        setSelectedTag={(tag: string) => setSelectedTag(tag)}
+        actionButton={
+          <Button onClick={() => setShowCreateSessionDialog(true)}>
+            <Plus />
+            <div className="hidden xl:block">Create</div>
+          </Button>
+        }
+      />
 
       {isLoading && (
         <div className="text-center text-muted-foreground mt-10">

@@ -28,12 +28,14 @@ export interface StudySessionResource {
 }
 
 export interface PaginationQuery {
-  from?: Date;
-  to?: Date;
   start?: number;
   limit?: number;
 }
 
+export interface TimeRangeQuery {
+  from?: Date;
+  to?: Date;
+}
 export interface FilterQuery {
   tagId?: string;
   q?: string;
@@ -41,7 +43,7 @@ export interface FilterQuery {
 
 export async function getSessions(
   userId: string,
-  paginationQuery: PaginationQuery & FilterQuery
+  paginationQuery: PaginationQuery & FilterQuery & TimeRangeQuery
 ) {
   const { from, to, start, limit, tagId, q } = paginationQuery;
   const query = db
@@ -77,7 +79,7 @@ export async function getSessions(
 
 export async function getSessionsDurationByDay(
   userId: string,
-  paginationQuery: PaginationQuery & FilterQuery
+  paginationQuery: PaginationQuery & FilterQuery & TimeRangeQuery
 ) {
   const { from, to, start, limit, tagId, q } = paginationQuery;
   const result = await db

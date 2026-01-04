@@ -14,6 +14,7 @@ import validate from "../utils/validate";
 import { getResourcesBySessionId } from "../controllers/resources";
 import { validatePaginationQuery } from "../utils/validatePagination";
 import { validateFilterQuery } from "../utils/validateFilter";
+import { validateTimeRangeQuery } from "../utils/validateTimeRange";
 
 const validateCreateSession = [
   body("tagId").notEmpty().withMessage("Tag is required"),
@@ -75,6 +76,7 @@ router.get(
   "/",
   requiredAuth,
   validate(validatePaginationQuery),
+  validate(validateTimeRangeQuery),
   validate(validateFilterQuery),
   getSessions
 );

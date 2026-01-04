@@ -5,10 +5,10 @@ import { BookOpenIcon, BoxIcon, Tag } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Separator } from '../ui/separator'
 import SessionForm from '../dialogs/SessionForm'
-import { ResourceDialog } from '../resources/Dialog'
+import { ResourceDialog } from '../dialogs/ResourceDialog'
 import CreateTagDialog from '../dialogs/TagDialog'
 import type { SessionFormData } from '../dialogs/SessionForm'
-import type { ResourceDialogForm } from '../resources/Dialog'
+import type { ResourceDialogForm } from '../dialogs/ResourceDialog'
 import type { CreateTagForm } from '../dialogs/TagDialog'
 
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
@@ -22,7 +22,6 @@ export default function ActionButtons() {
   const [showCreateTagDialog, setShowCreateTagDialog] = useState(false)
   const sessionMutation = useMutation({
     mutationFn: (sessionData: SessionFormData) => {
-      
       return api.post('/sessions', sessionData)
     },
     onSuccess: () => {

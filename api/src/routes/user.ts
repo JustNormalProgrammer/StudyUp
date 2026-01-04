@@ -16,10 +16,8 @@ const router = Router();
 
 const updateUserSettingsSchema = [
   body("dailyStudyGoal")
-    .optional()
     .isInt({ min: 1}),
   body("weeklyQuizGoal")
-    .optional()
     .isInt({ min: 1 }),
 ];
 const getUserChartDataSchema = [

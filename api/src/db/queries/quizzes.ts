@@ -1,7 +1,11 @@
 import { db } from "..";
 import { quizzes, quizAttempts, tags, studySessions } from "../schema";
-import { and, between, desc, eq, gte, lte } from "drizzle-orm";
-import sessions, { PaginationQuery } from "./sessions";
+import { and, desc, eq, gte, ilike, lte } from "drizzle-orm";
+import {
+  FilterQuery,
+  PaginationQuery,
+  TimeRangeQuery,
+} from "./sessions";
 import { withPagination } from "../withPagination";
 
 export interface QuizAttemptCreate {
@@ -20,8 +24,12 @@ export interface QuizCreate {
   quizContent: any;
 }
 
-export async function getUserQuizzes(userId: string) {
-  const result = await db
+export async function getUserQuizzes(
+  userId: string,
+  paginationQuery: { start: number; limit: number } & FilterQuery
+) {
+  const { start, limit, tagId, q } = paginationQuery;
+  const query = db
     .select({
       quizId: quizzes.quizId,
       sessionId: quizzes.sessionId,
@@ -38,7 +46,16 @@ export async function getUserQuizzes(userId: string) {
     .from(quizzes)
     .innerJoin(studySessions, eq(quizzes.sessionId, studySessions.sessionId))
     .innerJoin(tags, eq(studySessions.tagId, tags.tagId))
-    .where(eq(quizzes.userId, userId));
+    .where(
+      and(
+        eq(quizzes.userId, userId),
+        tagId ? eq(studySessions.tagId, tagId) : undefined,
+        q ? ilike(quizzes.title, `%${q}%`) : undefined
+      )
+    )
+    .orderBy(desc(quizzes.createdAt), desc(quizzes.quizId))
+    .$dynamic();
+  const result = await withPagination(query, start, limit);
   return result;
 }
 
@@ -101,7 +118,7 @@ export async function getQuizAttempts(quizId: string, userId: string) {
 
 export async function getUserAttempts(
   userId: string,
-  paginationQuery: PaginationQuery
+  paginationQuery: PaginationQuery & TimeRangeQuery
 ) {
   const { from, to, start, limit } = paginationQuery;
   const query = db
@@ -129,7 +146,8 @@ export async function getUserAttempts(
         to ? lte(quizAttempts.finishedAt, to) : undefined
       )
     )
-    .orderBy(desc(quizAttempts.finishedAt), desc(quizAttempts.quizAttemptId)).$dynamic();
+    .orderBy(desc(quizAttempts.finishedAt), desc(quizAttempts.quizAttemptId))
+    .$dynamic();
   const result = await withPagination(query, start, limit);
   return result;
 }

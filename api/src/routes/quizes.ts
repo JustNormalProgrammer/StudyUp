@@ -11,6 +11,9 @@ import {
 } from "../controllers/quizzes";
 import { body, param } from "express-validator";
 import validate from "../utils/validate";
+import { validatePaginationQuery } from "../utils/validatePagination";
+import { validateFilterQuery } from "../utils/validateFilter";
+import { validateTimeRangeQuery } from "../utils/validateTimeRange";
 
 const validateCreateQuizAttempt = [
   param("quizId").isUUID().withMessage("Invalid quiz ID"),
@@ -27,7 +30,14 @@ const validateCreateQuizAttempt = [
 
 const router = Router();
 
-router.get("/", requiredAuth, getUserQuizzes);
+router.get(
+  "/",
+  requiredAuth,
+  validate(validatePaginationQuery),
+  validate(validateTimeRangeQuery),
+  validate(validateFilterQuery),
+  getUserQuizzes
+);
 router.get("/attempts/:quizAttemptId", requiredAuth, getQuizAttempt);
 router.delete("/attempts/:quizAttemptId", requiredAuth, deleteQuizAttempt);
 router.get("/:quizId/attempts", requiredAuth, getUserQuizAttempts);

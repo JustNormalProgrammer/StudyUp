@@ -131,7 +131,6 @@ function OptionsList({
   reset?: boolean
   value?: string
 }) {
-  console.log('value', value)
   return (
     <Command>
       <CommandInput placeholder="Find tag..." />

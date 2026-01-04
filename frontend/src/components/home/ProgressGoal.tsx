@@ -9,12 +9,12 @@ import ProgressBar from '../charts/ProgressBar'
 import CreateTagDialog from '../dialogs/TagDialog'
 import type { SessionFormData } from '../dialogs/SessionForm'
 import type { UserSettings } from '@/api/types'
-import type { ResourceDialogForm } from '@/components/resources/Dialog'
+import type { ResourceDialogForm } from '@/components/dialogs/ResourceDialog'
 import type { CreateTagForm } from '../dialogs/TagDialog'
 import { Separator } from '@/components/ui/separator'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import { getWeekRange } from '@/utils/getWeekRange'
-import { ResourceDialog } from '@/components/resources/Dialog'
+import { ResourceDialog } from '@/components/dialogs/ResourceDialog'
 
 type StudySessionResponse = {
   duration: number
@@ -60,13 +60,11 @@ export default function ProgressGoal() {
     },
   })
 
-  const todaySessions = barData?.sessionsData.filter((s) =>
-    isToday(s.startedAt),
-  )
-  const progress = Math.min(
-    todaySessions?.reduce((acc, s) => acc + s.duration, 0) ?? 0,
-    60,
-  )
+  const todaySessions =
+    barData?.sessionsData.filter((s) => isToday(s.startedAt)) || []
+  console.log(todaySessions)
+
+  const progress = todaySessions.reduce((acc, s) => acc + s.duration, 0)
 
   return (
     <>

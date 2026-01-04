@@ -2,14 +2,29 @@ import { Request, Response } from "express";
 import quizzes, { QuizAttemptCreate } from "../db/queries/quizzes";
 import { matchedData, validationResult } from "express-validator";
 import { QuestionType, QuizType } from "./sessions";
+import { FilterQuery } from "../db/queries/sessions";
 
 export type QuizAttemptContent = Array<
   Array<"A" | "B" | "C" | "D" | "E" | "F" | undefined>
 >;
 
 export const getUserQuizzes = async (req: Request, res: Response) => {
+  const valResult = validationResult(req);
+  if (!valResult.isEmpty()) {
+    return res
+      .status(400)
+      .json({ error: valResult.array({ onlyFirstError: true }) });
+  }
   try {
-    const result = await quizzes.getUserQuizzes(req.user!.userId);
+    const { start, limit, tagId, q } = matchedData<
+      { start: number; limit: number } & FilterQuery
+    >(req);
+    const result = await quizzes.getUserQuizzes(req.user!.userId, {
+      start,
+      limit,
+      tagId,
+      q,
+    });
     return res.json(result);
   } catch (e) {
     console.log(e);
@@ -71,16 +86,16 @@ export const createQuizAttempt = async (req: Request, res: Response) => {
         let questionScore = 0;
         let questionMaxScore = 0;
 
-        const correctAnswers = question.questionChoices.filter(
-          (c) => c.isCorrect
-        ).map((c) => c.id);
+        const correctAnswers = question.questionChoices
+          .filter((c) => c.isCorrect)
+          .map((c) => c.id);
 
         if (question.isMultipleChoice) {
           questionMaxScore = question.questionChoices.length === 4 ? 2 : 3;
 
-          const wrongAnswers = question.questionChoices.filter(
-            (c) => !c.isCorrect
-          ).map((c) => c.id);
+          const wrongAnswers = question.questionChoices
+            .filter((c) => !c.isCorrect)
+            .map((c) => c.id);
 
           const correctSelected = correctAnswers.filter((id) =>
             userAnswers.includes(id)

@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { AlertCircle, Eye, EyeOff } from 'lucide-react'
-import {
-  Link,
-  useNavigate,
-} from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
@@ -41,7 +38,8 @@ const schema = z.object({
 type LoginForm = z.infer<typeof schema>
 
 export default function Login() {
-  const redirect = new URLSearchParams(window.location.search).get('redirect') || '/'
+  const { redirect } = useSearch({ from: '/login' })
+
   const form = useForm<LoginForm>({
     mode: 'onTouched',
     resolver: zodResolver(schema),

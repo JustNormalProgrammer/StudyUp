@@ -108,7 +108,7 @@ export async function getUserStats(userId: string) {
 }
 export async function updateUserSettings(
   userId: string,
-  data: { dailyStudyGoal?: number; weeklyQuizGoal?: number }
+  data: { dailyStudyGoal: number; weeklyQuizGoal: number }
 ) {
   const [result] = await db
     .insert(userSettings)

@@ -2,6 +2,7 @@ import sessions, {
   StudySessionCreate,
   PaginationQuery,
   FilterQuery,
+  TimeRangeQuery,
 } from "../db/queries/sessions";
 import resources from "../db/queries/resources";
 import { Request, Response } from "express";
@@ -50,7 +51,7 @@ export const getSessions = async (req: Request, res: Response) => {
   }
   try {
     const { from, to, start, limit, tagId, q } = matchedData<
-      PaginationQuery & FilterQuery
+      PaginationQuery & FilterQuery & TimeRangeQuery
     >(req);
     const result = await sessions.getSessions(req.user!.userId, {
       from,
