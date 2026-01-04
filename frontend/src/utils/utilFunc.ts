@@ -8,16 +8,6 @@ export function hexToRgba(hex: string, alpha = 0.1) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export function getLast7DaysLabels() {
-  const formatter = new Intl.DateTimeFormat('en-US', { weekday: 'long' })
-  const today = new Date()
-
-  return Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date(today)
-    d.setDate(today.getDate() - (6 - i))
-    return formatter.format(d)
-  })
-}
 export const getColor = (percent: number) => {
   if (percent >= 80) return 'oklch(72.3% 0.219 149.579)' // zielony
   if (percent >= 50) return 'oklch(90.5% 0.182 98.111)' // żółty

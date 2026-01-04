@@ -4,8 +4,6 @@ import { toast } from 'sonner'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Navigate, useNavigate, useParams } from '@tanstack/react-router'
-import { Label } from '@radix-ui/react-label'
-import { SquareArrowOutUpRight } from 'lucide-react'
 import { Field, FieldError, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
@@ -29,10 +27,10 @@ import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import { Switch } from '@/components/ui/switch'
 
 const schema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().trim().min(1, 'Title is required'),
   numberOfQuestions: z.number().min(1, 'Number of questions is required'),
   isMultipleChoice: z.boolean(),
-  additionalInfo: z.string().optional(),
+  additionalInfo: z.string().trim().optional(),
 })
 
 export type CreateQuizDialogForm = z.infer<typeof schema>
@@ -55,7 +53,7 @@ export default function CreateQuizDialog({
       title: '',
       numberOfQuestions: 5,
       isMultipleChoice: false,
-      additionalInfo: '',
+      additionalInfo: undefined,
     },
   })
   let toastId: string | number
@@ -181,7 +179,14 @@ export default function CreateQuizDialog({
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>Additional information</FieldLabel>
-                <Textarea {...field} />
+                <Textarea
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === '' ? undefined : e.target.value,
+                    )
+                  }
+                />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

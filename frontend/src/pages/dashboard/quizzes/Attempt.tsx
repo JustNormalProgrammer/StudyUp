@@ -155,7 +155,7 @@ export default function Attempt() {
           </RadialBarChart>
         </ChartContainer>
         <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-lg font-medium ">
+          <div className="text-lg font-medium">
             {getScoreMessage(percentage)}
           </div>
           <div className=" text-md font-medium tracking-tighter">

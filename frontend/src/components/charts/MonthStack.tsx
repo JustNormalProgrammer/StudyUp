@@ -1,125 +1,213 @@
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import {
+  Bar,
+  BarChart,
+  BarStack,
+  CartesianGrid,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { useQuery } from '@tanstack/react-query'
+import {
+  ArrowLeft,
+  ArrowRight,
+  CircleSlash2,
+  ListOrdered,
+  Sigma,
+} from 'lucide-react'
+import { useState } from 'react'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../ui/card'
+import { Button } from '../ui/button'
 import type { ChartConfig } from '@/components/ui/chart'
+import type { UserSettings } from '@/api/types'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+import { getWeekRange } from '@/utils/getWeekRange'
 
-const chartData = [
-  {
-    day: 'Monday',
-    historia: 0,
-    jezykiObce: 0,
-    programowanie: 0,
-    matematyka: 120,
-  },
-  {
-    day: 'Tuesday',
-    historia: 0,
-    jezykiObce: 0,
-    programowanie: 90,
-    matematyka: 0,
-  },
-  {
-    day: 'Wednesday',
-    historia: 0,
-    jezykiObce: 0,
-    programowanie: 150,
-    matematyka: 0,
-  },
-  {
-    day: 'Thursday',
-    historia: 0,
-    jezykiObce: 60,
-    programowanie: 0,
-    matematyka: 0,
-  },
-  {
-    day: 'Friday',
-    historia: 180,
-    jezykiObce: 20,
-    programowanie: 0,
-    matematyka: 0,
-  },
-  {
-    day: 'Saturday',
-    historia: 0,
-    jezykiObce: 12,
-    programowanie: 0,
-    matematyka: 0,
-  },
-  {
-    day: 'Sunday',
-    historia: 20,
-    jezykiObce: 10,
-    programowanie: 20,
-    matematyka: 60,
-  },
+type StudySessionResponse = {
+  tag: string
+  tagColor: string
+  duration: number
+  startedAt: string
+}
+
+const WEEK_DAYS = [
+  { key: 'Monday', index: 1 },
+  { key: 'Tuesday', index: 2 },
+  { key: 'Wednesday', index: 3 },
+  { key: 'Thursday', index: 4 },
+  { key: 'Friday', index: 5 },
+  { key: 'Saturday', index: 6 },
+  { key: 'Sunday', index: 0 },
 ]
 
-const chartConfig = {
-  historia: {
-    label: 'Historia',
-    color: '#4F46E5',
-  },
-  jezykiObce: {
-    label: 'Języki obce',
-    color: '#10B981',
-  },
-  programowanie: {
-    label: 'Programowanie',
-    color: '#F59E0B',
-  },
-  matematyka: {
-    label: 'Matematyka',
-    color: '#EC4899',
-  },
-} satisfies ChartConfig
+function buildWeeklyChart(sessions: Array<StudySessionResponse>) {
+  const usedTags = Array.from(new Set(sessions.map((s) => s.tag)))
+  const chartConfig: ChartConfig = Object.fromEntries(
+    usedTags.map((tag) => {
+      const color = sessions.find((s) => s.tag === tag)?.tagColor ?? '#888'
+      return [
+        tag,
+        {
+          label: tag,
+          color,
+        },
+      ]
+    }),
+  )
+
+  const chartData = WEEK_DAYS.map(({ key }) => {
+    const row: Record<string, number | string> = { day: key }
+    usedTags.forEach((tag) => (row[tag] = 0))
+    return row
+  })
+
+  sessions.forEach((session) => {
+    const date = new Date(session.startedAt)
+
+    const dayIndex = date.getDay()
+    const dayKey = WEEK_DAYS.find((d) => d.index === dayIndex)?.key
+    if (!dayKey) return
+
+    const dayRow = chartData.find((d) => d.day === dayKey)
+    if (!dayRow) return
+
+    dayRow[session.tag] = (dayRow[session.tag] as number) + session.duration
+  })
+
+  return { chartData, chartConfig, usedTags }
+}
 
 export function WeeklyChartStack() {
+  const api = useAuthenticatedRequest()
+  const [date, setDate] = useState(new Date())
+  const { from, to } = getWeekRange(date)
+  const { data } = useQuery({
+    queryKey: ['weekly-chart', 'bar', from, to],
+    queryFn: async () => {
+      const { data } = await api.get<Array<StudySessionResponse>>(
+        `/user/chart-data?from=${from.toISOString()}&to=${to.toISOString()}`,
+      )
+      return data
+    },
+  })
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: async () => {
+      const { data } = await api.get<UserSettings>('/user/settings')
+      return data
+    },
+  })
+
+  const { chartData, chartConfig, usedTags } = buildWeeklyChart(data || [])
+  const totalDuration = data?.reduce((acc, s) => acc + s.duration, 0) ?? 0
+  const avgDuration = totalDuration ? totalDuration / (data?.length ?? 1) : 0
   return (
-    <Card >
-      <CardHeader>
-        <CardTitle>Weekly Chart Stack</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[150px] xl:min-h-[250px]">
-          <BarChart accessibilityLayer data={chartData}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="day"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
+    <Card className="w-full py-3">
+      <CardContent className="h-full flex flex-col gap-3 justify-between">
+        <CardHeader className="flex flex-row justify-between items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDate(new Date(date.setDate(date.getDate() - 7)))}
+          >
+            <ArrowLeft />
+          </Button>
+          <div className="text-center font-medium">
+            {from.toLocaleDateString()} - {to.toLocaleDateString()}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDate(new Date(date.setDate(date.getDate() + 7)))}
+          >
+            <ArrowRight />
+          </Button>
+        </CardHeader>
+        <div className="flex flex-col gap-1">
+          <ChartContainer
+            config={chartConfig}
+            className="min-h-[150px] xl:min-h-[240px] xl:max-h-[310px]"
+          >
+            <BarChart data={chartData}>
+              <CartesianGrid vertical={false} />
+              <YAxis hide={true} />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={5}
+                tickFormatter={(v) => v.slice(0, 3)}
+              />
+              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+
+              <BarStack radius={[12, 12, 0, 0]} stackId="a">
+                {usedTags.map((tag) => (
+                  <Bar
+                    key={tag}
+                    dataKey={tag}
+                    fill={chartConfig[tag].color}
+                    fillOpacity={0.85}
+                    barSize={30}
+                  />
+                ))}
+              </BarStack>
+              <ReferenceLine
+                y={settings?.dailyStudyGoal}
+                stroke="#000"
+                strokeDasharray="3 4"
+              />
+            </BarChart>
+          </ChartContainer>
+          <div className="flex flex-row w-full justify-between gap-2 items-center flex-wrap">
+            <Label
+              icon={<CircleSlash2 size={16} className="mr-1" />}
+              value={Number(avgDuration).toFixed(2)}
+              label="min"
             />
-            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-            <Bar dataKey="historia" stackId="a" fill="var(--color-historia)" />
-            <Bar
-              dataKey="matematyka"
-              stackId="a"
-              fill="var(--color-matematyka)"
+            <Label
+              icon={<ListOrdered size={16} className="mr-1" />}
+              value={data?.length ?? 0}
+              label="sessions"
             />
-            <Bar
-              dataKey="jezykiObce"
-              stackId="a"
-              fill="var(--color-jezykiObce)"
+            <Label
+              icon={<Sigma size={16} className="mr-1" />}
+              value={Number(totalDuration).toFixed(2)}
+              label="min"
             />
-            <Bar
-              dataKey="programowanie"
-              stackId="a"
-              fill="var(--color-programowanie)"
-            />
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          You've spent 10 hours learning this week, keep it up!
+          </div>
         </div>
-      </CardFooter> 
+      </CardContent>
     </Card>
+  )
+}
+
+function Label({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode
+  value: string | number
+  label: string
+}) {
+  return (
+    <div className="text-gray-600 font-semibold flex flex-row items-center gap-0">
+      {icon}
+      <div>
+        {value}
+        <span className="text-xs text-gray-500 font-normal mx-0.25">{label}</span>
+      </div>
+    </div>
   )
 }

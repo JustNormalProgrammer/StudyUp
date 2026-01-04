@@ -30,8 +30,8 @@ import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 const schema = z.object({
   tagId: z.string({ error: 'Tag is required' }).min(1, 'Tag is required'),
-  title: z.string().min(1, 'Title is required'),
-  notes: z.string().optional(),
+  title: z.string().trim().min(1, 'Title is required'),
+  notes: z.string().trim().optional(),
   startedAt: z.date(),
   durationMinutes: z
     .number({ error: 'Duration must be a number' })
@@ -40,7 +40,7 @@ const schema = z.object({
     .array(
       z.object({
         resourceId: z.string(),
-        label: z.string().optional(),
+        label: z.string().trim().optional(),
       }),
     )
     .default([]),
@@ -71,11 +71,11 @@ export default function SessionForm({
     },
   })
   const form = useForm({
-    mode: 'onSubmit', // TODO: work on onTouched
+    mode: 'onSubmit',
     resolver: zodResolver(schema),
     defaultValues: {
       title: sessionData?.session?.title || '',
-      notes: sessionData?.session?.notes || '',
+      notes: sessionData?.session?.notes || undefined,
       tagId: sessionData?.session?.tagId || '',
       studyResources: sessionData?.resources || [],
       startedAt: sessionData?.session?.startedAt

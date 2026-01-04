@@ -22,6 +22,15 @@ export const getUserDetails = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserSettings = async (req: Request, res: Response) => {
+  try {
+    const result = await user.getUserSettings(req.user!.userId);
+    return res.json(result);
+  } catch (e) {
+    console.log(e);
+    return res.sendStatus(500);
+  }
+};
 export const getUserEvents = async (req: Request, res: Response) => {
   const valResult = validationResult(req);
   if (!valResult.isEmpty()) {
@@ -50,7 +59,17 @@ export const getUserEvents = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserEventsChart = async (req: Request, res: Response) => {
+export const getUserStats = async (req: Request, res: Response) => {
+  try {
+    const result = await user.getUserStats(req.user!.userId);
+    return res.json(result);
+  } catch (e) {
+    console.log(e);
+    return res.sendStatus(500);
+  }
+};
+
+export const getUserChartData = async (req: Request, res: Response) => {
   const valResult = validationResult(req);
   if (!valResult.isEmpty()) {
     return res
@@ -58,18 +77,36 @@ export const getUserEventsChart = async (req: Request, res: Response) => {
       .json({ error: valResult.array({ onlyFirstError: true }) });
   }
   try {
-    const { from, to, start, limit } = matchedData<PaginationQuery>(req);
-    const userSessions = await sessions.getSessionsDurationByDay(
+    const { from, to, goal } = matchedData<{ from: Date; to: Date, goal: boolean}>(req);
+    if (goal) {
+      const result = await user.getUserProgressData(req.user!.userId, from, to);
+      return res.json(result);
+    }
+    const result = await user.getUseBarChartData(req.user!.userId, from, to);
+    return res.json(result);
+  } catch (e) {
+    console.log(e);
+    return res.sendStatus(500);
+  }
+};
+
+export const updateUserSettings = async (req: Request, res: Response) => {
+  const valResult = validationResult(req);
+  if (!valResult.isEmpty()) {
+    return res
+      .status(400)
+      .json({ error: valResult.array({ onlyFirstError: true }) });
+  }
+  const { dailyStudyGoal, weeklyQuizGoal } = matchedData<{ dailyStudyGoal: number; weeklyQuizGoal: number }>(req);
+  if (!(dailyStudyGoal || weeklyQuizGoal)) {
+    return res.status(400).json({error: [{msg: "No values set"}]});
+  }
+  try {
+    const result = await user.updateUserSettings(
       req.user!.userId,
-      {
-        from,
-        to,
-        start,
-        limit,
-      }
+      { dailyStudyGoal, weeklyQuizGoal }
     );
-    console.log(userSessions);
-    return res.json(userSessions);
+    return res.json(result);
   } catch (e) {
     console.log(e);
     return res.sendStatus(500);

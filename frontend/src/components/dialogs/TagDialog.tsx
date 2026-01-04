@@ -25,6 +25,7 @@ import type { Tag as TagType } from '@/api/types'
 const schema = z.object({
   content: z
     .string()
+    .trim()
     .min(1, 'Content is required')
     .max(50, 'Tag cannot exceed 50 characters'),
   color: z.string().min(1, 'Color is required'),

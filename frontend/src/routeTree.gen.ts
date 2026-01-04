@@ -14,7 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
 import { Route as DashboardNotFoundRouteImport } from './routes/dashboard/not-found'
 import { Route as DashboardHomeRouteImport } from './routes/dashboard/home'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
@@ -51,9 +51,9 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardNotFoundRoute = DashboardNotFoundRouteImport.update({
@@ -120,7 +120,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/home': typeof DashboardHomeRoute
   '/dashboard/not-found': typeof DashboardNotFoundRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
   '/dashboard/quizzes': typeof DashboardQuizzesIndexRoute
@@ -137,7 +137,7 @@ export interface FileRoutesByTo {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/home': typeof DashboardHomeRoute
   '/dashboard/not-found': typeof DashboardNotFoundRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
   '/dashboard/quizzes': typeof DashboardQuizzesIndexRoute
@@ -156,7 +156,7 @@ export interface FileRoutesById {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/home': typeof DashboardHomeRoute
   '/dashboard/not-found': typeof DashboardNotFoundRoute
-  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
   '/dashboard/quizzes/': typeof DashboardQuizzesIndexRoute
@@ -176,7 +176,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/home'
     | '/dashboard/not-found'
-    | '/dashboard/settings'
+    | '/dashboard/profile'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
     | '/dashboard/quizzes'
@@ -193,7 +193,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/home'
     | '/dashboard/not-found'
-    | '/dashboard/settings'
+    | '/dashboard/profile'
     | '/dashboard'
     | '/dashboard/study-sessions/create'
     | '/dashboard/quizzes'
@@ -211,7 +211,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/home'
     | '/dashboard/not-found'
-    | '/dashboard/settings'
+    | '/dashboard/profile'
     | '/dashboard/'
     | '/dashboard/study-sessions/create'
     | '/dashboard/quizzes/'
@@ -266,11 +266,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-    '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/not-found': {
@@ -350,7 +350,7 @@ interface DashboardRouteRouteChildren {
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardNotFoundRoute: typeof DashboardNotFoundRoute
-  DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardStudySessionsCreateRoute: typeof DashboardStudySessionsCreateRoute
   DashboardQuizzesIndexRoute: typeof DashboardQuizzesIndexRoute
@@ -365,7 +365,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardNotFoundRoute: DashboardNotFoundRoute,
-  DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardProfileRoute: DashboardProfileRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardStudySessionsCreateRoute: DashboardStudySessionsCreateRoute,
   DashboardQuizzesIndexRoute: DashboardQuizzesIndexRoute,

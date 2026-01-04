@@ -24,6 +24,7 @@ import SessionForm from '@/components/dialogs/SessionForm'
 import Tag from '@/components/primitives/Tag'
 import { hexToRgba } from '@/utils/hexToRgba'
 import { Spinner } from '@/components/ui/spinner'
+import { TagSuggestionBox } from '@/components/primitives/TagSugestionBox'
 
 const LIMIT = 20
 
@@ -97,28 +98,23 @@ export default function Sessions() {
 
   return (
     <div className="flex flex-col gap-4 max-w-7xl mx-auto">
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Input
           placeholder="Search sessions..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="flex-1"
+        />
+        <TagSuggestionBox
+          value={selectedTag}
+          setValue={(tag: string) => setSelectedTag(tag)}
+          reset={true}
         />
         <Button onClick={() => setShowCreateSessionDialog(true)}>
           <Plus />
-          Create session
+          <div className="hidden xl:block">Create session</div>
         </Button>
       </div>
-
-      <TagSelector
-        value={selectedTag}
-        onClick={(tag: TagType) => {
-          if (selectedTag === tag.tagId) {
-            setSelectedTag('')
-            return
-          }
-          setSelectedTag(tag.tagId)
-        }}
-      />
 
       {isLoading && (
         <div className="text-center text-muted-foreground mt-10">

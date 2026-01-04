@@ -30,6 +30,7 @@ code {
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-accent-custom: var(--accent-custom);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -88,6 +89,7 @@ code {
   --foreground: oklch(0.2046 0 0);
   --card: oklch(0.9911 0 0);
   --card-foreground: oklch(0.2046 0 0);
+  --accent-custom:oklch(54.1% 0.281 293.009);
   --popover: oklch(0.9911 0 0);
   --popover-foreground: oklch(0.4386 0 0);
   --primary: oklch(0.8348 0.1302 160.9080);

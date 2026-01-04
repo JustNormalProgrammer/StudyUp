@@ -27,7 +27,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/", user);
+app.use("/user", user);
 app.use("/auth", auth);
 app.use("/sessions", sessions);
 app.use("/resources", resources);

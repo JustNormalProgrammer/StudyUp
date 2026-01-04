@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useMediaQuery } from 'usehooks-ts'
 import { useQuery } from '@tanstack/react-query'
 import { ListPlus } from 'lucide-react'
 import ResourceItem from '../resources/Item'
 import type { StudyResource } from '@/api/types'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -29,16 +29,15 @@ export function ResourcesSuggestionBox({
   setValue: (value: Array<{ resourceId: string; label?: string }>) => void
   resourcesData: Array<StudyResource>
 }) {
-
   const [open, setOpen] = useState(false)
-  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const isMobile = useIsMobile();
   const selectedResources = resourcesData.filter((resource) =>
     value.some((r) => r.resourceId === resource.resourceId),
   )
   const remainingResources = resourcesData.filter(
     (resource) => !selectedResources.includes(resource),
   )
-  if (isDesktop) {
+  if (!isMobile) {
     return (
       <Popover open={open} onOpenChange={setOpen} modal={true}>
         <PopoverTrigger asChild>

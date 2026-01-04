@@ -1,22 +1,46 @@
 import { Router } from "express";
 import { requiredAuth } from "../middleware/requiredAuth";
-import { getUserEvents, getUserDetails, getUserEventsChart } from "../controllers/user";
+import {
+  getUserEvents,
+  getUserDetails,
+  getUserStats,
+  updateUserSettings,
+  getUserChartData,
+  getUserSettings,
+} from "../controllers/user";
 import { validatePaginationQuery } from "../utils/validatePagination";
 import validate from "../utils/validate";
+import { body, query } from "express-validator";
 
 const router = Router();
 
-router.get("/user-details", requiredAuth, getUserDetails);
+const updateUserSettingsSchema = [
+  body("dailyStudyGoal")
+    .optional()
+    .isInt({ min: 1}),
+  body("weeklyQuizGoal")
+    .optional()
+    .isInt({ min: 1 }),
+];
+const getUserChartDataSchema = [
+  query("from").isISO8601().withMessage("From field must be a date").toDate(),
+  query("to").isISO8601().withMessage("To field must be a date").toDate(),
+  query("goal").optional().isBoolean(),
+];
+router.get("/details", requiredAuth, getUserDetails);
 router.get(
-  "/user-events",
+  "/events",
   requiredAuth,
   validate(validatePaginationQuery),
   getUserEvents
 );
+router.get("/stats", requiredAuth, getUserStats);
 router.get(
-  "/user-events/chart",
+  "/chart-data",
   requiredAuth,
-  validate(validatePaginationQuery),
-  getUserEventsChart
+  validate(getUserChartDataSchema),
+  getUserChartData
 );
+router.get("/settings", requiredAuth, getUserSettings);
+router.put("/settings", requiredAuth, validate(updateUserSettingsSchema), updateUserSettings);
 export default router;

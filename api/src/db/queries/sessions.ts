@@ -1,13 +1,11 @@
-import { and, eq, between, desc, sql, ilike, gte, lte, sum } from "drizzle-orm";
+import { and, eq, desc, sql, ilike, gte, lte, sum } from "drizzle-orm";
 import { db } from "../index";
 import {
-  studyResources,
   studySessions,
   studySessionsStudyResources,
 } from "../schema";
 import { tags } from "../schema";
 import {
-  getStudyResourcesBySessionId,
   StudyResourceTypeEnum,
 } from "./resources";
 import { withPagination } from "../withPagination";

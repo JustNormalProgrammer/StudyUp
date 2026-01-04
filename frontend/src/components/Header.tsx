@@ -1,10 +1,10 @@
-import { LogOut, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react'
+import { LogOut, PanelLeftClose, PanelLeftOpen, UserPen } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from './ui/button'
+import Avatar from './primitives/Avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -18,16 +18,14 @@ export default function Header() {
     <nav className="flex border-b h-[65px] items-center justify-between md:justify-end p-5">
       <SidebarToggle />
       <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <div className="rounded-full bg-primary/80 h-12 w-12 flex items-center justify-center font-semibold text-xl cursor-pointer">
-            {user?.username.split('').slice(0, 2).join('').toUpperCase()}
-          </div>
+        <DropdownMenuTrigger>
+          <Avatar className="cursor-pointer" />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40">
           <DropdownMenuItem asChild>
-            <Link to="/dashboard/settings" className="w-full cursor-default">
-              <Settings size={16} />
-              Settings
+            <Link to="/dashboard/profile" className="w-full cursor-default">
+              <UserPen size={16} />
+              Profile
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

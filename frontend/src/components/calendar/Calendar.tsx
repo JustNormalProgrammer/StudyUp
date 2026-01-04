@@ -11,13 +11,11 @@ import {
   MessageCircleQuestionMark,
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { Link, useNavigate } from '@tanstack/react-router'
 import Tag from '../primitives/Tag'
 import DateEvent from './DateEvent'
 import Event from './Event'
 import type { Tag as TagType } from '@/api/types'
-import { useSidebar } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import {
@@ -79,7 +77,7 @@ export default function Calendar() {
     queryKey: ['calendar-events', range],
     enabled: !!range,
     queryFn: async () => {
-      const response = await api.get('/user-events', {
+      const response = await api.get('/user/events', {
         params: {
           from: range!.start,
           to: range!.end,
@@ -156,8 +154,6 @@ export default function Calendar() {
   const quizzesForDate = quizzes.filter(
     (quiz) => new Date(quiz.start).toDateString() === selectedDate,
   )
-  console.log('sessionsForDate:', sessionsForDate)
-  console.log('quizzesForDate:', quizzesForDate)
   return (
     <>
       <div className="overflow-y-hidden">
@@ -253,11 +249,11 @@ export default function Calendar() {
                         title={session.title}
                         colorBorder={session.borderColor}
                         secInfo={
-                          <div className="flex flex-row items-center gap-5 overflow-hidden">
+                          <div className="flex flex-row items-center gap-5 ">
                             <Tag
                               tag={session.extendedProps.tag}
                               size="sm"
-                              className="min-w-0 text-ellipsis shrink"
+                              className="min-w-0 text-ellipsis max-w-7.5 sm:max-w-full"
                             />
                             <div className="flex flex-row items-center gap-1">
                               <Hourglass className="w-3 h-4" />
@@ -304,7 +300,7 @@ export default function Calendar() {
                         colorBorder={quiz.borderColor}
                         secInfo={
                           <div className="flex flex-row items-center gap-5">
-                            <Tag tag={quiz.extendedProps.tag} size="sm" />
+                            <Tag tag={quiz.extendedProps.tag} size="sm" className="min-w-0 text-ellipsis max-w-7.5 sm:max-w-full" />
                             <div
                               className="text-xs font-semibold bg-(--score-color)/10 px-2 py-1 rounded-md"
                               style={{

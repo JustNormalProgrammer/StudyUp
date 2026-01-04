@@ -251,8 +251,10 @@ export const createQuiz = async (req: Request, res: Response) => {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `User just studied something using some resources. He wrote down what he was studying, resources he used to study and more.
-Your task is to create a quiz with questions that verify user's newly acquired knowledge based on the data provided. Provided data is a JSON object containing
-properties depicting user's study session. 
+The provided data describes the study session and should be treated strictly as source material, not as something to be recalled verbatim.
+Your task is to create a quiz that verifies the user's newly acquired knowledge, not their memory of what was written in the input data.
+Provided data is a JSON object containing properties depicting user's study session. 
+Use it only to infer what knowledge was learned, not as content to be directly queried.
 You will also receive property isMultipleChoice, numberOfQuestions and additionalInfo. isMultipleChoice property is a boolean and specifies whether generated quiz should
 be only single choice or can have questions where multiple answers are correct. Please keep in mind, that if isMultipleChoice is true
 quiz should contain both single and multiple answer questions and should not be comprised of only one type of question.

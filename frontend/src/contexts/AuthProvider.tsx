@@ -33,7 +33,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     user: User | null
     isAuthenticated: boolean
     token: string | null
-  }>({ user: null, isAuthenticated: false, token: null})
+  }>({ user: null, isAuthenticated: false, token: null })
   const [isLoading, setIsLoading] = useState(true)
 
   const login = useCallback((data: LoginResponse) => {
@@ -63,21 +63,21 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const {data: {accessToken}} = await api.get<RefreshTokenResponse>('/auth/refresh-token')
-        const { data } = await api.get<User>('/user-details', {
+        const {
+          data: { accessToken },
+        } = await api.get<RefreshTokenResponse>('/auth/refresh-token')
+        const { data } = await api.get<User>('/user/details', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         })
-        setState(
-          {
-            user: {
-              ...data,
-            },
-            isAuthenticated: true,
-            token: accessToken,
-          }
-        )
+        setState({
+          user: {
+            ...data,
+          },
+          isAuthenticated: true,
+          token: accessToken,
+        })
       } catch (e) {
         console.log(e)
       } finally {
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         logout,
       }}
     >
-      { isLoading ? null : children}
+      {isLoading ? null : children}
     </AuthContext.Provider>
   )
 }

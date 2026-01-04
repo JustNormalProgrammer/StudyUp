@@ -31,6 +31,15 @@ export const users = pgTable("users", {
   createdAt: timestamp().defaultNow().notNull(),
 });
 
+export const userSettings = pgTable("user_settings", {
+  userId: uuid()
+    .notNull()
+    .primaryKey()
+    .references(() => users.userId, { onDelete: "cascade" }),
+  dailyStudyGoal: integer().notNull().default(60),
+  weeklyQuizGoal: integer().notNull().default(3),
+});
+
 export const refreshTokens = pgTable("refresh_tokens", {
   userId: uuid()
     .references(() => users.userId)

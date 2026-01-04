@@ -72,3 +72,21 @@ export interface UserEventResponse {
   userSessions: Array<StudySession>
   userQuizzesAttempts: Array<QuizAttempt>
 }
+export interface UserStats {
+  sessionsStats: {
+    totalSessions: number
+    totalDuration: number
+  }
+  quizzesStats: {
+    totalQuizzes: number
+    totalQuizAttempts: number
+    averageQuizScore: number
+  }
+  resourcesStats: {
+    totalResources: number
+  }
+}
+export interface UserSettings {
+  dailyStudyGoal: number
+  weeklyQuizGoal: number
+}
