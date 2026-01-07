@@ -18,8 +18,17 @@ import { validateTimeRangeQuery } from "../utils/validateTimeRange";
 
 const validateCreateSession = [
   body("tagId").notEmpty().withMessage("Tag is required"),
-  body("title").notEmpty().withMessage("Title is required"),
-  body("notes").optional().notEmpty().withMessage("Notes cannot be empty"),
+  body("title")
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Title must be between 1 and 255 characters"),
+  body("notes")
+    .optional()
+    .notEmpty()
+    .withMessage("Notes cannot be empty")
+    .isLength({ min: 1, max: 2000 })
+    .withMessage("Notes must be between 1 and 2000 characters"),
   body("startedAt")
     .notEmpty()
     .withMessage("Starting time is required")
@@ -50,7 +59,11 @@ const validateCreateSession = [
 ];
 
 const validateCreateQuiz = [
-  body("title").notEmpty().withMessage("Title is required"),
+  body("title")
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Title must be between 1 and 255 characters"),
   body("numberOfQuestions")
     .notEmpty()
     .withMessage("Number of questions is required")
@@ -66,7 +79,9 @@ const validateCreateQuiz = [
   body("additionalInfo")
     .optional()
     .notEmpty()
-    .withMessage("Additional information cannot be empty"),
+    .withMessage("Additional information cannot be empty")
+    .isLength({ min: 1, max: 500 })
+    .withMessage("Additional information must be between 1 and 500 characters"),
 ];
 
 

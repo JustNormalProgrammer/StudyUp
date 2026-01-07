@@ -12,9 +12,13 @@ import { body, query } from "express-validator";
 import { StudyResourceTypeEnum } from "../db/queries/resources";
 import { validatePaginationQuery } from "../utils/validatePagination";
 const validateResource = [
-  body("title").notEmpty().withMessage("Title is required"),
+  body("title").notEmpty().withMessage("Title is required")
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Title must be between 1 and 255 characters"),
   body("type").notEmpty().withMessage("Type is required"),
-  body("desc").optional().notEmpty().withMessage("Description is required"),
+  body("desc").optional().notEmpty().withMessage("Description is required")
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Description must be between 1 and 255 characters"),
   body("type").custom((value) => {
     if (!Object.values(StudyResourceTypeEnum).includes(value)) {
       throw new Error("Invalid study resource type");

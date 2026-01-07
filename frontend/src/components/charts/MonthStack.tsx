@@ -17,6 +17,8 @@ import {
   Sigma,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useErrorBoundary } from 'react-error-boundary'
+import { toast } from 'sonner'
 import {
   Card,
   CardContent,
@@ -25,6 +27,8 @@ import {
   CardTitle,
 } from '../ui/card'
 import { Button } from '../ui/button'
+import { Spinner } from '../ui/spinner'
+import { Skeleton } from '../ui/skeleton'
 import type { ChartConfig } from '@/components/ui/chart'
 import type { UserSettings } from '@/api/types'
 import {
@@ -91,108 +95,141 @@ function buildWeeklyChart(sessions: Array<StudySessionResponse>) {
 
 export function WeeklyChartStack() {
   const api = useAuthenticatedRequest()
+  const { showBoundary } = useErrorBoundary()
   const [date, setDate] = useState(new Date())
   const { from, to } = getWeekRange(date)
-  const { data } = useQuery({
-    queryKey: ['weekly-chart', 'bar', from, to],
+  const chartDataQuery = useQuery({
+    queryKey: ['chart', 'weekly', from, to],
     queryFn: async () => {
       const { data } = await api.get<Array<StudySessionResponse>>(
-        `/user/chart-data?from=${from.toISOString()}&to=${to.toISOString()}`,
+        `/user/chart-data/sessions-duration?from=${from.toISOString()}&to=${to.toISOString()}`,
       )
       return data
     },
+    placeholderData: (prev) => prev,
   })
-  const { data: settings } = useQuery({
+  const settingsQuery = useQuery({
     queryKey: ['settings'],
     queryFn: async () => {
       const { data } = await api.get<UserSettings>('/user/settings')
       return data
     },
   })
+  if (chartDataQuery.data && settingsQuery.data) {
+    const { chartData, chartConfig, usedTags } = buildWeeklyChart(
+      chartDataQuery.data,
+    )
+    const totalDuration = chartDataQuery.data.reduce(
+      (acc, s) => acc + s.duration,
+      0,
+    )
+    const avgDuration = totalDuration
+      ? totalDuration / chartDataQuery.data.length
+      : 0
+    return (
+      <Card className="w-full py-3">
+        <CardContent className="h-full flex flex-col gap-3 justify-between">
+          <CardHeader className="flex flex-row justify-between items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                setDate(new Date(date.setDate(date.getDate() - 7)))
+              }
+            >
+              <ArrowLeft />
+            </Button>
+            <div className="text-center font-medium">
+              {from.toLocaleDateString()} - {to.toLocaleDateString()}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                setDate(new Date(date.setDate(date.getDate() + 7)))
+              }
+            >
+              <ArrowRight />
+            </Button>
+          </CardHeader>
+          <div className="flex flex-col gap-1">
+            <ChartContainer
+              config={chartConfig}
+              className="min-h-[150px] xl:min-h-[240px] xl:max-h-[310px] relative"
+            >
+              {chartDataQuery.isFetching && (
+                <div className="absolute w-full h-full flex justify-center items-center z-999">
+                  <Spinner className="h-10 w-full" />
+                </div>
+              )}
+              <BarChart data={chartData}>
+                <CartesianGrid vertical={false} />
+                <YAxis hide={true} />
+                <XAxis
+                  dataKey="day"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={5}
+                  tickFormatter={(v) => v.slice(0, 3)}
+                />
+                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
 
-  const { chartData, chartConfig, usedTags } = buildWeeklyChart(data || [])
-  const totalDuration = data?.reduce((acc, s) => acc + s.duration, 0) ?? 0
-  const avgDuration = totalDuration ? totalDuration / (data?.length ?? 1) : 0
+                <BarStack radius={[12, 12, 0, 0]} stackId="a">
+                  {usedTags.map((tag) => (
+                    <Bar
+                      key={tag}
+                      dataKey={tag}
+                      fill={chartConfig[tag].color}
+                      fillOpacity={0.85}
+                      barSize={30}
+                      opacity={chartDataQuery.isFetching ? 0.5 : 1}
+                    />
+                  ))}
+                </BarStack>
+                <ReferenceLine
+                  y={settingsQuery.data.dailyStudyGoal}
+                  stroke="#000"
+                  strokeDasharray="3 4"
+                >
+                  <RechartsLabel
+                    value={settingsQuery.data.dailyStudyGoal}
+                    position="insideTopRight"
+                  />
+                </ReferenceLine>
+              </BarChart>
+            </ChartContainer>
+            <div className="flex flex-row w-full justify-between gap-2 items-center flex-wrap">
+              <Label
+                icon={<CircleSlash2 size={16} className="mr-1" />}
+                value={Number(avgDuration).toFixed(2)}
+                label="min/day"
+              />
+              <Label
+                icon={<ListOrdered size={16} className="mr-1" />}
+                value={chartDataQuery.data.length}
+                label="sessions"
+              />
+              <Label
+                icon={<Sigma size={16} className="mr-1" />}
+                value={Number(totalDuration).toFixed(2)}
+                label="min"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+  if (chartDataQuery.error) {
+    toast.error('Failed to load weekly data')
+  }
+  if (settingsQuery.error) {
+    showBoundary(settingsQuery.error)
+  }
   return (
     <Card className="w-full py-3">
-      <CardContent className="h-full flex flex-col gap-3 justify-between">
-        <CardHeader className="flex flex-row justify-between items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDate(new Date(date.setDate(date.getDate() - 7)))}
-          >
-            <ArrowLeft />
-          </Button>
-          <div className="text-center font-medium">
-            {from.toLocaleDateString()} - {to.toLocaleDateString()}
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDate(new Date(date.setDate(date.getDate() + 7)))}
-          >
-            <ArrowRight />
-          </Button>
-        </CardHeader>
-        <div className="flex flex-col gap-1">
-          <ChartContainer
-            config={chartConfig}
-            className="min-h-[150px] xl:min-h-[240px] xl:max-h-[310px]"
-          >
-            <BarChart data={chartData}>
-              <CartesianGrid vertical={false} />
-              <YAxis hide={true} />
-              <XAxis
-                dataKey="day"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={5}
-                tickFormatter={(v) => v.slice(0, 3)}
-              />
-              <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-
-              <BarStack radius={[12, 12, 0, 0]} stackId="a">
-                {usedTags.map((tag) => (
-                  <Bar
-                    key={tag}
-                    dataKey={tag}
-                    fill={chartConfig[tag].color}
-                    fillOpacity={0.85}
-                    barSize={30}
-                  />
-                ))}
-              </BarStack>
-              <ReferenceLine
-                y={settings?.dailyStudyGoal}
-                stroke="#000"
-                strokeDasharray="3 4"
-              >
-                <RechartsLabel
-                  value={settings?.dailyStudyGoal ?? 10}
-                  position="insideTopRight"
-                />
-              </ReferenceLine>
-            </BarChart>
-          </ChartContainer>
-          <div className="flex flex-row w-full justify-between gap-2 items-center flex-wrap">
-            <Label
-              icon={<CircleSlash2 size={16} className="mr-1" />}
-              value={Number(avgDuration).toFixed(2)}
-              label="min/day"
-            />
-            <Label
-              icon={<ListOrdered size={16} className="mr-1" />}
-              value={data?.length ?? 0}
-              label="sessions"
-            />
-            <Label
-              icon={<Sigma size={16} className="mr-1" />}
-              value={Number(totalDuration).toFixed(2)}
-              label="min"
-            />
-          </div>
-        </div>
+      <CardContent className="h-full flex gap-3 justify-between items-center">
+        <Spinner className="h-10 md:h-20 w-full" />
       </CardContent>
     </Card>
   )

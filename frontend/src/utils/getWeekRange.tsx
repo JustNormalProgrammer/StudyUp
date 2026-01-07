@@ -1,5 +1,5 @@
 export function getWeekRange(date: Date) {
-  const day = date.getDay() // 0 = Sunday
+  const day = date.getDay()
   const diffToMonday = (day + 6) % 7
 
   const monday = new Date(date)

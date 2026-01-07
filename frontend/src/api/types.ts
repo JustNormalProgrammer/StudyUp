@@ -38,7 +38,7 @@ export interface Quiz {
   numberOfQuestions: number
   isMultipleChoice: boolean
   createdAt: string
-  tag: Tag  
+  tag: Tag
   quizContent: Array<QuizQuestion>
   maxScore: number
 }
@@ -86,7 +86,29 @@ export interface UserStats {
     totalResources: number
   }
 }
+export interface UserChartData {
+  sessionsData: Array<{
+    sessionId: string
+    duration: number
+    startedAt: string
+    tag: Tag
+  }>
+  attemptsData: Array<{
+    quizAttemptId: string
+    quizId: string
+    finishedAt: string
+    score: number
+    maxScore: number
+    avgScore: number
+    tag: Tag
+  }>
+}
 export interface UserSettings {
   dailyStudyGoal: number
   weeklyQuizGoal: number
+}
+export interface UserProgressData {
+  todayProgress: number
+  weeklySessionsProgress: number
+  weeklyQuizProgress: number
 }

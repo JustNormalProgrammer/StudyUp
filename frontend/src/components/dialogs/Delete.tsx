@@ -14,10 +14,17 @@ export default function DeleteDialog({
   open,
   setOpen,
   mutation,
+  secInfo,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
-  mutation: UseMutationResult<AxiosResponse<void, any, {}>, Error, void, unknown>
+  mutation: UseMutationResult<
+    AxiosResponse<void, any, {}>,
+    Error,
+    void,
+    unknown
+  >
+  secInfo?: React.ReactNode
 }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -25,8 +32,13 @@ export default function DeleteDialog({
         <DialogHeader>
           <DialogTitle>Delete confirmation</DialogTitle>
         </DialogHeader>
-        <DialogDescription>
+        <DialogDescription className="flex flex-col gap-2">
           Are you sure you want to delete this item? This action is permanent.
+          {secInfo && (
+            <div className="text-sm text-gray-500">
+              {secInfo}
+            </div>
+          )}
         </DialogDescription>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>

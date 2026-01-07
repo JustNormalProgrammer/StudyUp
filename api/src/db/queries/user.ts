@@ -5,6 +5,8 @@ import {
   count,
   countDistinct,
   eq,
+  gte,
+  lte,
   or,
   sql,
   sum,
@@ -19,6 +21,7 @@ import {
   users,
   userSettings,
 } from "../schema";
+import { getWeekRange } from "../../utils/weekRange";
 
 export interface UserRegister {
   username: string;
@@ -132,7 +135,11 @@ export async function getUserSettings(userId: string) {
     .limit(1);
   return result;
 }
-export async function getUseBarChartData(userId: string, from: Date, to: Date) {
+export async function getUserBarChartData(
+  userId: string,
+  from: Date,
+  to: Date
+) {
   const result = await db
     .select({
       tag: tags.content,
@@ -150,43 +157,50 @@ export async function getUseBarChartData(userId: string, from: Date, to: Date) {
     );
   return result;
 }
-export async function getUserProgressData(
-  userId: string,
-  from: Date,
-  to: Date
-) {
-  const sessionsData = await db
+export async function getUserProgressData(userId: string) {
+  const startOfTodayUTC = new Date();
+  startOfTodayUTC.setUTCHours(0, 0, 0, 0);
+  const endOfTodayUTC = new Date();
+  endOfTodayUTC.setUTCHours(23, 59, 59, 999);
+  const { from, to } = getWeekRange(startOfTodayUTC);
+  const [{progress: todayProgress}] = await db
     .select({
-      duration: studySessions.durationMinutes,
-      startedAt: studySessions.startedAt,
-      title: studySessions.title,
-      sessionId: studySessions.sessionId,
+      progress: sql<number>`coalesce(sum(${studySessions.durationMinutes})::integer, 0)`,
     })
     .from(studySessions)
-    .leftJoin(tags, eq(studySessions.tagId, tags.tagId))
     .where(
       and(
         eq(studySessions.userId, userId),
-        between(studySessions.startedAt, from, to)
+        gte(studySessions.startedAt, startOfTodayUTC),
+        lte(studySessions.startedAt, endOfTodayUTC)
       )
     );
-  const quizAttemptsData = await db
+  const [{progress: weeklySessionsProgress}] = await db
     .select({
-      score: quizAttempts.score,
-      quizAttemptId: quizAttempts.quizAttemptId,
-      title: quizzes.title,
-      finishedAt: quizAttempts.finishedAt,
-      quizId: quizzes.quizId,
+      progress: sql<number>`coalesce(sum(${studySessions.durationMinutes})::integer, 0)`,
+    })
+    .from(studySessions)
+    .where(
+      and(
+        eq(studySessions.userId, userId),
+        gte(studySessions.startedAt, from),
+        lte(studySessions.startedAt, to)
+      )
+    );
+  const [{progress: weeklyQuizProgress}] = await db
+    .select({
+      progress: sql<number>`count(${quizAttempts.quizAttemptId})::integer`,
     })
     .from(quizAttempts)
     .leftJoin(quizzes, eq(quizAttempts.quizId, quizzes.quizId))
     .where(
       and(
-        between(quizAttempts.finishedAt, from, to),
-        eq(quizzes.userId, userId)
+        eq(quizzes.userId, userId),
+        gte(quizAttempts.finishedAt, from),
+        lte(quizAttempts.finishedAt, to)
       )
     );
-  return { sessionsData, quizAttemptsData };
+  return { todayProgress, weeklySessionsProgress, weeklyQuizProgress };
 }
 
 export default {
@@ -198,6 +212,6 @@ export default {
   getUserStats,
   updateUserSettings,
   getUserSettings,
-  getUseBarChartData,
+  getUserBarChartData,
   getUserProgressData,
 };

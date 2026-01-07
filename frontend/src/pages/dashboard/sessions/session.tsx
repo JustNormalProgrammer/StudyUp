@@ -6,6 +6,7 @@ import {
   Hourglass,
   MessageCircleQuestionMark,
   Pencil,
+  Sparkles,
   Trash,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -192,8 +193,14 @@ export default function Session() {
             <MessageCircleQuestionMark className="w-4 h-4 md:w-6 md:h-6 antialiased" />
             <h2 className="text-lg font-semibold">Quizzes</h2>
           </div>
-          <Button variant="destructive" onClick={() => setOpenAiSLOP(true)}>
-            AI SLOP
+          <Button
+            className="flex flex-row items-center gap-2 p-0 bg-gradient-to-r  from-purple-500 via-red-500 to-yellow-500"
+            onClick={() => setOpenAiSLOP(true)}
+          >
+            <div className='bg-transparent hover:bg-black/20 transition-all duration-300 text-white w-full h-full gap-1 flex items-center justify-center rounded-sm p-1'>
+              <Sparkles className="w-4 h-4" />
+              AI Quiz
+            </div>
           </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -220,6 +227,12 @@ export default function Session() {
         open={openDeleteDialog}
         setOpen={setOpenDeleteDialog}
         mutation={deleteMutation}
+        secInfo={
+          <div className="text-sm text-red-600 font-semibold">
+            Deleting this session will permanently remove all quizzes that are
+            associated with it.
+          </div>
+        }
       />
     </div>
   )

@@ -77,35 +77,6 @@ export async function getSessions(
   return result;
 }
 
-export async function getSessionsDurationByDay(
-  userId: string,
-  paginationQuery: PaginationQuery & FilterQuery & TimeRangeQuery
-) {
-  const { from, to, start, limit, tagId, q } = paginationQuery;
-  const result = await db
-    .select({
-      sum: sum(studySessions.durationMinutes),
-      day: sql<number>`extract(dow from ${studySessions.startedAt})`,
-      color: tags.color,
-    })
-    .from(studySessions)
-    .leftJoin(tags, eq(studySessions.tagId, tags.tagId))
-    .where(
-      and(
-        eq(studySessions.userId, userId),
-        from ? gte(studySessions.startedAt, from) : undefined,
-        to ? lte(studySessions.startedAt, to) : undefined,
-        tagId ? eq(studySessions.tagId, tagId) : undefined,
-        q ? ilike(studySessions.title, `%${q}%`) : undefined
-      )
-    )
-    .groupBy(
-      sql<number>`extract(dow from ${studySessions.startedAt})`,
-      tags.color
-    )
-  return result;
-}
-
 export async function getSessionById(sessionId: string, userId: string) {
   const [result] = await db
     .select({
@@ -183,5 +154,4 @@ export default {
   updateStudySession,
   updateStudySessionResources,
   deleteStudySession,
-  getSessionsDurationByDay,
 };

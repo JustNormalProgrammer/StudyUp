@@ -13,6 +13,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import Tag from '../primitives/Tag'
+import { Spinner } from '../ui/spinner'
 import DateEvent from './DateEvent'
 import Event from './Event'
 import type { Tag as TagType } from '@/api/types'
@@ -66,11 +67,7 @@ export default function Calendar() {
     null,
   )
 
-  const {
-    data: events,
-    isLoading,
-    isError,
-  } = useQuery<{
+  const calendarEventsQuery = useQuery<{
     sessions: Array<SessionEvent>
     quizzes: Array<QuizEvent>
   }>({
@@ -118,6 +115,7 @@ export default function Calendar() {
         }))
       return { sessions: sessionsEvents, quizzes: quizzesAttemptsEvents }
     },
+    placeholderData: (prev) => prev,
   })
 
   function renderEventContent(eventInfo: { event: SessionEvent | QuizEvent }) {
@@ -145,8 +143,9 @@ export default function Calendar() {
     }
     return
   }
-  const sessions = events?.sessions ?? []
-  const quizzes = events?.quizzes ?? []
+
+  const sessions = calendarEventsQuery.data?.sessions ?? []
+  const quizzes = calendarEventsQuery.data?.quizzes ?? []
 
   const sessionsForDate = sessions.filter(
     (session) => new Date(session.start).toDateString() === selectedDate,
@@ -160,12 +159,11 @@ export default function Calendar() {
         <div className="flex flex-col mb-4 gap-2 justify-center items-center md:flex-row md:justify-between">
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => calendarRef.current?.getApi().prev()}
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
-              Prev
             </Button>
 
             <div className="text-center font-semibold text-lg select-none">
@@ -173,11 +171,10 @@ export default function Calendar() {
             </div>
 
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => calendarRef.current?.getApi().next()}
             >
-              Next
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
@@ -192,7 +189,7 @@ export default function Calendar() {
           </Button>
         </div>
 
-        <div className="shadow-sm bg-white">
+        <div className="shadow-sm bg-white relative">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, interactionPlugin]}
@@ -213,11 +210,16 @@ export default function Calendar() {
               })
             }}
           />
+          {calendarEventsQuery.isFetching && (
+            <div className="absolute top-0 right-0 w-full h-full flex justify-center items-center z-9990 backdrop-blur-[1px]">
+              <Spinner className="h-10 w-10" />
+            </div>
+          )}
         </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="overflow-y-auto max-h-[calc(100vh-2rem)]">
           <DialogHeader>
             <DialogTitle className="mx-auto">
               {selectedDate
@@ -300,7 +302,11 @@ export default function Calendar() {
                         colorBorder={quiz.borderColor}
                         secInfo={
                           <div className="flex flex-row items-center gap-5">
-                            <Tag tag={quiz.extendedProps.tag} size="sm" className="min-w-0 text-ellipsis max-w-7.5 sm:max-w-full" />
+                            <Tag
+                              tag={quiz.extendedProps.tag}
+                              size="sm"
+                              className="min-w-0 text-ellipsis max-w-7.5 sm:max-w-full"
+                            />
                             <div
                               className="text-xs font-semibold bg-(--score-color)/10 px-2 py-1 rounded-md"
                               style={{

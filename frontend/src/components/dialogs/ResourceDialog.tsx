@@ -28,9 +28,13 @@ import {
 import { StudyResourceTypeEnum } from '@/api/types'
 
 const schema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z
+    .string()
+    .trim()
+    .min(1, 'Title is required')
+    .max(255, 'Title is too long'),
   type: z.enum(StudyResourceTypeEnum, { error: 'Invalid type' }),
-  desc: z.string().optional(),
+  desc: z.string().trim().max(255, 'Description is too long').optional(),
   url: z.optional(z.url({ error: 'Invalid URL' })),
 })
 
@@ -42,14 +46,12 @@ export function ResourceDialog({
   resource,
   onSubmit,
   isLoading = false,
-  mutationError = undefined,
 }: {
   open: boolean
   setOpen: (open: boolean) => void
   resource?: StudyResource
   onSubmit: (data: z.infer<typeof schema>) => void
   isLoading?: boolean
-  mutationError?: Error
 }) {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -118,6 +120,11 @@ export function ResourceDialog({
                   aria-invalid={fieldState.invalid}
                   placeholder="Add additional information..."
                   rows={2}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value === '' ? undefined : e.target.value,
+                    )
+                  }
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

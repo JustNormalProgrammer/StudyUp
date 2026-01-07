@@ -6,23 +6,26 @@ import {
   CircleSlash2,
   Hourglass,
   MessageCircleQuestionMark,
-  Plus,
 } from 'lucide-react'
+import { useErrorBoundary } from 'react-error-boundary'
 import { Card, CardContent } from '../ui/card'
 import { Separator } from '../ui/separator'
-import type { UserSettings, UserStats } from '@/api/types'
+import { Skeleton } from '../ui/skeleton'
+import type { UserStats } from '@/api/types'
 import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 export default function StatCards() {
   const api = useAuthenticatedRequest()
-  const { data: stats } = useQuery({
+  const { showBoundary } = useErrorBoundary()
+  const dataQuery = useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
       const { data } = await api.get<UserStats>('/user/stats')
       return data
     },
   })
-  return (
+  if (dataQuery.data) {
+    return (
       <Card className="w-full">
         <CardContent className="h-full flex flex-col gap-3">
           <div className="text-lg font-semibold">Statistics</div>
@@ -30,29 +33,31 @@ export default function StatCards() {
           <div className="grid grid-cols-1 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             <ProfileStat
               title="Study sessions"
-              value={stats?.sessionsStats.totalSessions}
+              value={dataQuery.data.sessionsStats.totalSessions}
               icon={<BookOpen size={16} />}
             />
             <ProfileStat
               title="Created Quizzes"
-              value={stats?.quizzesStats.totalQuizzes}
+              value={dataQuery.data.quizzesStats.totalQuizzes}
               icon={<MessageCircleQuestionMark size={16} />}
             />
             <ProfileStat
               title="Added Resources"
-              value={stats?.resourcesStats.totalResources}
+              value={dataQuery.data.resourcesStats.totalResources}
               icon={<BoxIcon size={16} />}
             />
             <ProfileStat
               title="Time spent studying"
               value={
-                stats?.sessionsStats.totalDuration && (
+                dataQuery.data.sessionsStats.totalDuration && (
                   <>
-                    {Math.floor(stats.sessionsStats.totalDuration / 60)}
+                    {Math.floor(
+                      dataQuery.data.sessionsStats.totalDuration / 60,
+                    )}
                     <span className="text-sm text-gray-500 mx-0.5 font-normal">
                       hours
                     </span>
-                    {stats.sessionsStats.totalDuration % 60}
+                    {dataQuery.data.sessionsStats.totalDuration % 60}
                     <span className="text-sm text-gray-500 mx-0.5 font-normal">
                       mins
                     </span>
@@ -63,18 +68,18 @@ export default function StatCards() {
             />
             <ProfileStat
               title="Quiz attempts"
-              value={stats?.quizzesStats.totalQuizAttempts}
+              value={dataQuery.data.quizzesStats.totalQuizAttempts}
               icon={<MessageCircleQuestionMark size={16} />}
             />
             <ProfileStat
               title="Average quiz score"
               value={
                 <>
-                  {stats?.quizzesStats.averageQuizScore || (
+                  {dataQuery.data.quizzesStats.averageQuizScore || (
                     <CircleOff className="size-5 mt-1 text-gray-600" />
                   )}
                   <span
-                    hidden={!stats?.quizzesStats.averageQuizScore}
+                    hidden={!dataQuery.data.quizzesStats.averageQuizScore}
                     className="text-sm text-gray-500 mx-0.5 font-normal"
                   >
                     %
@@ -86,6 +91,20 @@ export default function StatCards() {
           </div>
         </CardContent>
       </Card>
+    )
+  }
+  if (dataQuery.error) {
+    showBoundary(dataQuery.error)
+  }
+
+  return (
+    <Card className="w-full">
+      <CardContent className="flex flex-col gap-3">
+        <div className="text-lg font-semibold">Statistics</div>
+        <Separator />
+        <Skeleton className="h-25 w-full" />
+      </CardContent>
+    </Card>
   )
 }
 

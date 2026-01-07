@@ -61,7 +61,7 @@ export function TagSuggestionBox({
               </div>
             ) : (
               <>
-                <TagIcon /> {reset ? 'Show all' : 'Select tag'}
+                <TagIcon /> Select tag
               </>
             )}
           </Button>
@@ -99,7 +99,7 @@ export function TagSuggestionBox({
             </div>
           ) : (
             <>
-              <TagIcon /> {reset ? 'Show all' : 'Select tag'}
+              <TagIcon />  Select tag
             </>
           )}
         </Button>

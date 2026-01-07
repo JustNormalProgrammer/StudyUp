@@ -10,7 +10,11 @@ import validate from "../utils/validate";
 import { body } from "express-validator";
 
 const validateTag = [
-  body("content").notEmpty().withMessage("Content is required"),
+  body("content")
+    .notEmpty()
+    .withMessage("Content is required")
+    .isLength({ min: 1, max: 50 })
+    .withMessage("Content must be between 1 and 50 characters"),
   body("color")
     .notEmpty()
     .withMessage("Color is required")

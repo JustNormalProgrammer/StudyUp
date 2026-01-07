@@ -27,10 +27,18 @@ import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 import { Switch } from '@/components/ui/switch'
 
 const schema = z.object({
-  title: z.string().trim().min(1, 'Title is required'),
+  title: z
+    .string()
+    .trim()
+    .min(1, 'Title is required')
+    .max(255, 'Title is too long'),
   numberOfQuestions: z.number().min(1, 'Number of questions is required'),
   isMultipleChoice: z.boolean(),
-  additionalInfo: z.string().trim().optional(),
+  additionalInfo: z
+    .string()
+    .trim()
+    .max(500, 'Additional information is too long')
+    .optional(),
 })
 
 export type CreateQuizDialogForm = z.infer<typeof schema>
@@ -56,7 +64,6 @@ export default function CreateQuizDialog({
       additionalInfo: undefined,
     },
   })
-  let toastId: string | number
   const mutation = useMutation({
     mutationFn: (data: CreateQuizDialogForm) => {
       setOpen(false)
@@ -186,6 +193,7 @@ export default function CreateQuizDialog({
                       e.target.value === '' ? undefined : e.target.value,
                     )
                   }
+                  className="break-all"
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

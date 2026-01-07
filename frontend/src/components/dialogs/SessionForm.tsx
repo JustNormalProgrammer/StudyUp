@@ -30,8 +30,8 @@ import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 const schema = z.object({
   tagId: z.string({ error: 'Tag is required' }).min(1, 'Tag is required'),
-  title: z.string().trim().min(1, 'Title is required'),
-  notes: z.string().trim().optional(),
+  title: z.string().trim().min(1, 'Title is required').max(255, 'Title is too long'),
+  notes: z.string().trim().max(2000, 'Notes are too long').optional(),
   startedAt: z.date(),
   durationMinutes: z
     .number({ error: 'Duration must be a number' })
@@ -135,6 +135,7 @@ export default function SessionForm({
                   id="notes"
                   placeholder="Add additional notes..."
                   aria-invalid={fieldState.invalid}
+                  className="break-all"
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

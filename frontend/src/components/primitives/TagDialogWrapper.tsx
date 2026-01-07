@@ -33,7 +33,6 @@ export default function TagDialogWrapper({ tag }: { tag: TagType }) {
       toast.error('Failed to update tag')
     },
   })
-  
 
   const deleteMutation = useMutation({
     mutationFn: () => {
@@ -83,6 +82,12 @@ export default function TagDialogWrapper({ tag }: { tag: TagType }) {
         open={showDeleteDialog}
         setOpen={setShowDeleteDialog}
         mutation={deleteMutation}
+        secInfo={
+          <div className="text-sm text-red-600 font-semibold">
+            Deleting this tag will permanently remove all sessions and quizzes
+            that it is associated with.
+          </div>
+        }
       />
     </>
   )

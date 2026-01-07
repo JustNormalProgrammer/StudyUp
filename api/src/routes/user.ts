@@ -5,12 +5,14 @@ import {
   getUserDetails,
   getUserStats,
   updateUserSettings,
-  getUserChartData,
+  getUserBarChartDurationData,
+  getTodaysUserProgressChartData,
   getUserSettings,
 } from "../controllers/user";
 import { validatePaginationQuery } from "../utils/validatePagination";
 import validate from "../utils/validate";
-import { body, query } from "express-validator";
+import { body } from "express-validator";
+import { validateTimeRangeQuery } from "../utils/validateTimeRange";
 
 const router = Router();
 
@@ -20,11 +22,7 @@ const updateUserSettingsSchema = [
   body("weeklyQuizGoal")
     .isInt({ min: 1 }),
 ];
-const getUserChartDataSchema = [
-  query("from").isISO8601().withMessage("From field must be a date").toDate(),
-  query("to").isISO8601().withMessage("To field must be a date").toDate(),
-  query("goal").optional().isBoolean(),
-];
+
 router.get("/details", requiredAuth, getUserDetails);
 router.get(
   "/events",
@@ -34,11 +32,17 @@ router.get(
 );
 router.get("/stats", requiredAuth, getUserStats);
 router.get(
-  "/chart-data",
+  "/chart-data/sessions-duration",
   requiredAuth,
-  validate(getUserChartDataSchema),
-  getUserChartData
+  validate(validateTimeRangeQuery),
+  getUserBarChartDurationData
 );
+router.get(
+  "/chart-data/progress",
+  requiredAuth,
+  getTodaysUserProgressChartData
+);
+
 router.get("/settings", requiredAuth, getUserSettings);
 router.put("/settings", requiredAuth, validate(updateUserSettingsSchema), updateUserSettings);
 export default router;
