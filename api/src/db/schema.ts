@@ -29,6 +29,7 @@ export const users = pgTable("users", {
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 256 }).notNull(),
   createdAt: timestamp().defaultNow().notNull(),
+  isVerified: boolean().default(false).notNull(),
 });
 
 export const userSettings = pgTable("user_settings", {
@@ -45,6 +46,13 @@ export const refreshTokens = pgTable("refresh_tokens", {
     .references(() => users.userId)
     .primaryKey(),
   refreshToken: varchar().notNull(),
+});
+
+export const verificationTokens = pgTable("verification_tokens", {
+  userId: uuid()
+    .references(() => users.userId)
+    .primaryKey(),
+  token: varchar().notNull(),
 });
 
 export const tags = pgTable("tags", {

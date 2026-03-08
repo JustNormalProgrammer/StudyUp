@@ -9,23 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
-import { Route as DashboardNotFoundRouteImport } from './routes/dashboard/not-found'
-import { Route as DashboardHomeRouteImport } from './routes/dashboard/home'
-import { Route as DashboardCalendarRouteImport } from './routes/dashboard/calendar'
-import { Route as DashboardStudySessionsIndexRouteImport } from './routes/dashboard/study-sessions/index'
-import { Route as DashboardResourcesIndexRouteImport } from './routes/dashboard/resources/index'
-import { Route as DashboardQuizzesIndexRouteImport } from './routes/dashboard/quizzes/index'
-import { Route as DashboardStudySessionsCreateRouteImport } from './routes/dashboard/study-sessions/create'
-import { Route as DashboardStudySessionsSessionIdIndexRouteImport } from './routes/dashboard/study-sessions/$sessionId/index'
-import { Route as DashboardQuizzesQuizIdIndexRouteImport } from './routes/dashboard/quizzes/$quizId/index'
-import { Route as DashboardQuizzesQuizIdAttemptsAttemptIdRouteImport } from './routes/dashboard/quizzes/$quizId/attempts/$attemptId'
+import { Route as AuthDashboardRouteRouteImport } from './routes/_auth/dashboard/route'
+import { Route as AuthDashboardIndexRouteImport } from './routes/_auth/dashboard/index'
+import { Route as AuthDashboardProfileRouteImport } from './routes/_auth/dashboard/profile'
+import { Route as AuthDashboardNotFoundRouteImport } from './routes/_auth/dashboard/not-found'
+import { Route as AuthDashboardHomeRouteImport } from './routes/_auth/dashboard/home'
+import { Route as AuthDashboardCalendarRouteImport } from './routes/_auth/dashboard/calendar'
+import { Route as AuthDashboardStudySessionsIndexRouteImport } from './routes/_auth/dashboard/study-sessions/index'
+import { Route as AuthDashboardResourcesIndexRouteImport } from './routes/_auth/dashboard/resources/index'
+import { Route as AuthDashboardQuizzesIndexRouteImport } from './routes/_auth/dashboard/quizzes/index'
+import { Route as AuthDashboardStudySessionsCreateRouteImport } from './routes/_auth/dashboard/study-sessions/create'
+import { Route as AuthDashboardStudySessionsSessionIdIndexRouteImport } from './routes/_auth/dashboard/study-sessions/$sessionId/index'
+import { Route as AuthDashboardQuizzesQuizIdIndexRouteImport } from './routes/_auth/dashboard/quizzes/$quizId/index'
+import { Route as AuthDashboardQuizzesQuizIdAttemptsAttemptIdRouteImport } from './routes/_auth/dashboard/quizzes/$quizId/attempts/$attemptId'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -36,9 +43,8 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRouteRoute = DashboardRouteRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthRouteRoute = AuthRouteRouteImport.update({
+  id: '/_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -46,133 +52,145 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
+const AuthDashboardRouteRoute = AuthDashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthDashboardIndexRoute = AuthDashboardIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => AuthDashboardRouteRoute,
 } as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
+const AuthDashboardProfileRoute = AuthDashboardProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => AuthDashboardRouteRoute,
 } as any)
-const DashboardNotFoundRoute = DashboardNotFoundRouteImport.update({
+const AuthDashboardNotFoundRoute = AuthDashboardNotFoundRouteImport.update({
   id: '/not-found',
   path: '/not-found',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => AuthDashboardRouteRoute,
 } as any)
-const DashboardHomeRoute = DashboardHomeRouteImport.update({
+const AuthDashboardHomeRoute = AuthDashboardHomeRouteImport.update({
   id: '/home',
   path: '/home',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => AuthDashboardRouteRoute,
 } as any)
-const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+const AuthDashboardCalendarRoute = AuthDashboardCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
-  getParentRoute: () => DashboardRouteRoute,
+  getParentRoute: () => AuthDashboardRouteRoute,
 } as any)
-const DashboardStudySessionsIndexRoute =
-  DashboardStudySessionsIndexRouteImport.update({
+const AuthDashboardStudySessionsIndexRoute =
+  AuthDashboardStudySessionsIndexRouteImport.update({
     id: '/study-sessions/',
     path: '/study-sessions/',
-    getParentRoute: () => DashboardRouteRoute,
+    getParentRoute: () => AuthDashboardRouteRoute,
   } as any)
-const DashboardResourcesIndexRoute = DashboardResourcesIndexRouteImport.update({
-  id: '/resources/',
-  path: '/resources/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardQuizzesIndexRoute = DashboardQuizzesIndexRouteImport.update({
-  id: '/quizzes/',
-  path: '/quizzes/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DashboardStudySessionsCreateRoute =
-  DashboardStudySessionsCreateRouteImport.update({
+const AuthDashboardResourcesIndexRoute =
+  AuthDashboardResourcesIndexRouteImport.update({
+    id: '/resources/',
+    path: '/resources/',
+    getParentRoute: () => AuthDashboardRouteRoute,
+  } as any)
+const AuthDashboardQuizzesIndexRoute =
+  AuthDashboardQuizzesIndexRouteImport.update({
+    id: '/quizzes/',
+    path: '/quizzes/',
+    getParentRoute: () => AuthDashboardRouteRoute,
+  } as any)
+const AuthDashboardStudySessionsCreateRoute =
+  AuthDashboardStudySessionsCreateRouteImport.update({
     id: '/study-sessions/create',
     path: '/study-sessions/create',
-    getParentRoute: () => DashboardRouteRoute,
+    getParentRoute: () => AuthDashboardRouteRoute,
   } as any)
-const DashboardStudySessionsSessionIdIndexRoute =
-  DashboardStudySessionsSessionIdIndexRouteImport.update({
+const AuthDashboardStudySessionsSessionIdIndexRoute =
+  AuthDashboardStudySessionsSessionIdIndexRouteImport.update({
     id: '/study-sessions/$sessionId/',
     path: '/study-sessions/$sessionId/',
-    getParentRoute: () => DashboardRouteRoute,
+    getParentRoute: () => AuthDashboardRouteRoute,
   } as any)
-const DashboardQuizzesQuizIdIndexRoute =
-  DashboardQuizzesQuizIdIndexRouteImport.update({
+const AuthDashboardQuizzesQuizIdIndexRoute =
+  AuthDashboardQuizzesQuizIdIndexRouteImport.update({
     id: '/quizzes/$quizId/',
     path: '/quizzes/$quizId/',
-    getParentRoute: () => DashboardRouteRoute,
+    getParentRoute: () => AuthDashboardRouteRoute,
   } as any)
-const DashboardQuizzesQuizIdAttemptsAttemptIdRoute =
-  DashboardQuizzesQuizIdAttemptsAttemptIdRouteImport.update({
+const AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute =
+  AuthDashboardQuizzesQuizIdAttemptsAttemptIdRouteImport.update({
     id: '/quizzes/$quizId/attempts/$attemptId',
     path: '/quizzes/$quizId/attempts/$attemptId',
-    getParentRoute: () => DashboardRouteRoute,
+    getParentRoute: () => AuthDashboardRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/home': typeof DashboardHomeRoute
-  '/dashboard/not-found': typeof DashboardNotFoundRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
-  '/dashboard/quizzes': typeof DashboardQuizzesIndexRoute
-  '/dashboard/resources': typeof DashboardResourcesIndexRoute
-  '/dashboard/study-sessions': typeof DashboardStudySessionsIndexRoute
-  '/dashboard/quizzes/$quizId': typeof DashboardQuizzesQuizIdIndexRoute
-  '/dashboard/study-sessions/$sessionId': typeof DashboardStudySessionsSessionIdIndexRoute
-  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/dashboard': typeof AuthDashboardRouteRouteWithChildren
+  '/dashboard/calendar': typeof AuthDashboardCalendarRoute
+  '/dashboard/home': typeof AuthDashboardHomeRoute
+  '/dashboard/not-found': typeof AuthDashboardNotFoundRoute
+  '/dashboard/profile': typeof AuthDashboardProfileRoute
+  '/dashboard/': typeof AuthDashboardIndexRoute
+  '/dashboard/study-sessions/create': typeof AuthDashboardStudySessionsCreateRoute
+  '/dashboard/quizzes': typeof AuthDashboardQuizzesIndexRoute
+  '/dashboard/resources': typeof AuthDashboardResourcesIndexRoute
+  '/dashboard/study-sessions': typeof AuthDashboardStudySessionsIndexRoute
+  '/dashboard/quizzes/$quizId': typeof AuthDashboardQuizzesQuizIdIndexRoute
+  '/dashboard/study-sessions/$sessionId': typeof AuthDashboardStudySessionsSessionIdIndexRoute
+  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/home': typeof DashboardHomeRoute
-  '/dashboard/not-found': typeof DashboardNotFoundRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
-  '/dashboard/quizzes': typeof DashboardQuizzesIndexRoute
-  '/dashboard/resources': typeof DashboardResourcesIndexRoute
-  '/dashboard/study-sessions': typeof DashboardStudySessionsIndexRoute
-  '/dashboard/quizzes/$quizId': typeof DashboardQuizzesQuizIdIndexRoute
-  '/dashboard/study-sessions/$sessionId': typeof DashboardStudySessionsSessionIdIndexRoute
-  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/dashboard/calendar': typeof AuthDashboardCalendarRoute
+  '/dashboard/home': typeof AuthDashboardHomeRoute
+  '/dashboard/not-found': typeof AuthDashboardNotFoundRoute
+  '/dashboard/profile': typeof AuthDashboardProfileRoute
+  '/dashboard': typeof AuthDashboardIndexRoute
+  '/dashboard/study-sessions/create': typeof AuthDashboardStudySessionsCreateRoute
+  '/dashboard/quizzes': typeof AuthDashboardQuizzesIndexRoute
+  '/dashboard/resources': typeof AuthDashboardResourcesIndexRoute
+  '/dashboard/study-sessions': typeof AuthDashboardStudySessionsIndexRoute
+  '/dashboard/quizzes/$quizId': typeof AuthDashboardQuizzesQuizIdIndexRoute
+  '/dashboard/study-sessions/$sessionId': typeof AuthDashboardStudySessionsSessionIdIndexRoute
+  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/_auth': typeof AuthRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/home': typeof DashboardHomeRoute
-  '/dashboard/not-found': typeof DashboardNotFoundRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/study-sessions/create': typeof DashboardStudySessionsCreateRoute
-  '/dashboard/quizzes/': typeof DashboardQuizzesIndexRoute
-  '/dashboard/resources/': typeof DashboardResourcesIndexRoute
-  '/dashboard/study-sessions/': typeof DashboardStudySessionsIndexRoute
-  '/dashboard/quizzes/$quizId/': typeof DashboardQuizzesQuizIdIndexRoute
-  '/dashboard/study-sessions/$sessionId/': typeof DashboardStudySessionsSessionIdIndexRoute
-  '/dashboard/quizzes/$quizId/attempts/$attemptId': typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/_auth/dashboard': typeof AuthDashboardRouteRouteWithChildren
+  '/_auth/dashboard/calendar': typeof AuthDashboardCalendarRoute
+  '/_auth/dashboard/home': typeof AuthDashboardHomeRoute
+  '/_auth/dashboard/not-found': typeof AuthDashboardNotFoundRoute
+  '/_auth/dashboard/profile': typeof AuthDashboardProfileRoute
+  '/_auth/dashboard/': typeof AuthDashboardIndexRoute
+  '/_auth/dashboard/study-sessions/create': typeof AuthDashboardStudySessionsCreateRoute
+  '/_auth/dashboard/quizzes/': typeof AuthDashboardQuizzesIndexRoute
+  '/_auth/dashboard/resources/': typeof AuthDashboardResourcesIndexRoute
+  '/_auth/dashboard/study-sessions/': typeof AuthDashboardStudySessionsIndexRoute
+  '/_auth/dashboard/quizzes/$quizId/': typeof AuthDashboardQuizzesQuizIdIndexRoute
+  '/_auth/dashboard/study-sessions/$sessionId/': typeof AuthDashboardStudySessionsSessionIdIndexRoute
+  '/_auth/dashboard/quizzes/$quizId/attempts/$attemptId': typeof AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/dashboard'
     | '/login'
     | '/register'
+    | '/verify-email'
+    | '/dashboard'
     | '/dashboard/calendar'
     | '/dashboard/home'
     | '/dashboard/not-found'
@@ -190,6 +208,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/verify-email'
     | '/dashboard/calendar'
     | '/dashboard/home'
     | '/dashboard/not-found'
@@ -205,32 +224,42 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
+    | '/_auth'
     | '/login'
     | '/register'
-    | '/dashboard/calendar'
-    | '/dashboard/home'
-    | '/dashboard/not-found'
-    | '/dashboard/profile'
-    | '/dashboard/'
-    | '/dashboard/study-sessions/create'
-    | '/dashboard/quizzes/'
-    | '/dashboard/resources/'
-    | '/dashboard/study-sessions/'
-    | '/dashboard/quizzes/$quizId/'
-    | '/dashboard/study-sessions/$sessionId/'
-    | '/dashboard/quizzes/$quizId/attempts/$attemptId'
+    | '/verify-email'
+    | '/_auth/dashboard'
+    | '/_auth/dashboard/calendar'
+    | '/_auth/dashboard/home'
+    | '/_auth/dashboard/not-found'
+    | '/_auth/dashboard/profile'
+    | '/_auth/dashboard/'
+    | '/_auth/dashboard/study-sessions/create'
+    | '/_auth/dashboard/quizzes/'
+    | '/_auth/dashboard/resources/'
+    | '/_auth/dashboard/study-sessions/'
+    | '/_auth/dashboard/quizzes/$quizId/'
+    | '/_auth/dashboard/study-sessions/$sessionId/'
+    | '/_auth/dashboard/quizzes/$quizId/attempts/$attemptId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -245,11 +274,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteRouteImport
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -259,134 +288,153 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
+    '/_auth/dashboard': {
+      id: '/_auth/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthDashboardRouteRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/dashboard/': {
+      id: '/_auth/dashboard/'
       path: '/'
       fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardIndexRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/profile': {
-      id: '/dashboard/profile'
+    '/_auth/dashboard/profile': {
+      id: '/_auth/dashboard/profile'
       path: '/profile'
       fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardProfileRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/not-found': {
-      id: '/dashboard/not-found'
+    '/_auth/dashboard/not-found': {
+      id: '/_auth/dashboard/not-found'
       path: '/not-found'
       fullPath: '/dashboard/not-found'
-      preLoaderRoute: typeof DashboardNotFoundRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardNotFoundRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/home': {
-      id: '/dashboard/home'
+    '/_auth/dashboard/home': {
+      id: '/_auth/dashboard/home'
       path: '/home'
       fullPath: '/dashboard/home'
-      preLoaderRoute: typeof DashboardHomeRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardHomeRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/calendar': {
-      id: '/dashboard/calendar'
+    '/_auth/dashboard/calendar': {
+      id: '/_auth/dashboard/calendar'
       path: '/calendar'
       fullPath: '/dashboard/calendar'
-      preLoaderRoute: typeof DashboardCalendarRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardCalendarRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/study-sessions/': {
-      id: '/dashboard/study-sessions/'
+    '/_auth/dashboard/study-sessions/': {
+      id: '/_auth/dashboard/study-sessions/'
       path: '/study-sessions'
       fullPath: '/dashboard/study-sessions'
-      preLoaderRoute: typeof DashboardStudySessionsIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardStudySessionsIndexRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/resources/': {
-      id: '/dashboard/resources/'
+    '/_auth/dashboard/resources/': {
+      id: '/_auth/dashboard/resources/'
       path: '/resources'
       fullPath: '/dashboard/resources'
-      preLoaderRoute: typeof DashboardResourcesIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardResourcesIndexRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/quizzes/': {
-      id: '/dashboard/quizzes/'
+    '/_auth/dashboard/quizzes/': {
+      id: '/_auth/dashboard/quizzes/'
       path: '/quizzes'
       fullPath: '/dashboard/quizzes'
-      preLoaderRoute: typeof DashboardQuizzesIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardQuizzesIndexRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/study-sessions/create': {
-      id: '/dashboard/study-sessions/create'
+    '/_auth/dashboard/study-sessions/create': {
+      id: '/_auth/dashboard/study-sessions/create'
       path: '/study-sessions/create'
       fullPath: '/dashboard/study-sessions/create'
-      preLoaderRoute: typeof DashboardStudySessionsCreateRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardStudySessionsCreateRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/study-sessions/$sessionId/': {
-      id: '/dashboard/study-sessions/$sessionId/'
+    '/_auth/dashboard/study-sessions/$sessionId/': {
+      id: '/_auth/dashboard/study-sessions/$sessionId/'
       path: '/study-sessions/$sessionId'
       fullPath: '/dashboard/study-sessions/$sessionId'
-      preLoaderRoute: typeof DashboardStudySessionsSessionIdIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardStudySessionsSessionIdIndexRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/quizzes/$quizId/': {
-      id: '/dashboard/quizzes/$quizId/'
+    '/_auth/dashboard/quizzes/$quizId/': {
+      id: '/_auth/dashboard/quizzes/$quizId/'
       path: '/quizzes/$quizId'
       fullPath: '/dashboard/quizzes/$quizId'
-      preLoaderRoute: typeof DashboardQuizzesQuizIdIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardQuizzesQuizIdIndexRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
-    '/dashboard/quizzes/$quizId/attempts/$attemptId': {
-      id: '/dashboard/quizzes/$quizId/attempts/$attemptId'
+    '/_auth/dashboard/quizzes/$quizId/attempts/$attemptId': {
+      id: '/_auth/dashboard/quizzes/$quizId/attempts/$attemptId'
       path: '/quizzes/$quizId/attempts/$attemptId'
       fullPath: '/dashboard/quizzes/$quizId/attempts/$attemptId'
-      preLoaderRoute: typeof DashboardQuizzesQuizIdAttemptsAttemptIdRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      preLoaderRoute: typeof AuthDashboardQuizzesQuizIdAttemptsAttemptIdRouteImport
+      parentRoute: typeof AuthDashboardRouteRoute
     }
   }
 }
 
-interface DashboardRouteRouteChildren {
-  DashboardCalendarRoute: typeof DashboardCalendarRoute
-  DashboardHomeRoute: typeof DashboardHomeRoute
-  DashboardNotFoundRoute: typeof DashboardNotFoundRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
-  DashboardStudySessionsCreateRoute: typeof DashboardStudySessionsCreateRoute
-  DashboardQuizzesIndexRoute: typeof DashboardQuizzesIndexRoute
-  DashboardResourcesIndexRoute: typeof DashboardResourcesIndexRoute
-  DashboardStudySessionsIndexRoute: typeof DashboardStudySessionsIndexRoute
-  DashboardQuizzesQuizIdIndexRoute: typeof DashboardQuizzesQuizIdIndexRoute
-  DashboardStudySessionsSessionIdIndexRoute: typeof DashboardStudySessionsSessionIdIndexRoute
-  DashboardQuizzesQuizIdAttemptsAttemptIdRoute: typeof DashboardQuizzesQuizIdAttemptsAttemptIdRoute
+interface AuthDashboardRouteRouteChildren {
+  AuthDashboardCalendarRoute: typeof AuthDashboardCalendarRoute
+  AuthDashboardHomeRoute: typeof AuthDashboardHomeRoute
+  AuthDashboardNotFoundRoute: typeof AuthDashboardNotFoundRoute
+  AuthDashboardProfileRoute: typeof AuthDashboardProfileRoute
+  AuthDashboardIndexRoute: typeof AuthDashboardIndexRoute
+  AuthDashboardStudySessionsCreateRoute: typeof AuthDashboardStudySessionsCreateRoute
+  AuthDashboardQuizzesIndexRoute: typeof AuthDashboardQuizzesIndexRoute
+  AuthDashboardResourcesIndexRoute: typeof AuthDashboardResourcesIndexRoute
+  AuthDashboardStudySessionsIndexRoute: typeof AuthDashboardStudySessionsIndexRoute
+  AuthDashboardQuizzesQuizIdIndexRoute: typeof AuthDashboardQuizzesQuizIdIndexRoute
+  AuthDashboardStudySessionsSessionIdIndexRoute: typeof AuthDashboardStudySessionsSessionIdIndexRoute
+  AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute: typeof AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute
 }
 
-const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardCalendarRoute: DashboardCalendarRoute,
-  DashboardHomeRoute: DashboardHomeRoute,
-  DashboardNotFoundRoute: DashboardNotFoundRoute,
-  DashboardProfileRoute: DashboardProfileRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
-  DashboardStudySessionsCreateRoute: DashboardStudySessionsCreateRoute,
-  DashboardQuizzesIndexRoute: DashboardQuizzesIndexRoute,
-  DashboardResourcesIndexRoute: DashboardResourcesIndexRoute,
-  DashboardStudySessionsIndexRoute: DashboardStudySessionsIndexRoute,
-  DashboardQuizzesQuizIdIndexRoute: DashboardQuizzesQuizIdIndexRoute,
-  DashboardStudySessionsSessionIdIndexRoute:
-    DashboardStudySessionsSessionIdIndexRoute,
-  DashboardQuizzesQuizIdAttemptsAttemptIdRoute:
-    DashboardQuizzesQuizIdAttemptsAttemptIdRoute,
+const AuthDashboardRouteRouteChildren: AuthDashboardRouteRouteChildren = {
+  AuthDashboardCalendarRoute: AuthDashboardCalendarRoute,
+  AuthDashboardHomeRoute: AuthDashboardHomeRoute,
+  AuthDashboardNotFoundRoute: AuthDashboardNotFoundRoute,
+  AuthDashboardProfileRoute: AuthDashboardProfileRoute,
+  AuthDashboardIndexRoute: AuthDashboardIndexRoute,
+  AuthDashboardStudySessionsCreateRoute: AuthDashboardStudySessionsCreateRoute,
+  AuthDashboardQuizzesIndexRoute: AuthDashboardQuizzesIndexRoute,
+  AuthDashboardResourcesIndexRoute: AuthDashboardResourcesIndexRoute,
+  AuthDashboardStudySessionsIndexRoute: AuthDashboardStudySessionsIndexRoute,
+  AuthDashboardQuizzesQuizIdIndexRoute: AuthDashboardQuizzesQuizIdIndexRoute,
+  AuthDashboardStudySessionsSessionIdIndexRoute:
+    AuthDashboardStudySessionsSessionIdIndexRoute,
+  AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute:
+    AuthDashboardQuizzesQuizIdAttemptsAttemptIdRoute,
 }
 
-const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
-  DashboardRouteRouteChildren,
+const AuthDashboardRouteRouteWithChildren =
+  AuthDashboardRouteRoute._addFileChildren(AuthDashboardRouteRouteChildren)
+
+interface AuthRouteRouteChildren {
+  AuthDashboardRouteRoute: typeof AuthDashboardRouteRouteWithChildren
+}
+
+const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthDashboardRouteRoute: AuthDashboardRouteRouteWithChildren,
+}
+
+const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
+  AuthRouteRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  AuthRouteRoute: AuthRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

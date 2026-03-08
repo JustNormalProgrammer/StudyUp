@@ -7,6 +7,7 @@ import { matchedData, validationResult } from "express-validator";
 import type { StringValue } from "ms";
 import refreshTokens from "../db/queries/refreshTokens";
 import { UserRegister, UserLogin } from "../db/queries/user";
+import { sendVerificationEmail } from "../services/email";
 
 function getSignedTokens({
   userId,
@@ -18,12 +19,12 @@ function getSignedTokens({
   const accessToken = jwt.sign(
     { userId, username },
     process.env.ACCESS_TOKEN_SECRET!,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION! as StringValue }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION! as StringValue },
   );
   const refreshToken = jwt.sign(
     { userId, username },
     process.env.REFRESH_TOKEN_SECRET!,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION! as StringValue }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION! as StringValue },
   );
   return { accessToken, refreshToken };
 }
@@ -40,8 +41,12 @@ export const handleLogin = async (req: Request, res: Response) => {
     const foundUser = await users.getUserByEmail(email);
     if (!foundUser) return res.sendStatus(401);
     const match = await bcrypt.compare(password, foundUser.password);
-    console.log(match);
     if (!match) return res.sendStatus(401);
+    if (!foundUser.isVerified)
+      return res.status(401).json({
+        error: "user not verified",
+        user: { userId: foundUser.userId, email: foundUser.email },
+      });
     const { accessToken, refreshToken } = getSignedTokens({
       userId: foundUser.userId,
       username: foundUser.username,
@@ -80,23 +85,19 @@ export const handleRegister = async (req: Request, res: Response) => {
       password: passwordHash,
       email,
     });
-    const { accessToken, refreshToken } = getSignedTokens({
-      userId: result.userId,
-      username: result.username,
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite: "none",
-      secure: true,
-      path: "/auth/refresh-token",
-    });
-    await refreshTokens.upsertRefreshToken(result.userId, refreshToken);
+    const verificationToken = jwt.sign(
+      { userId: result.userId },
+      process.env.VERIFICATION_TOKEN_SECRET!,
+      { expiresIn: process.env.VERIFICATION_TOKEN_EXPIRATION! as StringValue },
+    );
+    await Promise.all([
+      users.upsertVerificationToken(result.userId, verificationToken),
+      sendVerificationEmail(email, verificationToken),
+    ]);
     return res.json({
       userId: result.userId,
       username: result.username,
       email: result.email,
-      accessToken,
     });
   } catch (e) {
     console.log(e);
@@ -124,7 +125,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
             email: user.email,
           },
           process.env.ACCESS_TOKEN_SECRET!,
-          { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION! as StringValue }
+          { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION! as StringValue },
         );
         const newRefreshToken = jwt.sign(
           {
@@ -133,7 +134,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
             email: user.email,
           },
           process.env.REFRESH_TOKEN_SECRET!,
-          { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION! as StringValue }
+          { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION! as StringValue },
         );
         await refreshTokens.upsertRefreshToken(user.userId, newRefreshToken);
         res.cookie("refreshToken", newRefreshToken, {
@@ -144,7 +145,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
           path: "/auth/refresh-token",
         });
         return res.json({ accessToken });
-      }
+      },
     );
   } catch (e) {
     return res.sendStatus(500);
@@ -154,6 +155,51 @@ export const handleLogout = async (req: Request, res: Response) => {
   try {
     await refreshTokens.removeRefreshToken(req.user!.userId);
     return res.sendStatus(204);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+export const handleVerifyEmail = async (req: Request, res: Response) => {
+  try {
+    const { verificationToken } = req.params;
+    jwt.verify(
+      verificationToken,
+      process.env.VERIFICATION_TOKEN_SECRET!,
+      async (err: any, payload: any) => {
+        if (err) return res.sendStatus(400);
+        const user = await users.getVerificationToken(payload?.userId);
+        if (!user || verificationToken !== user.token) {
+          return res.sendStatus(400);
+        }
+        await Promise.all([
+          users.verifyUser(user.userId),
+          users.removeVerificationToken(user.userId),
+        ]);
+        return res.sendStatus(200);
+      },
+    );
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+};
+
+export const handleResendVerificationEmail = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { userId, email } = req.body;
+    const verificationToken = jwt.sign(
+      { userId: userId },
+      process.env.VERIFICATION_TOKEN_SECRET!,
+      { expiresIn: process.env.VERIFICATION_TOKEN_EXPIRATION! as StringValue },
+    );
+    await Promise.all([
+      users.upsertVerificationToken(userId, verificationToken),
+      sendVerificationEmail(email, verificationToken),
+    ]);
+    return res.sendStatus(200);
   } catch (e) {
     return res.sendStatus(500);
   }

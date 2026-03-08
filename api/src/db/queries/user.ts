@@ -20,6 +20,7 @@ import {
   tags,
   users,
   userSettings,
+  verificationTokens,
 } from "../schema";
 import { getWeekRange } from "../../utils/weekRange";
 
@@ -59,7 +60,7 @@ export async function getUserById(id: string) {
 }
 export async function getUserByCredentials(
   email: string,
-  passwordHash: string
+  passwordHash: string,
 ) {
   const [result] = await db
     .select()
@@ -111,7 +112,7 @@ export async function getUserStats(userId: string) {
 }
 export async function updateUserSettings(
   userId: string,
-  data: { dailyStudyGoal: number; weeklyQuizGoal: number }
+  data: { dailyStudyGoal: number; weeklyQuizGoal: number },
 ) {
   const [result] = await db
     .insert(userSettings)
@@ -127,6 +128,36 @@ export async function updateUserSettings(
 
   return result;
 }
+export async function upsertVerificationToken(userId: string, token: string) {
+  await db
+    .insert(verificationTokens)
+    .values({ userId, token })
+    .onConflictDoUpdate({
+      target: verificationTokens.userId,
+      set: { token },
+    });
+}
+export async function removeVerificationToken(userId: string) {
+  await db
+    .delete(verificationTokens)
+    .where(eq(verificationTokens.userId, userId));
+}
+export async function getVerificationToken(userId: string) {
+  const [result] = await db
+    .select()
+    .from(verificationTokens)
+    .where(eq(verificationTokens.userId, userId))
+    .limit(1);
+  return result;
+}
+export async function verifyUser(userId: string) {
+  const [result] = await db
+    .update(users)
+    .set({ isVerified: true })
+    .where(eq(users.userId, userId))
+    .returning();
+  return result;
+}
 export async function getUserSettings(userId: string) {
   const [result] = await db
     .select()
@@ -138,7 +169,7 @@ export async function getUserSettings(userId: string) {
 export async function getUserBarChartData(
   userId: string,
   from: Date,
-  to: Date
+  to: Date,
 ) {
   const result = await db
     .select({
@@ -152,8 +183,8 @@ export async function getUserBarChartData(
     .where(
       and(
         eq(studySessions.userId, userId),
-        between(studySessions.startedAt, from, to)
-      )
+        between(studySessions.startedAt, from, to),
+      ),
     );
   return result;
 }
@@ -163,7 +194,7 @@ export async function getUserProgressData(userId: string) {
   const endOfTodayUTC = new Date();
   endOfTodayUTC.setUTCHours(23, 59, 59, 999);
   const { from, to } = getWeekRange(startOfTodayUTC);
-  const [{progress: todayProgress}] = await db
+  const [{ progress: todayProgress }] = await db
     .select({
       progress: sql<number>`coalesce(sum(${studySessions.durationMinutes})::integer, 0)`,
     })
@@ -172,10 +203,10 @@ export async function getUserProgressData(userId: string) {
       and(
         eq(studySessions.userId, userId),
         gte(studySessions.startedAt, startOfTodayUTC),
-        lte(studySessions.startedAt, endOfTodayUTC)
-      )
+        lte(studySessions.startedAt, endOfTodayUTC),
+      ),
     );
-  const [{progress: weeklySessionsProgress}] = await db
+  const [{ progress: weeklySessionsProgress }] = await db
     .select({
       progress: sql<number>`coalesce(sum(${studySessions.durationMinutes})::integer, 0)`,
     })
@@ -184,10 +215,10 @@ export async function getUserProgressData(userId: string) {
       and(
         eq(studySessions.userId, userId),
         gte(studySessions.startedAt, from),
-        lte(studySessions.startedAt, to)
-      )
+        lte(studySessions.startedAt, to),
+      ),
     );
-  const [{progress: weeklyQuizProgress}] = await db
+  const [{ progress: weeklyQuizProgress }] = await db
     .select({
       progress: sql<number>`count(${quizAttempts.quizAttemptId})::integer`,
     })
@@ -197,8 +228,8 @@ export async function getUserProgressData(userId: string) {
       and(
         eq(quizzes.userId, userId),
         gte(quizAttempts.finishedAt, from),
-        lte(quizAttempts.finishedAt, to)
-      )
+        lte(quizAttempts.finishedAt, to),
+      ),
     );
   return { todayProgress, weeklySessionsProgress, weeklyQuizProgress };
 }
@@ -211,6 +242,10 @@ export default {
   createUser,
   getUserStats,
   updateUserSettings,
+  getVerificationToken,
+  upsertVerificationToken,
+  removeVerificationToken,
+  verifyUser,
   getUserSettings,
   getUserBarChartData,
   getUserProgressData,
