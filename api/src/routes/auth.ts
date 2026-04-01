@@ -68,6 +68,6 @@ router.post("/login", validate(validateLogin), handleLogin);
 router.post("/register", validate(validateRegister), handleRegister);
 router.get("/logout", requiredAuth, handleLogout);
 router.get("/refresh-token", handleRefreshToken);
-router.get("/verify-email/:verificationToken", handleVerifyEmail);
+router.post("/verify-email", handleVerifyEmail);
 router.post("/resend-verification-email", handleResendVerificationEmail);
 export default router;

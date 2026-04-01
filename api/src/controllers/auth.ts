@@ -162,7 +162,7 @@ export const handleLogout = async (req: Request, res: Response) => {
 
 export const handleVerifyEmail = async (req: Request, res: Response) => {
   try {
-    const { verificationToken } = req.params;
+    const { verificationToken } = req.body;
     jwt.verify(
       verificationToken,
       process.env.VERIFICATION_TOKEN_SECRET!,
